@@ -4,10 +4,11 @@ import {
   Alert,
   FlatList,
   Pressable,
-  SafeAreaView,
   Text,
   View,
 } from 'react-native';
+import ScreenContainer from '../components/ScreenContainer';
+import { colors, radius, spacing } from '../constants/theme';
 import { getMyOrders } from '../services/orderService';
 
 export default function OrdersScreen({ navigation }) {
@@ -22,7 +23,7 @@ export default function OrdersScreen({ navigation }) {
       setOrders(Array.isArray(items) ? items : []);
     } catch (error) {
       console.log('GET ORDERS ERROR:', error?.response?.data || error.message);
-      Alert.alert('Error', 'No se pudieron cargar las órdenes');
+      showAppAlert('Error', 'No se pudieron cargar las órdenes');
     } finally {
       setLoading(false);
     }
@@ -32,80 +33,115 @@ export default function OrdersScreen({ navigation }) {
     fetchOrders();
   }, [fetchOrders]);
 
+  const cardStyle = {
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radius.lg,
+    backgroundColor: colors.surface,
+    padding: spacing.md,
+    marginBottom: spacing.md,
+  };
+
   if (loading) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center' }}>
-        <ActivityIndicator size="large" />
-      </View>
+      <ScreenContainer maxWidth={720}>
+        <View style={{ flex: 1, justifyContent: 'center' }}>
+          <ActivityIndicator size="large" />
+        </View>
+      </ScreenContainer>
     );
   }
 
   if (!orders.length) {
     return (
-      <SafeAreaView style={{ flex: 1 }}>
+      <ScreenContainer maxWidth={720}>
         <View
           style={{
             flex: 1,
-            width: '100%',
-            maxWidth: 720,
-            alignSelf: 'center',
             justifyContent: 'center',
             alignItems: 'center',
-            padding: 24,
+            paddingVertical: spacing.xl,
           }}
         >
-          <Text style={{ fontSize: 22, fontWeight: 'bold', marginBottom: 10 }}>
+          <Text
+            style={{
+              fontSize: 24,
+              fontWeight: '800',
+              color: colors.text,
+              marginBottom: 10,
+            }}
+          >
             Aún no tienes órdenes
           </Text>
-          <Text style={{ color: '#666', textAlign: 'center' }}>
+
+          <Text
+            style={{
+              color: colors.muted,
+              textAlign: 'center',
+              maxWidth: 420,
+            }}
+          >
             Cuando completes una compra, aparecerá aquí.
           </Text>
         </View>
-      </SafeAreaView>
+      </ScreenContainer>
     );
   }
 
   return (
-    <SafeAreaView style={{ flex: 1 }}>
+    <ScreenContainer maxWidth={720}>
       <FlatList
         data={orders}
         keyExtractor={(item) => item._id}
-        contentContainerStyle={{
-          padding: 16,
-          width: '100%',
-          maxWidth: 720,
-          alignSelf: 'center',
-        }}
+        contentContainerStyle={{ paddingBottom: spacing.xl }}
+        ListHeaderComponent={
+          <View style={{ marginBottom: spacing.md }}>
+            <Text
+              style={{
+                fontSize: 28,
+                fontWeight: '800',
+                color: colors.text,
+                marginBottom: 6,
+              }}
+            >
+              Mis órdenes
+            </Text>
+
+            <Text style={{ color: colors.muted }}>
+              Revisa el estado y detalle de tus compras.
+            </Text>
+          </View>
+        }
         renderItem={({ item }) => (
           <Pressable
             onPress={() => navigation.navigate('OrderDetail', { orderId: item._id })}
-            style={{
-              borderWidth: 1,
-              borderColor: '#e8e8e8',
-              borderRadius: 14,
-              padding: 16,
-              marginBottom: 12,
-              backgroundColor: '#fff',
-            }}
+            style={cardStyle}
           >
-            <Text style={{ fontSize: 16, fontWeight: 'bold', marginBottom: 6 }}>
+            <Text
+              style={{
+                fontSize: 17,
+                fontWeight: '700',
+                color: colors.text,
+                marginBottom: 8,
+              }}
+            >
               Orden #{item._id?.slice(-6)}
             </Text>
 
-            <Text style={{ color: '#666', marginBottom: 4 }}>
+            <Text style={{ color: colors.muted, marginBottom: 4 }}>
               Estado: {item.status || '—'}
             </Text>
 
-            <Text style={{ color: '#666', marginBottom: 4 }}>
+            <Text style={{ color: colors.muted, marginBottom: 4 }}>
               Total: ${item.total ?? '—'}
             </Text>
 
-            <Text style={{ color: '#666' }}>
+            <Text style={{ color: colors.muted }}>
               Items: {item.items?.length ?? 0}
             </Text>
           </Pressable>
         )}
       />
-    </SafeAreaView>
+    </ScreenContainer>
   );
 }

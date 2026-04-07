@@ -26,7 +26,7 @@ export default function FavoritesScreen({ navigation }) {
         "GET FAVORITES ERROR:",
         error?.response?.data || error.message,
       );
-      Alert.alert("Error", "No se pudieron cargar los favoritos");
+      showAppAlert("Error", "No se pudieron cargar los favoritos");
     } finally {
       setLoading(false);
     }
@@ -41,7 +41,7 @@ export default function FavoritesScreen({ navigation }) {
         "REMOVE FAVORITE ERROR:",
         error?.response?.data || error.message,
       );
-      Alert.alert("Error", "No se pudo quitar de favoritos");
+      showAppAlert("Error", "No se pudo quitar de favoritos");
     }
   };
 

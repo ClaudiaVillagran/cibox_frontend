@@ -4,10 +4,12 @@ import {
   Alert,
   FlatList,
   Pressable,
-  SafeAreaView,
   Text,
   View,
 } from 'react-native';
+import ScreenContainer from '../components/ScreenContainer';
+import AppButton from '../components/AppButton';
+import { colors, radius, spacing } from '../constants/theme';
 import {
   getNotifications,
   markAllNotificationsAsRead,
@@ -34,7 +36,7 @@ export default function NotificationsScreen() {
       setUnreadCount(data?.unread_count ?? 0);
     } catch (error) {
       console.log('GET NOTIFICATIONS ERROR:', error?.response?.data || error.message);
-      Alert.alert('Error', 'No se pudieron cargar las notificaciones');
+      showAppAlert('Error', 'No se pudieron cargar las notificaciones');
     } finally {
       setLoading(false);
     }
@@ -48,7 +50,7 @@ export default function NotificationsScreen() {
       await fetchNotifications();
     } catch (error) {
       console.log('MARK NOTIFICATION ERROR:', error?.response?.data || error.message);
-      Alert.alert('Error', 'No se pudo marcar la notificación');
+      showAppAlert('Error', 'No se pudo marcar la notificación');
     }
   };
 
@@ -59,7 +61,7 @@ export default function NotificationsScreen() {
       await fetchNotifications();
     } catch (error) {
       console.log('MARK ALL NOTIFICATIONS ERROR:', error?.response?.data || error.message);
-      Alert.alert('Error', 'No se pudieron marcar todas');
+      showAppAlert('Error', 'No se pudieron marcar todas');
     } finally {
       setMarkingAll(false);
     }
@@ -68,6 +70,15 @@ export default function NotificationsScreen() {
   useEffect(() => {
     fetchNotifications();
   }, [fetchNotifications]);
+
+  const cardStyle = {
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.surface,
+    borderRadius: radius.lg,
+    padding: spacing.md,
+    marginBottom: spacing.md,
+  };
 
   const renderNotification = ({ item }) => {
     const title = item?.title || item?.type || 'Notificación';
@@ -81,12 +92,8 @@ export default function NotificationsScreen() {
       <Pressable
         onPress={() => handleMarkOne(item._id, isRead)}
         style={{
-          borderWidth: 1,
-          borderColor: isRead ? '#e8e8e8' : '#d6d6d6',
-          backgroundColor: isRead ? '#fff' : '#f8f8f8',
-          borderRadius: 14,
-          padding: 16,
-          marginBottom: 12,
+          ...cardStyle,
+          backgroundColor: isRead ? colors.surface : '#f3f4f6',
         }}
       >
         <View
@@ -94,34 +101,54 @@ export default function NotificationsScreen() {
             flexDirection: 'row',
             justifyContent: 'space-between',
             alignItems: 'flex-start',
-            marginBottom: 6,
+            marginBottom: 8,
           }}
         >
-          <Text style={{ fontSize: 16, fontWeight: 'bold', flex: 1, marginRight: 12 }}>
+          <Text
+            style={{
+              fontSize: 16,
+              fontWeight: '700',
+              color: colors.text,
+              flex: 1,
+              marginRight: 12,
+            }}
+          >
             {title}
           </Text>
 
           {!isRead ? (
             <View
               style={{
-                backgroundColor: '#111',
+                backgroundColor: colors.primary,
                 borderRadius: 999,
                 paddingHorizontal: 8,
-                paddingVertical: 3,
+                paddingVertical: 4,
               }}
             >
-              <Text style={{ color: '#fff', fontSize: 12, fontWeight: 'bold' }}>
+              <Text
+                style={{
+                  color: colors.primaryText,
+                  fontSize: 12,
+                  fontWeight: '700',
+                }}
+              >
                 Nueva
               </Text>
             </View>
           ) : null}
         </View>
 
-        <Text style={{ color: '#444', marginBottom: 8 }}>
+        <Text
+          style={{
+            color: colors.muted,
+            marginBottom: 8,
+            lineHeight: 20,
+          }}
+        >
           {message}
         </Text>
 
-        <Text style={{ color: '#777', fontSize: 12 }}>
+        <Text style={{ color: colors.muted, fontSize: 12 }}>
           {createdAt}
         </Text>
       </Pressable>
@@ -130,32 +157,35 @@ export default function NotificationsScreen() {
 
   if (loading) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center' }}>
-        <ActivityIndicator size="large" />
-      </View>
+      <ScreenContainer maxWidth={720}>
+        <View style={{ flex: 1, justifyContent: 'center' }}>
+          <ActivityIndicator size="large" />
+        </View>
+      </ScreenContainer>
     );
   }
 
   return (
-    <SafeAreaView style={{ flex: 1 }}>
+    <ScreenContainer maxWidth={720}>
       <FlatList
         data={notifications}
         keyExtractor={(item) => item._id}
         renderItem={renderNotification}
-        contentContainerStyle={{
-          padding: 16,
-          width: '100%',
-          maxWidth: 900,
-          alignSelf: 'center',
-          paddingBottom: 32,
-        }}
+        contentContainerStyle={{ paddingBottom: spacing.xl }}
         ListHeaderComponent={
-          <View style={{ marginBottom: 18 }}>
-            <Text style={{ fontSize: 28, fontWeight: 'bold', marginBottom: 8 }}>
+          <View style={{ marginBottom: spacing.md }}>
+            <Text
+              style={{
+                fontSize: 28,
+                fontWeight: '800',
+                color: colors.text,
+                marginBottom: 6,
+              }}
+            >
               Notificaciones
             </Text>
 
-            <Text style={{ color: '#666', marginBottom: 16 }}>
+            <Text style={{ color: colors.muted, marginBottom: spacing.md }}>
               No leídas: {unreadCount}
             </Text>
 
@@ -163,25 +193,29 @@ export default function NotificationsScreen() {
               style={{
                 flexDirection: 'row',
                 alignItems: 'center',
-                marginBottom: 14,
+                marginBottom: spacing.md,
               }}
             >
               <Pressable
                 onPress={() => setActiveFilter('all')}
                 style={{
-                  backgroundColor: activeFilter === 'all' ? '#111' : '#fff',
+                  backgroundColor:
+                    activeFilter === 'all' ? colors.primary : colors.surface,
                   borderWidth: 1,
-                  borderColor: '#111',
+                  borderColor: colors.primary,
                   paddingVertical: 10,
                   paddingHorizontal: 14,
-                  borderRadius: 10,
+                  borderRadius: radius.md,
                   marginRight: 10,
                 }}
               >
                 <Text
                   style={{
-                    color: activeFilter === 'all' ? '#fff' : '#111',
-                    fontWeight: 'bold',
+                    color:
+                      activeFilter === 'all'
+                        ? colors.primaryText
+                        : colors.primary,
+                    fontWeight: '700',
                   }}
                 >
                   Todas
@@ -191,18 +225,22 @@ export default function NotificationsScreen() {
               <Pressable
                 onPress={() => setActiveFilter('unread')}
                 style={{
-                  backgroundColor: activeFilter === 'unread' ? '#111' : '#fff',
+                  backgroundColor:
+                    activeFilter === 'unread' ? colors.primary : colors.surface,
                   borderWidth: 1,
-                  borderColor: '#111',
+                  borderColor: colors.primary,
                   paddingVertical: 10,
                   paddingHorizontal: 14,
-                  borderRadius: 10,
+                  borderRadius: radius.md,
                 }}
               >
                 <Text
                   style={{
-                    color: activeFilter === 'unread' ? '#fff' : '#111',
-                    fontWeight: 'bold',
+                    color:
+                      activeFilter === 'unread'
+                        ? colors.primaryText
+                        : colors.primary,
+                    fontWeight: '700',
                   }}
                 >
                   No leídas
@@ -210,39 +248,43 @@ export default function NotificationsScreen() {
               </Pressable>
             </View>
 
-            <Pressable
+            <AppButton
+              title={markingAll ? 'Marcando...' : 'Marcar todas como leídas'}
               onPress={handleMarkAll}
               disabled={markingAll || unreadCount === 0}
-              style={{
-                backgroundColor:
-                  markingAll || unreadCount === 0 ? '#999' : '#111',
-                paddingVertical: 12,
-                borderRadius: 12,
-                alignItems: 'center',
-              }}
-            >
-              <Text style={{ color: '#fff', fontWeight: 'bold' }}>
-                {markingAll ? 'Marcando...' : 'Marcar todas como leídas'}
-              </Text>
-            </Pressable>
+            />
           </View>
         }
         ListEmptyComponent={
           <View
             style={{
-              paddingVertical: 40,
+              paddingVertical: spacing.xl,
               alignItems: 'center',
             }}
           >
-            <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 8 }}>
+            <Text
+              style={{
+                fontSize: 22,
+                fontWeight: '800',
+                color: colors.text,
+                marginBottom: 8,
+              }}
+            >
               No hay notificaciones
             </Text>
-            <Text style={{ color: '#666', textAlign: 'center' }}>
+
+            <Text
+              style={{
+                color: colors.muted,
+                textAlign: 'center',
+                maxWidth: 420,
+              }}
+            >
               Cuando ocurran eventos importantes, aparecerán aquí.
             </Text>
           </View>
         }
       />
-    </SafeAreaView>
+    </ScreenContainer>
   );
 }

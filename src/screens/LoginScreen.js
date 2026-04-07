@@ -18,7 +18,7 @@ export default function LoginScreen() {
 
       setAuth({ user, token });
     } catch (error) {
-      Alert.alert('Error', 'Login fallido');
+      showAppAlert('Error', 'Login fallido');
     }
   };
 

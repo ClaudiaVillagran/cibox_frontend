@@ -1,53 +1,83 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import HomeScreen from "../screens/HomeScreen";
+import MainTabs from "./MainTabs";
 import ProductDetailScreen from "../screens/ProductDetailScreen";
 import CartScreen from "../screens/CartScreen";
 import CheckoutScreen from "../screens/CheckoutScreen";
-import OrdersScreen from "../screens/OrdersScreen";
 import OrderDetailScreen from "../screens/OrderDetailScreen";
-import FavoritesScreen from "../screens/FavoritesScreen";
 import NotificationsScreen from "../screens/NotificationsScreen";
-
+import OrderSuccessScreen from "../screens/OrderSuccessScreen";
+import VendorDashboardScreen from "../screens/VendorDashboardScreen";
+import VendorProductsScreen from "../screens/VendorProductsScreen";
+import CreateProductScreen from "../screens/CreateProductScreen";
+import EditProductScreen from "../screens/EditProductScreen";
 const Stack = createNativeStackNavigator();
 
 export default function AppStack() {
   return (
-    <Stack.Navigator>
-      <Stack.Screen name="Home" component={HomeScreen} />
+    <Stack.Navigator
+      screenOptions={{
+        headerShadowVisible: false,
+        headerTitleStyle: {
+          fontWeight: "800",
+        },
+      }}
+    >
+      <Stack.Screen
+        name="MainTabs"
+        component={MainTabs}
+        options={{ headerShown: false }}
+      />
+
       <Stack.Screen
         name="ProductDetail"
         component={ProductDetailScreen}
-        options={{ title: "Detalle producto" }}
+        options={{ title: "Detalle del producto" }}
       />
+
       <Stack.Screen
         name="Cart"
         component={CartScreen}
         options={{ title: "Mi carrito" }}
       />
+
       <Stack.Screen
         name="Checkout"
         component={CheckoutScreen}
         options={{ title: "Checkout" }}
       />
-      <Stack.Screen
-        name="Orders"
-        component={OrdersScreen}
-        options={{ title: "Mis órdenes" }}
-      />
+
       <Stack.Screen
         name="OrderDetail"
         component={OrderDetailScreen}
-        options={{ title: "Detalle orden" }}
+        options={{ title: "Detalle de orden" }}
       />
-      <Stack.Screen
-        name="Favorites"
-        component={FavoritesScreen}
-        options={{ title: "Favoritos" }}
-      />
+
       <Stack.Screen
         name="Notifications"
         component={NotificationsScreen}
         options={{ title: "Notificaciones" }}
+      />
+      <Stack.Screen
+        name="OrderSuccess"
+        component={OrderSuccessScreen}
+        options={{ title: "Compra exitosa" }}
+      />
+      <Stack.Screen
+        name="VendorProducts"
+        component={VendorProductsScreen}
+        options={{ title: "Mis productos" }}
+      />
+
+    <Stack.Screen
+        name="CreateProduct"
+        component={CreateProductScreen}
+        options={{ title: "Crear producto" }}
+      />
+
+        <Stack.Screen
+        name="EditProduct"
+        component={EditProductScreen}
+        options={{ title: "Editar producto" }}
       />
     </Stack.Navigator>
   );

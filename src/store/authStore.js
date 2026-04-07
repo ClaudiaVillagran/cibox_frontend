@@ -1,5 +1,6 @@
-import { create } from 'zustand';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { create } from "zustand";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import useCartStore from "./cartStore";
 
 const useAuthStore = create((set) => ({
   user: null,
@@ -7,7 +8,7 @@ const useAuthStore = create((set) => ({
   isLoading: true,
 
   setAuth: async ({ user, token }) => {
-    await AsyncStorage.setItem('auth', JSON.stringify({ user, token }));
+    await AsyncStorage.setItem("auth", JSON.stringify({ user, token }));
 
     set({
       user,
@@ -16,7 +17,9 @@ const useAuthStore = create((set) => ({
   },
 
   logout: async () => {
-    await AsyncStorage.removeItem('auth');
+    await AsyncStorage.removeItem("auth");
+
+    useCartStore.getState().clearCartSummary();
 
     set({
       user: null,
@@ -26,7 +29,7 @@ const useAuthStore = create((set) => ({
 
   loadAuth: async () => {
     try {
-      const data = await AsyncStorage.getItem('auth');
+      const data = await AsyncStorage.getItem("auth");
 
       if (data) {
         const parsed = JSON.parse(data);
@@ -37,7 +40,7 @@ const useAuthStore = create((set) => ({
         });
       }
     } catch (error) {
-      console.log('LOAD AUTH ERROR:', error);
+      console.log("LOAD AUTH ERROR:", error);
     } finally {
       set({ isLoading: false });
     }
