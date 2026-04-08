@@ -7,6 +7,7 @@ import useCartStore from "../store/cartStore";
 import { colors, radius, spacing } from "../constants/theme";
 import { getMyProfile } from "../services/userService";
 import VendorDashboardScreen from "./VendorDashboardScreen";
+import { showAppAlert } from "../utils/appAlerts";
 
 export default function ProfileScreen({ navigation }) {
   const { user, logout, setAuth, token } = useAuthStore();

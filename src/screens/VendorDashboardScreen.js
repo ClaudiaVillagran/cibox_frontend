@@ -9,6 +9,7 @@ import {
 } from "../services/vendorService";
 import useAuthStore from "../store/authStore";
 import { useNavigation } from "@react-navigation/native";
+import { showAppAlert } from "../utils/appAlerts";
 
 export default function VendorDashboardScreen() {
   const [dashboard, setDashboard] = useState(null);

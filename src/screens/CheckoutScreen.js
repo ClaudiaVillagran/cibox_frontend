@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   ScrollView,
   Text,
   TextInput,
   View,
+  Pressable,
 } from "react-native";
 import ScreenContainer from "../components/ScreenContainer";
 import AppButton from "../components/AppButton";
@@ -17,13 +17,22 @@ import {
   getCheckoutAddress,
   saveCheckoutAddress,
 } from "../utils/checkoutStorage";
+import { showAppAlert } from "../utils/appAlerts";
 
 export default function CheckoutScreen({ navigation }) {
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+
   const [region, setRegion] = useState("");
   const [city, setCity] = useState("");
   const [address, setAddress] = useState("");
+  const [addressLine2, setAddressLine2] = useState("");
+  const [reference, setReference] = useState("");
+
   const [paymentMethod, setPaymentMethod] = useState("webpay");
   const [couponCode, setCouponCode] = useState("");
+  const [deliveryNotes, setDeliveryNotes] = useState("");
 
   const [box, setBox] = useState(null);
   const [loadingBox, setLoadingBox] = useState(true);
@@ -32,23 +41,41 @@ export default function CheckoutScreen({ navigation }) {
 
   const { loadCartSummary } = useCartStore();
 
+  const formatPrice = (value) => {
+    const number = Number(value || 0);
+    return number.toLocaleString("es-CL");
+  };
+
   const cardStyle = {
     borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: radius.lg,
-    backgroundColor: colors.surface,
-    padding: spacing.md,
-    marginBottom: spacing.md,
+    borderColor: "#DDE7D7",
+    borderRadius: 20,
+    backgroundColor: "#FFFFFF",
+    padding: 14,
+    marginBottom: 14,
+    shadowColor: "#000",
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 2,
   };
 
   const inputStyle = {
     borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: radius.md,
-    backgroundColor: colors.surface,
-    paddingHorizontal: 12,
-    paddingVertical: 12,
+    borderColor: "#DDE7D7",
+    borderRadius: 14,
+    backgroundColor: "#FAFBF8",
+    paddingHorizontal: 14,
+    paddingVertical: 13,
     color: colors.text,
+    fontSize: 15,
+  };
+
+  const labelStyle = {
+    color: colors.text,
+    fontWeight: "700",
+    marginBottom: 6,
+    fontSize: 14,
   };
 
   const fetchBox = async () => {
@@ -57,8 +84,10 @@ export default function CheckoutScreen({ navigation }) {
       const data = await getCustomBox();
       setBox(data);
     } catch (error) {
-      console.log("GET CHECKOUT BOX ERROR:", error?.response?.data || error.message);
-      
+      console.log(
+        "GET CHECKOUT BOX ERROR:",
+        error?.response?.data || error.message,
+      );
       showAppAlert("Error", "No se pudo cargar el resumen del carrito");
     } finally {
       setLoadingBox(false);
@@ -72,9 +101,14 @@ export default function CheckoutScreen({ navigation }) {
       const saved = await getCheckoutAddress();
 
       if (saved) {
+        setFullName(saved.fullName || "");
+        setEmail(saved.email || "");
+        setPhone(saved.phone || "");
         setRegion(saved.region || "");
         setCity(saved.city || "");
         setAddress(saved.address || "");
+        setAddressLine2(saved.addressLine2 || "");
+        setReference(saved.reference || "");
         setPaymentMethod(saved.paymentMethod || "webpay");
       }
     } catch (error) {
@@ -84,9 +118,46 @@ export default function CheckoutScreen({ navigation }) {
     }
   };
 
+  const validateEmail = (value) => {
+    return /\S+@\S+\.\S+/.test(value);
+  };
+
+  const validatePhone = (value) => {
+    const cleaned = value.replace(/\s+/g, "");
+    return cleaned.length >= 8;
+  };
+
   const handleCheckout = async () => {
+    if (!fullName.trim()) {
+      showAppAlert("Faltan datos", "Ingresa tu nombre completo");
+      return;
+    }
+
+    if (!email.trim()) {
+      showAppAlert("Faltan datos", "Ingresa tu correo");
+      return;
+    }
+
+    if (!validateEmail(email.trim())) {
+      showAppAlert("Correo inválido", "Ingresa un correo válido");
+      return;
+    }
+
+    if (!phone.trim()) {
+      showAppAlert("Faltan datos", "Ingresa tu teléfono");
+      return;
+    }
+
+    if (!validatePhone(phone.trim())) {
+      showAppAlert("Teléfono inválido", "Ingresa un teléfono válido");
+      return;
+    }
+
     if (!region.trim() || !city.trim() || !address.trim()) {
-      showAppAlert("Faltan datos", "Completa región, ciudad y dirección");
+      showAppAlert(
+        "Faltan datos",
+        "Completa región, ciudad y dirección de envío",
+      );
       return;
     }
 
@@ -94,38 +165,47 @@ export default function CheckoutScreen({ navigation }) {
       setSubmitting(true);
 
       const payload = {
+        customer: {
+          fullName: fullName.trim(),
+          email: email.trim().toLowerCase(),
+          phone: phone.trim(),
+        },
         shipping: {
           region: region.trim(),
           city: city.trim(),
           address: address.trim(),
+          addressLine2: addressLine2.trim(),
+          reference: reference.trim(),
         },
         payment: {
-          method: paymentMethod.trim() || "webpay",
+          method: paymentMethod || "webpay",
         },
+        notes: deliveryNotes.trim() || null,
       };
 
       if (couponCode.trim()) {
-        payload.couponCode = couponCode.trim();
+        payload.couponCode = couponCode.trim().toUpperCase();
       }
 
       const data = await createOrderFromCustomBox(payload);
 
-      const order =
-        data?.order ||
-        data?.data?.order ||
-        data?.data ||
-        data;
+      const order = data?.order || data?.data?.order || data?.data || data;
 
       await saveCheckoutAddress({
+        fullName: fullName.trim(),
+        email: email.trim().toLowerCase(),
+        phone: phone.trim(),
         region: region.trim(),
         city: city.trim(),
         address: address.trim(),
-        paymentMethod: paymentMethod.trim() || "webpay",
+        addressLine2: addressLine2.trim(),
+        reference: reference.trim(),
+        paymentMethod: paymentMethod || "webpay",
       });
 
       await loadCartSummary();
 
-     showAppAlert("Compra creada", "La orden fue creada correctamente");
+      showAppAlert("Compra creada", "La orden fue creada correctamente");
 
       if (order?._id) {
         navigation.replace("OrderSuccess", { orderId: order._id });
@@ -134,9 +214,9 @@ export default function CheckoutScreen({ navigation }) {
       }
     } catch (error) {
       console.log("CHECKOUT ERROR:", error?.response?.data || error.message);
-      Alert.alert(
+      showAppAlert(
         "Error",
-        error?.response?.data?.message || "No se pudo crear la orden"
+        error?.response?.data?.message || "No se pudo crear la orden",
       );
     } finally {
       setSubmitting(false);
@@ -152,7 +232,7 @@ export default function CheckoutScreen({ navigation }) {
     return (
       <ScreenContainer maxWidth={720}>
         <View style={{ flex: 1, justifyContent: "center" }}>
-          <ActivityIndicator size="large" />
+          <ActivityIndicator size="large" color="#4E9B27" />
         </View>
       </ScreenContainer>
     );
@@ -163,7 +243,10 @@ export default function CheckoutScreen({ navigation }) {
 
   return (
     <ScreenContainer maxWidth={720}>
-      <ScrollView contentContainerStyle={{ paddingBottom: spacing.xl }}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: spacing.xl }}
+      >
         <Text
           style={{
             fontSize: 28,
@@ -179,6 +262,7 @@ export default function CheckoutScreen({ navigation }) {
           style={{
             color: colors.muted,
             marginBottom: spacing.md,
+            fontSize: 15,
           }}
         >
           Completa tus datos y revisa tu compra antes de confirmar.
@@ -193,65 +277,38 @@ export default function CheckoutScreen({ navigation }) {
               marginBottom: 14,
             }}
           >
-            Resumen del pedido
+            Contacto
           </Text>
 
-          {!items.length ? (
-            <Text style={{ color: colors.muted }}>
-              Tu carrito está vacío.
-            </Text>
-          ) : (
-            items.map((item) => (
-              <View
-                key={item.product_id}
-                style={{
-                  paddingBottom: 12,
-                  marginBottom: 12,
-                  borderBottomWidth: 1,
-                  borderBottomColor: colors.border,
-                }}
-              >
-                <Text
-                  style={{
-                    fontWeight: "700",
-                    color: colors.text,
-                    marginBottom: 4,
-                  }}
-                >
-                  {item.name}
-                </Text>
+          <Text style={labelStyle}>Nombre completo</Text>
+          <TextInput
+            value={fullName}
+            onChangeText={setFullName}
+            placeholder="Ej: Claudia Pérez"
+            style={{ ...inputStyle, marginBottom: 14 }}
+            placeholderTextColor="#999"
+          />
 
-                <Text style={{ color: colors.muted, marginBottom: 4 }}>
-                  Cantidad: {item.quantity}
-                </Text>
+          <Text style={labelStyle}>Correo electrónico</Text>
+          <TextInput
+            value={email}
+            onChangeText={setEmail}
+            placeholder="Ej: correo@ejemplo.com"
+            keyboardType="email-address"
+            autoCapitalize="none"
+            style={{ ...inputStyle, marginBottom: 14 }}
+            placeholderTextColor="#999"
+          />
 
-                <Text style={{ color: colors.muted, marginBottom: 4 }}>
-                  Precio unitario: ${item.unit_price}
-                </Text>
-
-                {item.discount_applied ? (
-                  <Text style={{ color: colors.success, marginBottom: 4 }}>
-                    Descuento {item.discount_source}: -{item.discount_percent}%
-                  </Text>
-                ) : null}
-
-                <Text style={{ color: colors.text, fontWeight: "700" }}>
-                  Subtotal: ${item.subtotal}
-                </Text>
-              </View>
-            ))
-          )}
-
-          <Text
-            style={{
-              fontSize: 22,
-              fontWeight: "800",
-              color: colors.text,
-              marginTop: 6,
-            }}
-          >
-            Total: ${total}
-          </Text>
+          <Text style={labelStyle}>Teléfono</Text>
+          <TextInput
+            value={phone}
+            onChangeText={setPhone}
+            placeholder="Ej: +56 9 1234 5678"
+            keyboardType="phone-pad"
+            style={inputStyle}
+            placeholderTextColor="#999"
+          />
         </View>
 
         <View style={cardStyle}>
@@ -266,24 +323,28 @@ export default function CheckoutScreen({ navigation }) {
             Envío
           </Text>
 
-          <Text style={{ color: colors.muted, marginBottom: 14 }}>
-            Usamos tu última dirección guardada si existe. Puedes editarla antes de confirmar.
+          <Text
+            style={{
+              color: colors.muted,
+              marginBottom: 14,
+              fontSize: 14,
+              lineHeight: 20,
+            }}
+          >
+            Usamos tu última dirección guardada si existe. Puedes editarla antes
+            de confirmar.
           </Text>
 
-          <Text style={{ color: colors.text, fontWeight: "600", marginBottom: 6 }}>
-            Región
-          </Text>
+          <Text style={labelStyle}>Región</Text>
           <TextInput
             value={region}
             onChangeText={setRegion}
-            placeholder="Ej: RM"
+            placeholder="Ej: Región Metropolitana"
             style={{ ...inputStyle, marginBottom: 14 }}
             placeholderTextColor="#999"
           />
 
-          <Text style={{ color: colors.text, fontWeight: "600", marginBottom: 6 }}>
-            Ciudad
-          </Text>
+          <Text style={labelStyle}>Comuna / Ciudad</Text>
           <TextInput
             value={city}
             onChangeText={setCity}
@@ -292,13 +353,29 @@ export default function CheckoutScreen({ navigation }) {
             placeholderTextColor="#999"
           />
 
-          <Text style={{ color: colors.text, fontWeight: "600", marginBottom: 6 }}>
-            Dirección
-          </Text>
+          <Text style={labelStyle}>Dirección</Text>
           <TextInput
             value={address}
             onChangeText={setAddress}
-            placeholder="Ej: Las Condes 123"
+            placeholder="Ej: Av. Providencia 1234"
+            style={{ ...inputStyle, marginBottom: 14 }}
+            placeholderTextColor="#999"
+          />
+
+          <Text style={labelStyle}>Depto / Casa / Oficina</Text>
+          <TextInput
+            value={addressLine2}
+            onChangeText={setAddressLine2}
+            placeholder="Opcional"
+            style={{ ...inputStyle, marginBottom: 14 }}
+            placeholderTextColor="#999"
+          />
+
+          <Text style={labelStyle}>Referencia</Text>
+          <TextInput
+            value={reference}
+            onChangeText={setReference}
+            placeholder="Ej: Portón negro, al lado de la farmacia"
             style={inputStyle}
             placeholderTextColor="#999"
           />
@@ -313,31 +390,164 @@ export default function CheckoutScreen({ navigation }) {
               marginBottom: 14,
             }}
           >
-            Pago y cupón
+            Pago
           </Text>
 
-          <Text style={{ color: colors.text, fontWeight: "600", marginBottom: 6 }}>
-            Método de pago
+          <Text style={{ color: colors.muted, marginBottom: 12 }}>
+            Selecciona cómo quieres pagar tu pedido.
           </Text>
-          <TextInput
-            value={paymentMethod}
-            onChangeText={setPaymentMethod}
-            placeholder="webpay"
-            style={{ ...inputStyle, marginBottom: 14 }}
-            placeholderTextColor="#999"
-          />
 
-          <Text style={{ color: colors.text, fontWeight: "600", marginBottom: 6 }}>
-            Código de cupón
+          <View style={{ gap: 10 }}>
+            <Pressable
+              onPress={() => setPaymentMethod("webpay")}
+              style={{
+                borderWidth: 1.5,
+                borderColor:
+                  paymentMethod === "webpay" ? "#4E9B27" : "#DDE7D7",
+                backgroundColor:
+                  paymentMethod === "webpay" ? "#F4F9EF" : "#FFFFFF",
+                borderRadius: 14,
+                paddingVertical: 14,
+                paddingHorizontal: 14,
+              }}
+            >
+              <Text
+                style={{
+                  color: colors.text,
+                  fontWeight: "800",
+                  marginBottom: 2,
+                }}
+              >
+                Webpay
+              </Text>
+              <Text style={{ color: colors.muted, fontSize: 13 }}>
+                Pago online con tarjeta.
+              </Text>
+            </Pressable>
+
+         
+          </View>
+        </View>
+
+        <View style={cardStyle}>
+          <Text
+            style={{
+              fontSize: 20,
+              fontWeight: "800",
+              color: colors.text,
+              marginBottom: 14,
+            }}
+          >
+            Cupón y notas
           </Text>
+
+          <Text style={labelStyle}>Código de cupón</Text>
           <TextInput
             value={couponCode}
             onChangeText={setCouponCode}
             placeholder="Opcional"
             autoCapitalize="characters"
-            style={inputStyle}
+            style={{ ...inputStyle, marginBottom: 14 }}
             placeholderTextColor="#999"
           />
+
+          <Text style={labelStyle}>Notas para la entrega</Text>
+          <TextInput
+            value={deliveryNotes}
+            onChangeText={setDeliveryNotes}
+            placeholder="Opcional"
+            multiline
+            textAlignVertical="top"
+            style={{
+              ...inputStyle,
+              minHeight: 100,
+              paddingTop: 14,
+            }}
+            placeholderTextColor="#999"
+          />
+        </View>
+
+        <View style={cardStyle}>
+          <Text
+            style={{
+              fontSize: 20,
+              fontWeight: "800",
+              color: colors.text,
+              marginBottom: 14,
+            }}
+          >
+            Resumen del pedido
+          </Text>
+
+          {!items.length ? (
+            <Text style={{ color: colors.muted }}>Tu carrito está vacío.</Text>
+          ) : (
+            items.map((item, index) => (
+              <View
+                key={item.product_id || index}
+                style={{
+                  paddingBottom: 12,
+                  marginBottom: 12,
+                  borderBottomWidth: index === items.length - 1 ? 0 : 1,
+                  borderBottomColor: "#EEF3EA",
+                }}
+              >
+                <Text
+                  style={{
+                    fontWeight: "800",
+                    color: colors.text,
+                    marginBottom: 4,
+                    fontSize: 15,
+                  }}
+                >
+                  {item.name}
+                </Text>
+
+                <Text style={{ color: colors.muted, marginBottom: 4 }}>
+                  Cantidad: {item.quantity}
+                </Text>
+
+                <Text style={{ color: colors.muted, marginBottom: 4 }}>
+                  Precio unitario: ${formatPrice(item.unit_price)}
+                </Text>
+
+                {item.discount_applied ? (
+                  <Text
+                    style={{
+                      color: "#4E9B27",
+                      marginBottom: 4,
+                      fontWeight: "700",
+                    }}
+                  >
+                    Descuento {item.discount_source}: -{item.discount_percent}%
+                  </Text>
+                ) : null}
+
+                <Text style={{ color: colors.text, fontWeight: "800" }}>
+                  Subtotal: ${formatPrice(item.subtotal)}
+                </Text>
+              </View>
+            ))
+          )}
+
+          <View
+            style={{
+              marginTop: 6,
+              paddingTop: 12,
+              borderTopWidth: 1,
+              borderTopColor: "#EEF3EA",
+            }}
+          >
+            <Text
+              style={{
+                fontSize: 24,
+                fontWeight: "800",
+                color: colors.text,
+              }}
+            >
+              Total: ${formatPrice(total)}
+            </Text>
+          </View>
         </View>
 
         <AppButton

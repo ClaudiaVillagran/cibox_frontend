@@ -9,6 +9,7 @@ import {
   View,
 } from "react-native";
 import { getFavorites, removeFavorite } from "../services/favoriteService";
+import { showAppAlert } from "../utils/appAlerts";
 
 export default function FavoritesScreen({ navigation }) {
   const [favorites, setFavorites] = useState([]);

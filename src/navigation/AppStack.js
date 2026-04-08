@@ -6,7 +6,6 @@ import CheckoutScreen from "../screens/CheckoutScreen";
 import OrderDetailScreen from "../screens/OrderDetailScreen";
 import NotificationsScreen from "../screens/NotificationsScreen";
 import OrderSuccessScreen from "../screens/OrderSuccessScreen";
-import VendorDashboardScreen from "../screens/VendorDashboardScreen";
 import VendorProductsScreen from "../screens/VendorProductsScreen";
 import CreateProductScreen from "../screens/CreateProductScreen";
 import EditProductScreen from "../screens/EditProductScreen";

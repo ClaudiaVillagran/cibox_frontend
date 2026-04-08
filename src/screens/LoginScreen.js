@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Alert, Button, Text, TextInput, View } from 'react-native';
 import { loginRequest } from '../services/authService';
 import useAuthStore from '../store/authStore';
+import { showAppAlert } from '../utils/appAlerts';
 
 export default function LoginScreen() {
   const { setAuth } = useAuthStore();

@@ -9,6 +9,7 @@ import {
 import ScreenContainer from "../components/ScreenContainer";
 import { colors, radius, spacing } from "../constants/theme";
 import { getOrderById } from "../services/orderService";
+import { showAppAlert } from "../utils/appAlerts";
 
 export default function OrderDetailScreen({ route }) {
   const { orderId } = route.params;

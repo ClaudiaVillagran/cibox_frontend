@@ -1,15 +1,16 @@
 export const colors = {
-  background: '#f7f7f8',
-  surface: '#ffffff',
-  text: '#111111',
-  muted: '#666666',
-  border: '#e7e7e7',
-  primary: '#111111',
-  primaryText: '#ffffff',
-  danger: '#d92d20',
-  success: '#067647',
+  background: "#f7f7f8",
+  surface: "#ffffff",
+  text: "#111111",
+  muted: "#666666",
+  border: "#e7e7e7",
+  primary: "#4E9B27",
+  primaryLight: "#C3E062",
+  accent: "#F7B81C",
+  primaryText: "#ffffff",
+  danger: "#d92d20",
+  success: "#4E9B27",
 };
-
 export const spacing = {
   xs: 6,
   sm: 10,
@@ -27,10 +28,10 @@ export const radius = {
 
 export const shadows = {
   card: {
-    shadowColor: '#000',
-    shadowOpacity: 0.05,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 3 },
-    elevation: 2,
+    shadowColor: "#000",
+    shadowOpacity: 0.06,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 3,
   },
 };

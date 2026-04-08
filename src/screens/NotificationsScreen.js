@@ -15,6 +15,7 @@ import {
   markAllNotificationsAsRead,
   markNotificationAsRead,
 } from '../services/notificationService';
+import { showAppAlert } from '../utils/appAlerts';
 
 export default function NotificationsScreen() {
   const [notifications, setNotifications] = useState([]);

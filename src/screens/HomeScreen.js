@@ -1,12 +1,14 @@
 import { useEffect, useLayoutEffect, useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
   FlatList,
   Pressable,
   Text,
   View,
   useWindowDimensions,
 } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import ProductCard from "../components/ProductCard";
 import ScreenContainer from "../components/ScreenContainer";
 import { colors, spacing } from "../constants/theme";
@@ -18,9 +20,10 @@ import {
   getFeaturedProducts,
   getProducts,
   getRecommendedProducts,
-  getTopRatedProducts,
 } from "../services/productService";
+import { addItemToCustomBox } from "../services/customBoxService";
 import useCartStore from "../store/cartStore";
+import { showAppAlert } from "../utils/appAlerts";
 
 export default function HomeScreen({ navigation }) {
   const [products, setProducts] = useState([]);
@@ -40,13 +43,15 @@ export default function HomeScreen({ navigation }) {
   const numColumns = isWide ? 2 : 1;
 
   const [featuredProducts, setFeaturedProducts] = useState([]);
-  const [topRatedProducts, setTopRatedProducts] = useState([]);
   const [recommendedProducts, setRecommendedProducts] = useState([]);
   const [sectionsLoading, setSectionsLoading] = useState(true);
 
   const [page, setPage] = useState(1);
   const [hasNextPage, setHasNextPage] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
+
+  const [addingProductId, setAddingProductId] = useState(null);
+
   const { cartCount, loadCartSummary } = useCartStore();
 
   const showSections =
@@ -67,24 +72,21 @@ export default function HomeScreen({ navigation }) {
     try {
       setSectionsLoading(true);
 
-      const [featuredData, topRatedData, recommendedData] = await Promise.all([
+      const [featuredData, recommendedData] = await Promise.all([
         getFeaturedProducts({ limit: 8 }),
-        getTopRatedProducts({ limit: 8, minReviews: 1 }),
         getRecommendedProducts({ limit: 8 }),
       ]);
 
       setFeaturedProducts(Array.isArray(featuredData) ? featuredData : []);
-      setTopRatedProducts(Array.isArray(topRatedData) ? topRatedData : []);
 
       const recommended = recommendedData?.recommended_products || [];
       setRecommendedProducts(Array.isArray(recommended) ? recommended : []);
     } catch (error) {
       console.log(
         "ERROR HOME SECTIONS:",
-        error?.response?.data || error.message,
+        error?.response?.data || error.message
       );
       setFeaturedProducts([]);
-      setTopRatedProducts([]);
       setRecommendedProducts([]);
     } finally {
       setSectionsLoading(false);
@@ -141,12 +143,36 @@ export default function HomeScreen({ navigation }) {
     });
   };
 
+  const handleAddFromCard = async (product) => {
+    if (!product?._id) return;
+
+    try {
+      setAddingProductId(product._id);
+
+      await addItemToCustomBox({
+        productId: product._id,
+        quantity: 1,
+      });
+
+      await loadCartSummary();
+      showAppAlert("Éxito", "Producto agregado al carrito");
+    } catch (error) {
+      console.log("ADD FROM CARD ERROR:", error?.response?.data || error.message);
+      Alert.alert(
+        "Error",
+        error?.response?.data?.message || "No se pudo agregar al carrito"
+      );
+    } finally {
+      setAddingProductId(null);
+    }
+  };
+
   const renderFooter = () => {
     if (!loadingMore) return <View style={{ height: spacing.lg }} />;
 
     return (
       <View style={{ paddingVertical: spacing.md }}>
-        <ActivityIndicator size="small" />
+        <ActivityIndicator size="small" color={colors.primary} />
       </View>
     );
   };
@@ -157,37 +183,57 @@ export default function HomeScreen({ navigation }) {
         <View style={{ flexDirection: "row", alignItems: "center" }}>
           <Pressable
             onPress={() => navigation.navigate("Notifications")}
-            style={{ marginRight: 16 }}
+            style={{
+              width: 38,
+              height: 38,
+              borderRadius: 19,
+              justifyContent: "center",
+              alignItems: "center",
+              marginRight: 10,
+              backgroundColor: `${colors.primaryLight}33`,
+            }}
           >
-            <Text style={{ fontWeight: "700", color: colors.text }}>Notif</Text>
+            <Ionicons
+              name="notifications-outline"
+              size={21}
+              color={colors.text}
+            />
           </Pressable>
 
           <Pressable
             onPress={() => navigation.navigate("Cart")}
-            style={{ flexDirection: "row", alignItems: "center" }}
+            style={{
+              width: 38,
+              height: 38,
+              borderRadius: 19,
+              justifyContent: "center",
+              alignItems: "center",
+              backgroundColor: `${colors.primaryLight}33`,
+              position: "relative",
+            }}
           >
-            <Text style={{ fontWeight: "700", color: colors.text }}>
-              Carrito
-            </Text>
+            <Ionicons name="bag-outline" size={21} color={colors.text} />
 
             {cartCount > 0 ? (
               <View
                 style={{
-                  marginLeft: 6,
-                  minWidth: 20,
-                  height: 20,
-                  borderRadius: 10,
-                  backgroundColor: colors.text,
+                  position: "absolute",
+                  top: -2,
+                  right: -2,
+                  minWidth: 18,
+                  height: 18,
+                  borderRadius: 9,
+                  backgroundColor: colors.primary,
                   justifyContent: "center",
                   alignItems: "center",
-                  paddingHorizontal: 6,
+                  paddingHorizontal: 4,
                 }}
               >
                 <Text
                   style={{
                     color: "#fff",
-                    fontSize: 11,
-                    fontWeight: "700",
+                    fontSize: 10,
+                    fontWeight: "800",
                   }}
                 >
                   {cartCount}
@@ -199,9 +245,11 @@ export default function HomeScreen({ navigation }) {
       ),
     });
   }, [navigation, cartCount]);
+
   useEffect(() => {
     loadCartSummary();
   }, []);
+
   useEffect(() => {
     fetchHomeSections();
   }, []);
@@ -228,7 +276,7 @@ export default function HomeScreen({ navigation }) {
     return (
       <ScreenContainer maxWidth={900}>
         <View style={{ flex: 1, justifyContent: "center" }}>
-          <ActivityIndicator size="large" />
+          <ActivityIndicator size="large" color={colors.primary} />
         </View>
       </ScreenContainer>
     );
@@ -251,106 +299,331 @@ export default function HomeScreen({ navigation }) {
             : undefined
         }
         contentContainerStyle={{
-          paddingTop: spacing.md,
+          paddingTop: spacing.sm,
           paddingBottom: spacing.xl,
           paddingHorizontal: numColumns === 1 ? spacing.md : 0,
+          backgroundColor: colors.background,
         }}
         onEndReached={handleLoadMore}
         onEndReachedThreshold={0.4}
         ListFooterComponent={renderFooter}
         ListHeaderComponent={
-          <View
-            style={{
-              marginBottom: spacing.md,
-              paddingHorizontal: spacing.md,
-            }}
-          >
-            <Text
+          <View style={{ marginBottom: spacing.md }}>
+            <View
               style={{
-                fontSize: 28,
-                fontWeight: "800",
-                color: colors.text,
-                marginBottom: 6,
+                backgroundColor: colors.surface,
+                borderRadius: 20,
+                padding: spacing.md,
+                marginBottom: spacing.lg,
+                shadowColor: "#000",
+                shadowOpacity: 0.05,
+                shadowRadius: 10,
+                shadowOffset: { width: 0, height: 4 },
+                elevation: 2,
               }}
             >
-              Productos
-            </Text>
+              <View
+                style={{
+                  backgroundColor: `${colors.primaryLight}30`,
+                  paddingVertical: 12,
+                  paddingHorizontal: 14,
+                  borderRadius: 14,
+                  marginBottom: spacing.md,
+                }}
+              >
+                <Text
+                  style={{
+                    fontSize: 14,
+                    fontWeight: "800",
+                    color: colors.text,
+                  }}
+                >
+                  Ahorra más en tu despensa con CIBOX
+                </Text>
+                <Text
+                  style={{
+                    marginTop: 4,
+                    fontSize: 13,
+                    color: colors.muted,
+                  }}
+                >
+                  Productos funcionales, packs y compras inteligentes.
+                </Text>
+              </View>
 
-            <Text
-              style={{
-                color: colors.muted,
-                fontSize: 15,
-                marginBottom: 12,
-              }}
-            >
-              Explora suplementos, snacks y productos fitness.
-            </Text>
+              <Text
+                style={{
+                  fontSize: 30,
+                  fontWeight: "900",
+                  color: colors.text,
+                  marginBottom: 4,
+                  letterSpacing: -0.5,
+                }}
+              >
+                Productos
+              </Text>
 
-            <SearchInput
-              value={search}
-              onChange={setSearch}
-              placeholder="Buscar proteína, creatina, snacks..."
-            />
+              <Text
+                style={{
+                  color: colors.muted,
+                  fontSize: 14,
+                  marginBottom: 14,
+                }}
+              >
+                Tu supermercado digital para comprar mejor y ahorrar más..
+              </Text>
 
-            <View style={{ height: 12 }} />
+              <SearchInput
+                value={search}
+                onChange={setSearch}
+                placeholder="Buscar proteína, creatina, snacks..."
+              />
 
-            <FilterBar
-              categories={categories}
-              selectedCategory={selectedCategory}
-              onSelectCategory={setSelectedCategory}
-              sort={sort}
-              onChangeSort={setSort}
-              minPrice={minPrice}
-              maxPrice={maxPrice}
-              onChangeMinPrice={setMinPrice}
-              onChangeMaxPrice={setMaxPrice}
-              onClear={handleClearFilters}
-            />
+              <View style={{ height: 12 }} />
+
+              <FilterBar
+                categories={categories}
+                selectedCategory={selectedCategory}
+                onSelectCategory={setSelectedCategory}
+                sort={sort}
+                onChangeSort={setSort}
+                minPrice={minPrice}
+                maxPrice={maxPrice}
+                onChangeMinPrice={setMinPrice}
+                onChangeMaxPrice={setMaxPrice}
+                onClear={handleClearFilters}
+              />
+            </View>
 
             {showSections && (
-              <>
-                <View style={{ height: 20 }} />
-
+              <View style={{ marginBottom: spacing.md }}>
                 {sectionsLoading ? (
-                  <Text
-                    style={{ color: colors.muted, marginBottom: spacing.lg }}
+                  <View
+                    style={{
+                      backgroundColor: colors.surface,
+                      borderRadius: 18,
+                      padding: spacing.md,
+                    }}
                   >
-                    Cargando destacados...
-                  </Text>
+                    <Text style={{ color: colors.muted }}>
+                      Cargando destacados...
+                    </Text>
+                  </View>
                 ) : (
                   <>
-                    <ProductRowSection
-                      title="Destacados"
-                      products={featuredProducts}
-                      onPressProduct={(item) =>
-                        navigation.navigate("ProductDetail", {
-                          productId: item._id,
-                        })
-                      }
-                    />
+                    <View style={{ marginBottom: spacing.lg }}>
+                      <View
+                        style={{
+                          flexDirection: "row",
+                          alignItems: "center",
+                          marginBottom: 10,
+                          paddingHorizontal: 2,
+                        }}
+                      >
+                        <View
+                          style={{
+                            width: 8,
+                            height: 8,
+                            borderRadius: 4,
+                            backgroundColor: colors.primary,
+                            marginRight: 8,
+                          }}
+                        />
+                        <Text
+                          style={{
+                            fontSize: 24,
+                            fontWeight: "800",
+                            color: colors.text,
+                          }}
+                        >
+                          Destacados
+                        </Text>
+                      </View>
 
-                    <ProductRowSection
-                      title="Mejor valorados"
-                      products={topRatedProducts}
-                      onPressProduct={(item) =>
-                        navigation.navigate("ProductDetail", {
-                          productId: item._id,
-                        })
-                      }
-                    />
+                      <ProductRowSection
+                        title=""
+                        products={featuredProducts}
+                        onPressProduct={(item) =>
+                          navigation.navigate("ProductDetail", {
+                            productId: item._id,
+                          })
+                        }
+                        onAddToCart={handleAddFromCard}
+                        addingProductId={addingProductId}
+                      />
+                    </View>
 
-                    <ProductRowSection
-                      title="Recomendados para ti"
-                      products={recommendedProducts}
-                      onPressProduct={(item) =>
-                        navigation.navigate("ProductDetail", {
-                          productId: item._id,
-                        })
-                      }
-                    />
+                    <View
+                      style={{
+                        marginBottom: spacing.lg,
+                        backgroundColor: colors.surface,
+                        borderRadius: 24,
+                        padding: spacing.md,
+                        borderWidth: 1,
+                        borderColor: "#ececec",
+                      }}
+                    >
+                      <View
+                        style={{
+                          flexDirection: "row",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                          marginBottom: 12,
+                          gap: 12,
+                        }}
+                      >
+                        <View style={{ flex: 1 }}>
+                          <View
+                            style={{
+                              flexDirection: "row",
+                              alignItems: "center",
+                              marginBottom: 6,
+                            }}
+                          >
+                            <View
+                              style={{
+                                width: 4,
+                                height: 22,
+                                borderRadius: 999,
+                                backgroundColor: colors.primary,
+                                marginRight: 10,
+                              }}
+                            />
+                            <Text
+                              style={{
+                                fontSize: 24,
+                                fontWeight: "800",
+                                color: colors.text,
+                              }}
+                            >
+                              Productos individuales
+                            </Text>
+                          </View>
+
+                          <Text
+                            style={{
+                              color: colors.muted,
+                              fontSize: 14,
+                              marginLeft: 14,
+                            }}
+                          >
+                            Compra al detalle y agrega productos directo al carrito.
+                          </Text>
+                        </View>
+
+                        <Pressable
+                          onPress={() => navigation.navigate("Products")}
+                          style={{
+                            borderWidth: 1,
+                            borderColor: "#cfe3c4",
+                            backgroundColor: "#f7fbf4",
+                            paddingHorizontal: 16,
+                            paddingVertical: 10,
+                            borderRadius: 14,
+                          }}
+                        >
+                          <Text
+                            style={{
+                              color: colors.text,
+                              fontSize: 13,
+                              fontWeight: "800",
+                            }}
+                          >
+                            Ver todos
+                          </Text>
+                        </Pressable>
+                      </View>
+
+                      <View
+                        style={{
+                          borderWidth: 1,
+                          borderColor: "#cfe3c4",
+                          backgroundColor: "#fbfdf9",
+                          borderRadius: 18,
+                          paddingHorizontal: 16,
+                          paddingVertical: 14,
+                          marginBottom: spacing.md,
+                        }}
+                      >
+                        <Text
+                          style={{
+                            color: colors.text,
+                            fontSize: 15,
+                            fontWeight: "800",
+                            marginBottom: 4,
+                          }}
+                        >
+                          Compra al detalle
+                        </Text>
+
+                        <Text
+                          style={{
+                            color: colors.muted,
+                            fontSize: 14,
+                          }}
+                        >
+                          Agrega productos directos al carrito y revisa el catálogo
+                          completo desde esta sección.
+                        </Text>
+                      </View>
+
+                      <ProductRowSection
+                        title=""
+                        products={products.slice(0, 10)}
+                        onPressProduct={(item) =>
+                          navigation.navigate("ProductDetail", {
+                            productId: item._id,
+                          })
+                        }
+                        onAddToCart={handleAddFromCard}
+                        addingProductId={addingProductId}
+                      />
+                    </View>
+
+                    <View style={{ marginBottom: spacing.md }}>
+                      <View
+                        style={{
+                          flexDirection: "row",
+                          alignItems: "center",
+                          marginBottom: 10,
+                          paddingHorizontal: 2,
+                        }}
+                      >
+                        <View
+                          style={{
+                            width: 8,
+                            height: 8,
+                            borderRadius: 4,
+                            backgroundColor: colors.primary,
+                            marginRight: 8,
+                          }}
+                        />
+                        <Text
+                          style={{
+                            fontSize: 24,
+                            fontWeight: "800",
+                            color: colors.text,
+                          }}
+                        >
+                          Recomendados para ti
+                        </Text>
+                      </View>
+
+                      <ProductRowSection
+                        title=""
+                        products={recommendedProducts}
+                        onPressProduct={(item) =>
+                          navigation.navigate("ProductDetail", {
+                            productId: item._id,
+                          })
+                        }
+                        onAddToCart={handleAddFromCard}
+                        addingProductId={addingProductId}
+                      />
+                    </View>
                   </>
                 )}
-              </>
+              </View>
             )}
           </View>
         }
@@ -368,12 +641,16 @@ export default function HomeScreen({ navigation }) {
               onPress={() =>
                 navigation.navigate("ProductDetail", { productId: item._id })
               }
+              onAddToCart={handleAddFromCard}
+              adding={addingProductId === item._id}
             />
           </View>
         )}
         ListEmptyComponent={
           <View
             style={{
+              backgroundColor: colors.surface,
+              borderRadius: 18,
               paddingHorizontal: spacing.md,
               paddingVertical: spacing.xl,
               alignItems: "center",

@@ -10,6 +10,7 @@ import {
 import ScreenContainer from '../components/ScreenContainer';
 import { colors, radius, spacing } from '../constants/theme';
 import { getMyOrders } from '../services/orderService';
+import { showAppAlert } from '../utils/appAlerts';
 
 export default function OrdersScreen({ navigation }) {
   const [orders, setOrders] = useState([]);

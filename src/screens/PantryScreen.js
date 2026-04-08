@@ -9,6 +9,7 @@ import {
   View,
 } from 'react-native';
 import { getPantry, movePantryItemToCart } from '../services/pantryService';
+import { showAppAlert } from '../utils/appAlerts';
 
 export default function PantryScreen({ navigation }) {
   const [pantry, setPantry] = useState(null);
