@@ -6,11 +6,15 @@ import {
   TextInput,
   View,
   Pressable,
+  Platform,
 } from "react-native";
 import ScreenContainer from "../components/ScreenContainer";
 import AppButton from "../components/AppButton";
 import { colors, radius, spacing } from "../constants/theme";
-import { createOrderFromCustomBox } from "../services/orderService";
+import {
+  createOrderFromCustomBox,
+  createWebpayTransaction,
+} from "../services/orderService";
 import { getCustomBox } from "../services/customBoxService";
 import useCartStore from "../store/cartStore";
 import {
@@ -18,7 +22,6 @@ import {
   saveCheckoutAddress,
 } from "../utils/checkoutStorage";
 import { showAppAlert } from "../utils/appAlerts";
-
 export default function CheckoutScreen({ navigation }) {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
@@ -178,7 +181,7 @@ export default function CheckoutScreen({ navigation }) {
           reference: reference.trim(),
         },
         payment: {
-          method: paymentMethod || "webpay",
+          method: "webpay",
         },
         notes: deliveryNotes.trim() || null,
       };
@@ -187,9 +190,21 @@ export default function CheckoutScreen({ navigation }) {
         payload.couponCode = couponCode.trim().toUpperCase();
       }
 
-      const data = await createOrderFromCustomBox(payload);
+      const orderResponse = await createOrderFromCustomBox(payload);
+      const order =
+        orderResponse?.order ||
+        orderResponse?.data?.order ||
+        orderResponse?.data ||
+        orderResponse;
 
-      const order = data?.order || data?.data?.order || data?.data || data;
+      if (!order?._id) {
+        throw new Error("No se pudo obtener la orden creada");
+      }
+
+      const payment = await createWebpayTransaction({
+        orderId: order._id,
+        platform: Platform.OS,
+      });
 
       await saveCheckoutAddress({
         fullName: fullName.trim(),
@@ -200,29 +215,31 @@ export default function CheckoutScreen({ navigation }) {
         address: address.trim(),
         addressLine2: addressLine2.trim(),
         reference: reference.trim(),
-        paymentMethod: paymentMethod || "webpay",
+        paymentMethod: "webpay",
       });
 
       await loadCartSummary();
 
-      showAppAlert("Compra creada", "La orden fue creada correctamente");
-
-      if (order?._id) {
-        navigation.replace("OrderSuccess", { orderId: order._id });
-      } else {
-        navigation.replace("MainTabs");
+      if (!payment?.paymentToken || !payment?.paymentUrl) {
+        showAppAlert("Error", "No se pudo iniciar el pago con Webpay");
+        navigation.replace("OrderDetail", { orderId: order._id });
+        return;
       }
+      navigation.replace("Webpay", {
+        orderId: order._id,
+        paymentToken: payment.paymentToken,
+        paymentUrl: payment.paymentUrl,
+      });
     } catch (error) {
       console.log("CHECKOUT ERROR:", error?.response?.data || error.message);
       showAppAlert(
         "Error",
-        error?.response?.data?.message || "No se pudo crear la orden",
+        error?.response?.data?.message || "No se pudo iniciar el checkout",
       );
     } finally {
       setSubmitting(false);
     }
   };
-
   useEffect(() => {
     fetchBox();
     loadSavedAddress();
@@ -402,8 +419,7 @@ export default function CheckoutScreen({ navigation }) {
               onPress={() => setPaymentMethod("webpay")}
               style={{
                 borderWidth: 1.5,
-                borderColor:
-                  paymentMethod === "webpay" ? "#4E9B27" : "#DDE7D7",
+                borderColor: paymentMethod === "webpay" ? "#4E9B27" : "#DDE7D7",
                 backgroundColor:
                   paymentMethod === "webpay" ? "#F4F9EF" : "#FFFFFF",
                 borderRadius: 14,
@@ -424,8 +440,6 @@ export default function CheckoutScreen({ navigation }) {
                 Pago online con tarjeta.
               </Text>
             </Pressable>
-
-         
           </View>
         </View>
 

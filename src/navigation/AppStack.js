@@ -9,6 +9,7 @@ import OrderSuccessScreen from "../screens/OrderSuccessScreen";
 import VendorProductsScreen from "../screens/VendorProductsScreen";
 import CreateProductScreen from "../screens/CreateProductScreen";
 import EditProductScreen from "../screens/EditProductScreen";
+import WebpayScreen from "../screens/WebpayScreen";
 const Stack = createNativeStackNavigator();
 
 export default function AppStack() {
@@ -67,16 +68,21 @@ export default function AppStack() {
         options={{ title: "Mis productos" }}
       />
 
-    <Stack.Screen
+      <Stack.Screen
         name="CreateProduct"
         component={CreateProductScreen}
         options={{ title: "Crear producto" }}
       />
 
-        <Stack.Screen
+      <Stack.Screen
         name="EditProduct"
         component={EditProductScreen}
         options={{ title: "Editar producto" }}
+      />
+      <Stack.Screen
+        name="Webpay"
+        component={WebpayScreen}
+        options={{ title: "Pago con Webpay" }}
       />
     </Stack.Navigator>
   );

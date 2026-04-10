@@ -1,12 +1,34 @@
-import client from '../api/client';
+import client from "../api/client";
 
 export const createOrderFromCustomBox = async (payload) => {
-  const response = await client.post('/orders/from-custom-box', payload);
+  const response = await client.post("/orders/from-custom-box", payload);
+  return response.data;
+};
+
+export const createWebpayTransaction = async ({ orderId, platform }) => {
+  const response = await client.post("/payments/webpay/create", {
+    orderId,
+    platform,
+  });
+
+  const data = response?.data || {};
+
+  return {
+    orderId: data.orderId || orderId,
+    paymentToken: data.paymentToken || data.token,
+    paymentUrl: data.paymentUrl || data.url,
+  };
+};
+export const commitWebpayTransaction = async ({ orderId, token }) => {
+  const response = await client.post("/payments/webpay/commit", {
+    orderId,
+    token,
+  });
   return response.data;
 };
 
 export const getMyOrders = async () => {
-  const response = await client.get('/orders/my-orders');
+  const response = await client.get("/orders/my-orders");
   return response.data;
 };
 

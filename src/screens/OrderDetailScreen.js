@@ -1,17 +1,11 @@
 import { useCallback, useEffect, useState } from "react";
-import {
-  ActivityIndicator,
-  Alert,
-  FlatList,
-  Text,
-  View,
-} from "react-native";
+import { ActivityIndicator, Alert, FlatList, Text, View } from "react-native";
 import ScreenContainer from "../components/ScreenContainer";
 import { colors, radius, spacing } from "../constants/theme";
 import { getOrderById } from "../services/orderService";
 import { showAppAlert } from "../utils/appAlerts";
 
-export default function OrderDetailScreen({ route }) {
+export default function OrderDetailScreen({ route, navigation }) {
   const { orderId } = route.params;
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -25,7 +19,7 @@ export default function OrderDetailScreen({ route }) {
     } catch (error) {
       console.log(
         "GET ORDER DETAIL ERROR:",
-        error?.response?.data || error.message
+        error?.response?.data || error.message,
       );
       showAppAlert("Error", "No se pudo cargar la orden");
     } finally {
@@ -122,7 +116,13 @@ export default function OrderDetailScreen({ route }) {
       { key: "delivered", label: "Entregada" },
     ];
 
-    const statusOrder = ["pending", "paid", "processing", "shipped", "delivered"];
+    const statusOrder = [
+      "pending",
+      "paid",
+      "processing",
+      "shipped",
+      "delivered",
+    ];
     const currentIndex = statusOrder.indexOf(normalized);
 
     return orderSteps.map((step, index) => ({
@@ -145,7 +145,9 @@ export default function OrderDetailScreen({ route }) {
   if (!order) {
     return (
       <ScreenContainer maxWidth={720}>
-        <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <View
+          style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+        >
           <Text>No se encontró la orden</Text>
         </View>
       </ScreenContainer>
@@ -157,6 +159,22 @@ export default function OrderDetailScreen({ route }) {
 
   return (
     <ScreenContainer maxWidth={720}>
+      <View style={{ marginBottom: spacing.md }}>
+        <Text
+          onPress={() =>
+            navigation.navigate("MainTabs", {
+              screen: "Home",
+            })
+          }
+          style={{
+            color: colors.text,
+            fontWeight: "700",
+            fontSize: 14,
+          }}
+        >
+          ← Volver al inicio
+        </Text>
+      </View>
       <FlatList
         data={order.items || []}
         keyExtractor={(item, index) => `${item.product_id || index}`}
@@ -222,8 +240,8 @@ export default function OrderDetailScreen({ route }) {
                 const circleColor = step.danger
                   ? "#b91c1c"
                   : step.done
-                  ? colors.text
-                  : "#d1d5db";
+                    ? colors.text
+                    : "#d1d5db";
                 const lineColor = step.done ? colors.text : "#e5e7eb";
 
                 return (
@@ -255,7 +273,8 @@ export default function OrderDetailScreen({ route }) {
                         <Text
                           style={{
                             color: step.done ? colors.text : colors.muted,
-                            fontWeight: step.active || step.done ? "700" : "500",
+                            fontWeight:
+                              step.active || step.done ? "700" : "500",
                           }}
                         >
                           {step.label}
