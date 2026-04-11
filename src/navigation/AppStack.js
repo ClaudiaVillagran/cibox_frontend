@@ -11,8 +11,11 @@ import CreateProductScreen from "../screens/CreateProductScreen";
 import EditProductScreen from "../screens/EditProductScreen";
 import WebpayScreen from "../screens/WebpayScreen";
 const Stack = createNativeStackNavigator();
-
+import useAuthStore from "../store/authStore";
+import AuthStack from "./AuthStack";
+import ProductsScreen from "../screens/ProductsScreen";
 export default function AppStack() {
+  const { token } = useAuthStore();
   return (
     <Stack.Navigator
       screenOptions={{
@@ -27,13 +30,24 @@ export default function AppStack() {
         component={MainTabs}
         options={{ headerShown: false }}
       />
+      {!token && (
+        <Stack.Screen
+          name="Auth"
+          component={AuthStack}
+          options={{ headerShown: false }}
+        />
+      )}
 
       <Stack.Screen
         name="ProductDetail"
         component={ProductDetailScreen}
         options={{ title: "Detalle del producto" }}
       />
-
+      <Stack.Screen
+        name="Products"
+        component={ProductsScreen}
+        options={{ title: "Productos" }}
+      />
       <Stack.Screen
         name="Cart"
         component={CartScreen}

@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { ActivityIndicator, Alert, ScrollView, Text, View } from "react-native";
+import { ActivityIndicator, ScrollView, Text, View } from "react-native";
 import ScreenContainer from "../components/ScreenContainer";
 import AppButton from "../components/AppButton";
 import useAuthStore from "../store/authStore";
 import useCartStore from "../store/cartStore";
-import { colors, radius, spacing } from "../constants/theme";
+import { colors, radius, spacing, shadows } from "../constants/theme";
 import { getMyProfile } from "../services/userService";
 import VendorDashboardScreen from "./VendorDashboardScreen";
 import { showAppAlert } from "../utils/appAlerts";
@@ -14,7 +14,7 @@ export default function ProfileScreen({ navigation }) {
   const { cartCount } = useCartStore();
 
   const [profile, setProfile] = useState(user || null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!!token);
 
   const isVendor = profile?.role === "vendor";
 
@@ -26,8 +26,9 @@ export default function ProfileScreen({ navigation }) {
       backgroundColor: colors.surface,
       padding: spacing.md,
       marginBottom: spacing.md,
+      ...shadows.card,
     }),
-    [],
+    []
   );
 
   const halfCardStyle = useMemo(
@@ -35,7 +36,7 @@ export default function ProfileScreen({ navigation }) {
       ...cardStyle,
       width: "48%",
     }),
-    [cardStyle],
+    [cardStyle]
   );
 
   const getDisplayName = useCallback(() => {
@@ -50,6 +51,12 @@ export default function ProfileScreen({ navigation }) {
   }, [profile]);
 
   const loadProfile = useCallback(async () => {
+    if (!token) {
+      setProfile(null);
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
 
@@ -76,13 +83,93 @@ export default function ProfileScreen({ navigation }) {
     loadProfile();
   }, [loadProfile]);
 
+  if (!token) {
+    return (
+      <ScreenContainer maxWidth={720}>
+        <View
+          style={{
+            flex: 1,
+            justifyContent: "center",
+            alignItems: "center",
+            paddingVertical: spacing.xl,
+          }}
+        >
+          <View
+            style={{
+              width: "100%",
+              backgroundColor: colors.surface,
+              borderWidth: 1,
+              borderColor: colors.border,
+              borderRadius: radius.xl,
+              padding: spacing.lg,
+              ...shadows.card,
+            }}
+          >
+            <Text
+              style={{
+                fontSize: 26,
+                fontWeight: "800",
+                color: colors.text,
+                textAlign: "center",
+                marginBottom: spacing.sm,
+              }}
+            >
+              Inicia sesión para ver tu perfil
+            </Text>
+
+            <Text
+              style={{
+                color: colors.muted,
+                textAlign: "center",
+                lineHeight: 22,
+                marginBottom: spacing.lg,
+              }}
+            >
+              Accede a tu cuenta para revisar tus datos, tus órdenes y tus accesos
+              rápidos en CIBOX.
+            </Text>
+
+            <AppButton
+              title="Iniciar sesión"
+              onPress={() => navigation.navigate("Auth")}
+            />
+
+            <AppButton
+              title="Ver favoritos"
+              onPress={() => navigation.navigate("FavoritesTab")}
+              variant="secondary"
+              style={{ marginTop: spacing.sm }}
+            />
+
+            <AppButton
+              title="Volver al catálogo"
+              onPress={() =>
+                navigation.navigate("MainTabs", { screen: "HomeTab" })
+              }
+              variant="secondary"
+              style={{ marginTop: spacing.sm }}
+            />
+          </View>
+        </View>
+      </ScreenContainer>
+    );
+  }
+
   if (loading) {
     return (
       <ScreenContainer maxWidth={720}>
         <View
           style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
         >
-          <ActivityIndicator size="large" />
+          <ActivityIndicator size="large" color={colors.primary} />
+          <Text
+            style={{
+              marginTop: spacing.sm,
+              color: colors.muted,
+            }}
+          >
+            Cargando perfil...
+          </Text>
         </View>
       </ScreenContainer>
     );
@@ -189,7 +276,7 @@ export default function ProfileScreen({ navigation }) {
                 color: colors.text,
               }}
             >
-              {cartCount} item(s)
+              {cartCount} Producto(s)
             </Text>
           </View>
         </View>
@@ -207,24 +294,28 @@ export default function ProfileScreen({ navigation }) {
           </Text>
 
           <AppButton title="Refrescar perfil" onPress={loadProfile} />
+
           <AppButton
             title="Ver notificaciones"
             onPress={() => navigation.navigate("Notifications")}
             variant="secondary"
             style={{ marginTop: 10 }}
           />
+
           <AppButton
             title="Ver mis órdenes"
             onPress={() => navigation.navigate("OrdersTab")}
             variant="secondary"
             style={{ marginTop: 10 }}
           />
+
           <AppButton
             title="Ver favoritos"
             onPress={() => navigation.navigate("FavoritesTab")}
             variant="secondary"
             style={{ marginTop: 10 }}
           />
+
           <AppButton
             title="Ver despensa"
             onPress={() => navigation.navigate("PantryTab")}

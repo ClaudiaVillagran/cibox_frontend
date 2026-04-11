@@ -105,7 +105,7 @@ export default function FilterBar({
           { label: 'Más recientes', value: '' },
           { label: 'Precio ↑', value: 'price_asc' },
           { label: 'Precio ↓', value: 'price_desc' },
-          { label: 'Rating', value: 'rating_desc' },
+          { label: 'Puntuación', value: 'rating_desc' },
         ].map((item) => {
           const active = sort === item.value;
 

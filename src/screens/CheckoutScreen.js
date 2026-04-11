@@ -10,18 +10,23 @@ import {
 } from "react-native";
 import ScreenContainer from "../components/ScreenContainer";
 import AppButton from "../components/AppButton";
-import { colors, radius, spacing } from "../constants/theme";
+import { colors, spacing } from "../constants/theme";
 import {
-  createOrderFromCustomBox,
+  createOrderFromCart,
   createWebpayTransaction,
 } from "../services/orderService";
-import { getCustomBox } from "../services/customBoxService";
+import {
+  quoteShipping as quoteShippingService,
+  applyShippingToOrder as applyShippingToOrderService,
+} from "../services/shippingService";
+import { getCart } from "../services/cartService";
 import useCartStore from "../store/cartStore";
 import {
   getCheckoutAddress,
   saveCheckoutAddress,
 } from "../utils/checkoutStorage";
 import { showAppAlert } from "../utils/appAlerts";
+
 export default function CheckoutScreen({ navigation }) {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
@@ -37,8 +42,8 @@ export default function CheckoutScreen({ navigation }) {
   const [couponCode, setCouponCode] = useState("");
   const [deliveryNotes, setDeliveryNotes] = useState("");
 
-  const [box, setBox] = useState(null);
-  const [loadingBox, setLoadingBox] = useState(true);
+  const [cart, setCart] = useState(null);
+  const [loadingCart, setLoadingCart] = useState(true);
   const [loadingSavedAddress, setLoadingSavedAddress] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
@@ -81,19 +86,19 @@ export default function CheckoutScreen({ navigation }) {
     fontSize: 14,
   };
 
-  const fetchBox = async () => {
+  const fetchCart = async () => {
     try {
-      setLoadingBox(true);
-      const data = await getCustomBox();
-      setBox(data);
+      setLoadingCart(true);
+      const data = await getCart();
+      setCart(data);
     } catch (error) {
       console.log(
-        "GET CHECKOUT BOX ERROR:",
+        "GET CHECKOUT CART ERROR:",
         error?.response?.data || error.message,
       );
       showAppAlert("Error", "No se pudo cargar el resumen del carrito");
     } finally {
-      setLoadingBox(false);
+      setLoadingCart(false);
     }
   };
 
@@ -121,13 +126,49 @@ export default function CheckoutScreen({ navigation }) {
     }
   };
 
-  const validateEmail = (value) => {
-    return /\S+@\S+\.\S+/.test(value);
-  };
+  const validateEmail = (value) => /\S+@\S+\.\S+/.test(value);
 
   const validatePhone = (value) => {
     const cleaned = value.replace(/\s+/g, "");
     return cleaned.length >= 8;
+  };
+
+  const normalizeQuoteOptions = (quote) => {
+    const rawOptions =
+      quote?.services ||
+      quote?.rates ||
+      quote?.options ||
+      quote?.quotes ||
+      quote?.data?.services ||
+      quote?.data?.rates ||
+      quote?.data?.options ||
+      [];
+
+    if (!Array.isArray(rawOptions)) return [];
+
+    return rawOptions.map((item, index) => ({
+      id:
+        item?.id ||
+        item?.service_code ||
+        item?.serviceCode ||
+        item?.code ||
+        `${index}`,
+      name:
+        item?.service_name ||
+        item?.serviceName ||
+        item?.name ||
+        item?.label ||
+        "Envío Blue Express",
+      amount:
+        Number(
+          item?.amount ??
+            item?.price ??
+            item?.total ??
+            item?.value ??
+            item?.rate ??
+            0,
+        ) || 0,
+    }));
   };
 
   const handleCheckout = async () => {
@@ -181,7 +222,7 @@ export default function CheckoutScreen({ navigation }) {
           reference: reference.trim(),
         },
         payment: {
-          method: "webpay",
+          method: paymentMethod,
         },
         notes: deliveryNotes.trim() || null,
       };
@@ -190,7 +231,7 @@ export default function CheckoutScreen({ navigation }) {
         payload.couponCode = couponCode.trim().toUpperCase();
       }
 
-      const orderResponse = await createOrderFromCustomBox(payload);
+      const orderResponse = await createOrderFromCart(payload);
       const order =
         orderResponse?.order ||
         orderResponse?.data?.order ||
@@ -200,6 +241,30 @@ export default function CheckoutScreen({ navigation }) {
       if (!order?._id) {
         throw new Error("No se pudo obtener la orden creada");
       }
+
+      const quoteResponse = await quoteShippingService({
+        orderId: order._id,
+      });
+
+      const quote =
+        quoteResponse?.quote ||
+        quoteResponse?.data?.quote ||
+        quoteResponse?.data ||
+        quoteResponse;
+
+      const shippingOptions = normalizeQuoteOptions(quote);
+
+      if (!shippingOptions.length) {
+        throw new Error("No se encontraron tarifas de envío disponibles");
+      }
+
+      const selectedOption = shippingOptions[0];
+
+      await applyShippingToOrderService({
+        orderId: order._id,
+        shippingAmount: selectedOption.amount,
+        serviceName: selectedOption.name,
+      });
 
       const payment = await createWebpayTransaction({
         orderId: order._id,
@@ -215,37 +280,45 @@ export default function CheckoutScreen({ navigation }) {
         address: address.trim(),
         addressLine2: addressLine2.trim(),
         reference: reference.trim(),
-        paymentMethod: "webpay",
+        paymentMethod,
       });
 
       await loadCartSummary();
 
       if (!payment?.paymentToken || !payment?.paymentUrl) {
         showAppAlert("Error", "No se pudo iniciar el pago con Webpay");
-        navigation.replace("OrderDetail", { orderId: order._id });
+        navigation.replace("OrderDetail", {
+          orderId: order._id,
+          guestEmail: email.trim().toLowerCase(),
+        });
         return;
       }
+
       navigation.replace("Webpay", {
         orderId: order._id,
         paymentToken: payment.paymentToken,
         paymentUrl: payment.paymentUrl,
+        guestEmail: email.trim().toLowerCase(),
       });
     } catch (error) {
       console.log("CHECKOUT ERROR:", error?.response?.data || error.message);
       showAppAlert(
         "Error",
-        error?.response?.data?.message || "No se pudo iniciar el checkout",
+        error?.response?.data?.message ||
+          error.message ||
+          "No se pudo iniciar el checkout",
       );
     } finally {
       setSubmitting(false);
     }
   };
+
   useEffect(() => {
-    fetchBox();
+    fetchCart();
     loadSavedAddress();
   }, []);
 
-  if (loadingBox || loadingSavedAddress) {
+  if (loadingCart || loadingSavedAddress) {
     return (
       <ScreenContainer maxWidth={720}>
         <View style={{ flex: 1, justifyContent: "center" }}>
@@ -255,8 +328,8 @@ export default function CheckoutScreen({ navigation }) {
     );
   }
 
-  const items = Array.isArray(box?.items) ? box.items : [];
-  const total = box?.total || 0;
+  const items = Array.isArray(cart?.items) ? cart.items : [];
+  const total = cart?.total || 0;
 
   return (
     <ScreenContainer maxWidth={720}>
@@ -525,18 +598,6 @@ export default function CheckoutScreen({ navigation }) {
                   Precio unitario: ${formatPrice(item.unit_price)}
                 </Text>
 
-                {item.discount_applied ? (
-                  <Text
-                    style={{
-                      color: "#4E9B27",
-                      marginBottom: 4,
-                      fontWeight: "700",
-                    }}
-                  >
-                    Descuento {item.discount_source}: -{item.discount_percent}%
-                  </Text>
-                ) : null}
-
                 <Text style={{ color: colors.text, fontWeight: "800" }}>
                   Subtotal: ${formatPrice(item.subtotal)}
                 </Text>
@@ -559,13 +620,21 @@ export default function CheckoutScreen({ navigation }) {
                 color: colors.text,
               }}
             >
-              Total: ${formatPrice(total)}
+              Total productos: ${formatPrice(total)}
+            </Text>
+            <Text
+              style={{
+                marginTop: 6,
+                color: colors.muted,
+              }}
+            >
+              El valor final del envío se calculará antes del pago.
             </Text>
           </View>
         </View>
 
         <AppButton
-          title={submitting ? "Creando orden..." : "Confirmar compra"}
+          title={submitting ? "Procesando..." : "Confirmar compra"}
           onPress={handleCheckout}
           disabled={submitting || !items.length}
         />

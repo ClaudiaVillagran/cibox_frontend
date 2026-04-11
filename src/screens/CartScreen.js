@@ -9,33 +9,30 @@ import {
 } from "react-native";
 import ScreenContainer from "../components/ScreenContainer";
 import AppButton from "../components/AppButton";
-import { colors, radius, spacing } from "../constants/theme";
+import { colors, spacing } from "../constants/theme";
 import {
-  getCustomBox,
-  removeCustomBoxItem,
-  updateCustomBoxItemQuantity,
-} from "../services/customBoxService";
+  getCart,
+  removeCartItem,
+  updateCartItem,
+} from "../services/cartService";
 import useCartStore from "../store/cartStore";
 import { showAppAlert } from "../utils/appAlerts";
 
 export default function CartScreen({ navigation }) {
-  const [box, setBox] = useState(null);
+  const [cart, setCart] = useState(null);
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState(null);
 
   const { loadCartSummary } = useCartStore();
 
-  const fetchBox = useCallback(async () => {
+  const fetchCart = useCallback(async () => {
     try {
       setLoading(true);
-      const data = await getCustomBox();
-      setBox(data);
+      const data = await getCart();
+      setCart(data);
       await loadCartSummary();
     } catch (error) {
-      console.log(
-        "GET CUSTOM BOX ERROR:",
-        error?.response?.data || error.message,
-      );
+      console.log("GET CART ERROR:", error?.response?.data || error.message);
       showAppAlert("Error", "No se pudo cargar el carrito");
     } finally {
       setLoading(false);
@@ -46,12 +43,12 @@ export default function CartScreen({ navigation }) {
     try {
       setUpdatingId(item.product_id);
 
-      await updateCustomBoxItemQuantity({
+      await updateCartItem({
         productId: item.product_id,
         quantity: item.quantity + 1,
       });
 
-      await fetchBox();
+      await fetchCart();
     } catch (error) {
       console.log("UPDATE ITEM ERROR:", error?.response?.data || error.message);
       showAppAlert("Error", "No se pudo actualizar la cantidad");
@@ -69,12 +66,12 @@ export default function CartScreen({ navigation }) {
     try {
       setUpdatingId(item.product_id);
 
-      await updateCustomBoxItemQuantity({
+      await updateCartItem({
         productId: item.product_id,
         quantity: item.quantity - 1,
       });
 
-      await fetchBox();
+      await fetchCart();
     } catch (error) {
       console.log("UPDATE ITEM ERROR:", error?.response?.data || error.message);
       showAppAlert("Error", "No se pudo actualizar la cantidad");
@@ -86,8 +83,8 @@ export default function CartScreen({ navigation }) {
   const handleRemove = async (productId) => {
     try {
       setUpdatingId(productId);
-      await removeCustomBoxItem(productId);
-      await fetchBox();
+      await removeCartItem(productId);
+      await fetchCart();
     } catch (error) {
       console.log("REMOVE ITEM ERROR:", error?.response?.data || error.message);
       showAppAlert("Error", "No se pudo eliminar el producto");
@@ -97,11 +94,11 @@ export default function CartScreen({ navigation }) {
   };
 
   useEffect(() => {
-    fetchBox();
-  }, [fetchBox]);
+    fetchCart();
+  }, [fetchCart]);
 
-  const items = box?.items || [];
-  const total = box?.total || 0;
+  const items = cart?.items || [];
+  const total = cart?.total || 0;
 
   const formatPrice = (value) => {
     const number = Number(value || 0);
@@ -179,7 +176,7 @@ export default function CartScreen({ navigation }) {
     <ScreenContainer maxWidth={900}>
       <FlatList
         data={items}
-        keyExtractor={(item) => item.product_id}
+        keyExtractor={(item, index) => String(item.product_id || index)}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: spacing.xl }}
         ListHeaderComponent={
@@ -202,17 +199,6 @@ export default function CartScreen({ navigation }) {
         }
         renderItem={({ item }) => {
           const isUpdating = updatingId === item.product_id;
-
-          const hasDiscount =
-            item.discount_applied &&
-            item.original_unit_price &&
-            item.original_unit_price > item.unit_price;
-
-          const savingsPerUnit = hasDiscount
-            ? item.original_unit_price - item.unit_price
-            : 0;
-
-          const totalSavings = hasDiscount ? savingsPerUnit * item.quantity : 0;
 
           return (
             <View
@@ -264,97 +250,16 @@ export default function CartScreen({ navigation }) {
                     {item.name}
                   </Text>
 
-                  <View
-                    style={{
-                      flexDirection: "row",
-                      flexWrap: "wrap",
-                      marginBottom: 6,
-                    }}
-                  >
-                    {item.tier_label ? (
-                      <View
-                        style={{
-                          backgroundColor: "#4E9B27",
-                          paddingHorizontal: 8,
-                          paddingVertical: 4,
-                          borderRadius: 999,
-                          marginRight: 6,
-                          marginBottom: 6,
-                        }}
-                      >
-                        <Text
-                          style={{
-                            color: "#fff",
-                            fontSize: 10,
-                            fontWeight: "800",
-                          }}
-                        >
-                          {item.tier_label}
-                        </Text>
-                      </View>
-                    ) : null}
-
-                    {item.discount_applied ? (
-                      <View
-                        style={{
-                          backgroundColor: "#C3E062",
-                          paddingHorizontal: 8,
-                          paddingVertical: 4,
-                          borderRadius: 999,
-                          marginRight: 6,
-                          marginBottom: 6,
-                        }}
-                      >
-                        <Text
-                          style={{
-                            color: "#234014",
-                            fontSize: 10,
-                            fontWeight: "800",
-                          }}
-                        >
-                          {item.discount_source || "descuento"} -{item.discount_percent || 0}%
-                        </Text>
-                      </View>
-                    ) : null}
-                  </View>
-
                   <Text
                     style={{
                       color: colors.text,
                       fontSize: 15,
                       fontWeight: "800",
-                      marginBottom: 2,
+                      marginBottom: 4,
                     }}
                   >
                     ${formatPrice(item.unit_price)}
                   </Text>
-
-                  {item.original_unit_price &&
-                  item.original_unit_price !== item.unit_price ? (
-                    <Text
-                      style={{
-                        color: colors.muted,
-                        fontSize: 12,
-                        textDecorationLine: "line-through",
-                        marginBottom: 4,
-                      }}
-                    >
-                      ${formatPrice(item.original_unit_price)}
-                    </Text>
-                  ) : null}
-
-                  {totalSavings > 0 ? (
-                    <Text
-                      style={{
-                        color: "#4E9B27",
-                        fontSize: 12,
-                        fontWeight: "700",
-                        marginBottom: 4,
-                      }}
-                    >
-                      Ahorras ${formatPrice(totalSavings)}
-                    </Text>
-                  ) : null}
 
                   <Text
                     style={{

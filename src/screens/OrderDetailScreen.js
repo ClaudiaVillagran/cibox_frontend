@@ -1,35 +1,21 @@
 import { useCallback, useEffect, useState } from "react";
-import { ActivityIndicator, Alert, FlatList, Text, View } from "react-native";
+import { ActivityIndicator, FlatList, Text, View } from "react-native";
 import ScreenContainer from "../components/ScreenContainer";
 import { colors, radius, spacing } from "../constants/theme";
-import { getOrderById } from "../services/orderService";
+import {
+  getGuestOrderById,
+  getOrderById,
+} from "../services/orderService";
+import useAuthStore from "../store/authStore";
 import { showAppAlert } from "../utils/appAlerts";
 
 export default function OrderDetailScreen({ route, navigation }) {
-  const { orderId } = route.params;
+  const { token } = useAuthStore();
+  const orderId = route?.params?.orderId;
+  const guestEmail = route?.params?.guestEmail || null;
+
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
-
-  const fetchOrder = useCallback(async () => {
-    try {
-      setLoading(true);
-      const data = await getOrderById(orderId);
-      const item = data?.order || data?.data?.order || data?.data || data;
-      setOrder(item);
-    } catch (error) {
-      console.log(
-        "GET ORDER DETAIL ERROR:",
-        error?.response?.data || error.message,
-      );
-      showAppAlert("Error", "No se pudo cargar la orden");
-    } finally {
-      setLoading(false);
-    }
-  }, [orderId]);
-
-  useEffect(() => {
-    fetchOrder();
-  }, [fetchOrder]);
 
   const cardStyle = {
     borderWidth: 1,
@@ -39,6 +25,51 @@ export default function OrderDetailScreen({ route, navigation }) {
     padding: spacing.md,
     marginBottom: spacing.md,
   };
+
+  const fetchOrder = useCallback(async () => {
+    try {
+      if (!orderId) {
+        showAppAlert("Error", "No se recibió el ID de la orden");
+        setLoading(false);
+        return;
+      }
+
+      setLoading(true);
+
+      let data;
+
+      if (token) {
+        data = await getOrderById(orderId);
+      } else if (guestEmail) {
+        data = await getGuestOrderById({
+          orderId,
+          email: guestEmail,
+        });
+      } else {
+        showAppAlert(
+          "Acceso restringido",
+          "Inicia sesión o usa el correo asociado a la compra"
+        );
+        setLoading(false);
+        return;
+      }
+
+      const item = data?.order || data?.data?.order || data?.data || data;
+      setOrder(item);
+    } catch (error) {
+      console.log(
+        "GET ORDER DETAIL ERROR:",
+        error?.response?.data || error.message
+      );
+      showAppAlert("Error", "No se pudo cargar la orden");
+    } finally {
+      setLoading(false);
+    }
+  }, [orderId, token, guestEmail]);
+
+  useEffect(() => {
+    fetchOrder();
+  }, [fetchOrder]);
 
   const getStatusMeta = (status) => {
     const normalized = String(status || "").toLowerCase();
@@ -59,7 +90,7 @@ export default function OrderDetailScreen({ route, navigation }) {
       };
     }
 
-    if (normalized === "processing") {
+    if (normalized === "processing" || normalized === "preparing") {
       return {
         label: "Procesando",
         backgroundColor: "#dbeafe",
@@ -111,7 +142,7 @@ export default function OrderDetailScreen({ route, navigation }) {
     const orderSteps = [
       { key: "pending", label: "Pendiente" },
       { key: "paid", label: "Pagada" },
-      { key: "processing", label: "Procesando" },
+      { key: "preparing", label: "Preparando" },
       { key: "shipped", label: "Enviada" },
       { key: "delivered", label: "Entregada" },
     ];
@@ -119,10 +150,11 @@ export default function OrderDetailScreen({ route, navigation }) {
     const statusOrder = [
       "pending",
       "paid",
-      "processing",
+      "preparing",
       "shipped",
       "delivered",
     ];
+
     const currentIndex = statusOrder.indexOf(normalized);
 
     return orderSteps.map((step, index) => ({
@@ -136,7 +168,7 @@ export default function OrderDetailScreen({ route, navigation }) {
     return (
       <ScreenContainer maxWidth={720}>
         <View style={{ flex: 1, justifyContent: "center" }}>
-          <ActivityIndicator size="large" />
+          <ActivityIndicator size="large" color={colors.primary} />
         </View>
       </ScreenContainer>
     );
@@ -156,28 +188,28 @@ export default function OrderDetailScreen({ route, navigation }) {
 
   const statusMeta = getStatusMeta(order.status);
   const progressSteps = getProgressSteps(order.status);
+  const orderItems = Array.isArray(order.items) ? order.items : [];
 
   return (
     <ScreenContainer maxWidth={720}>
       <View style={{ marginBottom: spacing.md }}>
         <Text
-          onPress={() =>
-            navigation.navigate("MainTabs", {
-              screen: "Home",
-            })
-          }
+          onPress={() => navigation.goBack()}
           style={{
             color: colors.text,
             fontWeight: "700",
             fontSize: 14,
           }}
         >
-          ← Volver al inicio
+          ← Volver
         </Text>
       </View>
+
       <FlatList
-        data={order.items || []}
-        keyExtractor={(item, index) => `${item.product_id || index}`}
+        data={orderItems}
+        keyExtractor={(item, index) =>
+          String(item.product_id || item._id || index)
+        }
         contentContainerStyle={{ paddingBottom: spacing.xl }}
         ListHeaderComponent={
           <>
@@ -190,7 +222,7 @@ export default function OrderDetailScreen({ route, navigation }) {
                   marginBottom: 8,
                 }}
               >
-                Orden #{order._id?.slice(-6)}
+                Orden #{String(order._id || order.id || "").slice(-6)}
               </Text>
 
               <View
@@ -218,8 +250,12 @@ export default function OrderDetailScreen({ route, navigation }) {
                 Total: ${order.total ?? "—"}
               </Text>
 
+              <Text style={{ color: colors.muted, marginBottom: 4 }}>
+                Ítems: {orderItems.length}
+              </Text>
+
               <Text style={{ color: colors.muted }}>
-                Items: {order.items?.length ?? 0}
+                ID: {order._id || order.id || "—"}
               </Text>
             </View>
 
@@ -319,8 +355,12 @@ export default function OrderDetailScreen({ route, navigation }) {
                 Ciudad: {order.shipping?.city || "—"}
               </Text>
 
-              <Text style={{ color: colors.muted }}>
+              <Text style={{ color: colors.muted, marginBottom: 4 }}>
                 Dirección: {order.shipping?.address || "—"}
+              </Text>
+
+              <Text style={{ color: colors.muted }}>
+                Servicio: {order.shipping?.service_name || "—"}
               </Text>
             </View>
 
@@ -336,8 +376,12 @@ export default function OrderDetailScreen({ route, navigation }) {
                 Pago
               </Text>
 
-              <Text style={{ color: colors.muted }}>
+              <Text style={{ color: colors.muted, marginBottom: 4 }}>
                 Método: {order.payment?.method || "—"}
+              </Text>
+
+              <Text style={{ color: colors.muted }}>
+                Estado pago: {order.payment?.status || order.status || "—"}
               </Text>
             </View>
 
@@ -375,7 +419,7 @@ export default function OrderDetailScreen({ route, navigation }) {
                 <View
                   style={{
                     alignSelf: "flex-start",
-                    backgroundColor: "#111",
+                    backgroundColor: colors.text,
                     paddingHorizontal: 8,
                     paddingVertical: 5,
                     borderRadius: 999,
@@ -384,7 +428,7 @@ export default function OrderDetailScreen({ route, navigation }) {
                 >
                   <Text
                     style={{
-                      color: "#fff",
+                      color: colors.primaryText,
                       fontSize: 11,
                       fontWeight: "700",
                     }}
@@ -420,6 +464,13 @@ export default function OrderDetailScreen({ route, navigation }) {
             </View>
           );
         }}
+        ListEmptyComponent={
+          <View style={cardStyle}>
+            <Text style={{ color: colors.muted }}>
+              Esta orden no tiene productos.
+            </Text>
+          </View>
+        }
       />
     </ScreenContainer>
   );

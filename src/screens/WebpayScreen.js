@@ -13,7 +13,7 @@ const SUCCESS_URL = "http://192.168.1.3:3000/success";
 const FAILED_URL = "http://192.168.1.3:3000/failed";
 
 export default function WebpayScreen({ route, navigation }) {
-  const { orderId, paymentToken, paymentUrl } = route.params || {};
+  const { orderId, paymentToken, paymentUrl, guestEmail } = route.params || {};
   const alreadyHandledRef = useRef(false);
 
   const html = `
@@ -59,6 +59,7 @@ export default function WebpayScreen({ route, navigation }) {
 
     navigation.replace("OrderSuccess", {
       orderId: finalOrderId || orderId,
+      guestEmail,
     });
   };
 
@@ -68,6 +69,7 @@ export default function WebpayScreen({ route, navigation }) {
 
     navigation.replace("OrderDetail", {
       orderId: finalOrderId || orderId,
+      guestEmail,
     });
   };
 

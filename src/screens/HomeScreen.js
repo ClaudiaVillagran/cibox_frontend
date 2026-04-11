@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -21,11 +21,12 @@ import {
   getProducts,
   getRecommendedProducts,
 } from "../services/productService";
-import { addItemToCustomBox } from "../services/customBoxService";
+import { addItemToCart } from "../services/cartService";
 import useCartStore from "../store/cartStore";
 import { showAppAlert } from "../utils/appAlerts";
-
+import useAuthStore from "../store/authStore";
 export default function HomeScreen({ navigation }) {
+  const { token } = useAuthStore();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -72,9 +73,15 @@ export default function HomeScreen({ navigation }) {
     try {
       setSectionsLoading(true);
 
+      const featuredPromise = getFeaturedProducts({ limit: 8 });
+
+      const recommendedPromise = token
+        ? getRecommendedProducts({ limit: 8 })
+        : Promise.resolve({ recommended_products: [] });
+
       const [featuredData, recommendedData] = await Promise.all([
-        getFeaturedProducts({ limit: 8 }),
-        getRecommendedProducts({ limit: 8 }),
+        featuredPromise,
+        recommendedPromise,
       ]);
 
       setFeaturedProducts(Array.isArray(featuredData) ? featuredData : []);
@@ -84,7 +91,7 @@ export default function HomeScreen({ navigation }) {
     } catch (error) {
       console.log(
         "ERROR HOME SECTIONS:",
-        error?.response?.data || error.message
+        error?.response?.data || error.message,
       );
       setFeaturedProducts([]);
       setRecommendedProducts([]);
@@ -149,7 +156,7 @@ export default function HomeScreen({ navigation }) {
     try {
       setAddingProductId(product._id);
 
-      await addItemToCustomBox({
+      await addItemToCart({
         productId: product._id,
         quantity: 1,
       });
@@ -157,10 +164,13 @@ export default function HomeScreen({ navigation }) {
       await loadCartSummary();
       showAppAlert("Éxito", "Producto agregado al carrito");
     } catch (error) {
-      console.log("ADD FROM CARD ERROR:", error?.response?.data || error.message);
+      console.log(
+        "ADD FROM CARD ERROR:",
+        error?.response?.data || error.message,
+      );
       Alert.alert(
         "Error",
-        error?.response?.data?.message || "No se pudo agregar al carrito"
+        error?.response?.data?.message || "No se pudo agregar al carrito",
       );
     } finally {
       setAddingProductId(null);
@@ -252,7 +262,7 @@ export default function HomeScreen({ navigation }) {
 
   useEffect(() => {
     fetchHomeSections();
-  }, []);
+  }, [token]);
 
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -347,7 +357,7 @@ export default function HomeScreen({ navigation }) {
                     color: colors.muted,
                   }}
                 >
-                  Productos funcionales, packs y compras inteligentes.
+                  Compras inteligentes para tu hogar.
                 </Text>
               </View>
 
@@ -370,13 +380,13 @@ export default function HomeScreen({ navigation }) {
                   marginBottom: 14,
                 }}
               >
-                Tu supermercado digital para comprar mejor y ahorrar más..
+                Tu supermercado digital para comprar mejor y ahorrar más.
               </Text>
 
               <SearchInput
                 value={search}
                 onChange={setSearch}
-                placeholder="Buscar proteína, creatina, snacks..."
+                placeholder="Buscar productos..."
               />
 
               <View style={{ height: 12 }} />
@@ -507,7 +517,8 @@ export default function HomeScreen({ navigation }) {
                               marginLeft: 14,
                             }}
                           >
-                            Compra al detalle y agrega productos directo al carrito.
+                            Compra al detalle y agrega productos directo al
+                            carrito.
                           </Text>
                         </View>
 
@@ -562,8 +573,8 @@ export default function HomeScreen({ navigation }) {
                             fontSize: 14,
                           }}
                         >
-                          Agrega productos directos al carrito y revisa el catálogo
-                          completo desde esta sección.
+                          Agrega productos directos al carrito y revisa el
+                          catálogo completo desde esta sección.
                         </Text>
                       </View>
 
@@ -580,72 +591,56 @@ export default function HomeScreen({ navigation }) {
                       />
                     </View>
 
-                    <View style={{ marginBottom: spacing.md }}>
-                      <View
-                        style={{
-                          flexDirection: "row",
-                          alignItems: "center",
-                          marginBottom: 10,
-                          paddingHorizontal: 2,
-                        }}
-                      >
+                    {token && recommendedProducts.length > 0 ? (
+                      <View style={{ marginBottom: spacing.md }}>
                         <View
                           style={{
-                            width: 8,
-                            height: 8,
-                            borderRadius: 4,
-                            backgroundColor: colors.primary,
-                            marginRight: 8,
-                          }}
-                        />
-                        <Text
-                          style={{
-                            fontSize: 24,
-                            fontWeight: "800",
-                            color: colors.text,
+                            flexDirection: "row",
+                            alignItems: "center",
+                            marginBottom: 10,
+                            paddingHorizontal: 2,
                           }}
                         >
-                          Recomendados para ti
-                        </Text>
-                      </View>
+                          <View
+                            style={{
+                              width: 8,
+                              height: 8,
+                              borderRadius: 4,
+                              backgroundColor: colors.primary,
+                              marginRight: 8,
+                            }}
+                          />
+                          <Text
+                            style={{
+                              fontSize: 24,
+                              fontWeight: "800",
+                              color: colors.text,
+                            }}
+                          >
+                            Recomendados para ti
+                          </Text>
+                        </View>
 
-                      <ProductRowSection
-                        title=""
-                        products={recommendedProducts}
-                        onPressProduct={(item) =>
-                          navigation.navigate("ProductDetail", {
-                            productId: item._id,
-                          })
-                        }
-                        onAddToCart={handleAddFromCard}
-                        addingProductId={addingProductId}
-                      />
-                    </View>
+                        <ProductRowSection
+                          title=""
+                          products={recommendedProducts}
+                          onPressProduct={(item) =>
+                            navigation.navigate("ProductDetail", {
+                              productId: item._id,
+                            })
+                          }
+                          onAddToCart={handleAddFromCard}
+                          addingProductId={addingProductId}
+                        />
+                      </View>
+                    ) : null}
                   </>
                 )}
               </View>
             )}
           </View>
         }
-        renderItem={({ item }) => (
-          <View
-            style={{
-              flex: 1,
-              marginBottom: numColumns === 1 ? spacing.md : 0,
-              paddingHorizontal: numColumns === 1 ? 0 : undefined,
-            }}
-          >
-            <ProductCard
-              product={item}
-              compact={numColumns > 1}
-              onPress={() =>
-                navigation.navigate("ProductDetail", { productId: item._id })
-              }
-              onAddToCart={handleAddFromCard}
-              adding={addingProductId === item._id}
-            />
-          </View>
-        )}
+       
         ListEmptyComponent={
           <View
             style={{

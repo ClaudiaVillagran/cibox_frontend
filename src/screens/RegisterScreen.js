@@ -10,45 +10,38 @@ import {
   View,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { loginRequest } from "../services/authService";
-import useAuthStore from "../store/authStore";
+import { registerRequest } from "../services/authService";
 import { showAppAlert } from "../utils/appAlerts";
-import { colors, spacing, radius, shadows } from "../constants/theme";
+import { colors, spacing, shadows } from "../constants/theme";
 
-export default function LoginScreen({ navigation }) {
-  const { setAuth } = useAuthStore();
-
+export default function RegisterScreen({ navigation }) {
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleLogin = async () => {
-    if (!email.trim() || !password.trim()) {
-      showAppAlert("Faltan datos", "Ingresa tu correo y contraseña");
+  const handleRegister = async () => {
+    if (!name.trim() || !email.trim() || !password.trim()) {
+      showAppAlert("Faltan datos", "Completa nombre, correo y contraseña");
       return;
     }
 
     try {
       setLoading(true);
 
-      const data = await loginRequest({
+      await registerRequest({
+        name: name.trim(),
         email: email.trim().toLowerCase(),
         password,
       });
 
-      const user = data.user || data.data?.user;
-      const token = data.token || data.data?.token;
-
-      if (!user || !token) {
-        throw new Error("No se recibió la sesión correctamente");
-      }
-
-      await setAuth({ user, token });
+      showAppAlert("Éxito", "Cuenta creada correctamente");
+      navigation.goBack();
     } catch (error) {
-      console.log("LOGIN ERROR:", error?.response?.data || error.message);
+      console.log("REGISTER ERROR:", error?.response?.data || error.message);
       showAppAlert(
         "Error",
-        error?.response?.data?.message || "Login fallido"
+        error?.response?.data?.message || "No se pudo crear la cuenta"
       );
     } finally {
       setLoading(false);
@@ -74,7 +67,7 @@ export default function LoginScreen({ navigation }) {
               borderRadius: 28,
               paddingHorizontal: spacing.lg,
               paddingVertical: spacing.xl,
-              minHeight: 620,
+              minHeight: 660,
               justifyContent: "center",
               borderWidth: 1,
               borderColor: "#dfe8d8",
@@ -96,7 +89,7 @@ export default function LoginScreen({ navigation }) {
               <Ionicons name="arrow-back" size={22} color={colors.muted} />
             </Pressable>
 
-            <View style={{ marginTop: 28 }}>
+            <View style={{ marginTop: 20 }}>
               <View style={{ marginBottom: spacing.lg }}>
                 <Text
                   style={{
@@ -107,7 +100,7 @@ export default function LoginScreen({ navigation }) {
                     marginBottom: 8,
                   }}
                 >
-                  Iniciar sesión
+                  Crear cuenta
                 </Text>
 
                 <Text
@@ -119,8 +112,8 @@ export default function LoginScreen({ navigation }) {
                     paddingHorizontal: 8,
                   }}
                 >
-                  Accede a tu cuenta CIBOX para revisar pedidos, favoritos y tu
-                  perfil.
+                  Regístrate en CIBOX para guardar tus pedidos, favoritos y datos
+                  de compra.
                 </Text>
               </View>
 
@@ -139,6 +132,40 @@ export default function LoginScreen({ navigation }) {
                 >
                   <Ionicons
                     name="person-outline"
+                    size={18}
+                    color={colors.muted}
+                    style={{ marginRight: 10 }}
+                  />
+
+                  <TextInput
+                    placeholder="Nombre"
+                    placeholderTextColor="#9a9a9a"
+                    value={name}
+                    onChangeText={setName}
+                    style={{
+                      flex: 1,
+                      color: colors.text,
+                      fontSize: 15,
+                    }}
+                  />
+                </View>
+              </View>
+
+              <View style={{ marginBottom: spacing.md }}>
+                <View
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    borderWidth: 1.5,
+                    borderColor: "#cfdcc6",
+                    borderRadius: 999,
+                    paddingHorizontal: 16,
+                    height: 54,
+                    backgroundColor: colors.surface,
+                  }}
+                >
+                  <Ionicons
+                    name="mail-outline"
                     size={18}
                     color={colors.muted}
                     style={{ marginRight: 10 }}
@@ -196,7 +223,7 @@ export default function LoginScreen({ navigation }) {
               </View>
 
               <Pressable
-                onPress={handleLogin}
+                onPress={handleRegister}
                 disabled={loading}
                 style={{
                   height: 54,
@@ -218,32 +245,9 @@ export default function LoginScreen({ navigation }) {
                       letterSpacing: 0.4,
                     }}
                   >
-                    INGRESAR
+                    REGISTRARME
                   </Text>
                 )}
-              </Pressable>
-
-              <Pressable
-                onPress={() =>
-                  showAppAlert(
-                    "Próximamente",
-                    "La recuperación de contraseña estará disponible pronto."
-                  )
-                }
-                style={{
-                  marginTop: spacing.sm,
-                  alignItems: "center",
-                }}
-              >
-                <Text
-                  style={{
-                    color: colors.muted,
-                    fontSize: 12,
-                    fontWeight: "600",
-                  }}
-                >
-                  ¿Olvidaste tu contraseña?
-                </Text>
               </Pressable>
 
               <View
@@ -255,10 +259,10 @@ export default function LoginScreen({ navigation }) {
                 }}
               >
                 <Text style={{ color: colors.muted, fontSize: 14 }}>
-                  ¿No tienes cuenta?
+                  ¿Ya tienes cuenta?
                 </Text>
 
-                <Pressable onPress={() => navigation.navigate("Register")}>
+                <Pressable onPress={() => navigation.goBack()}>
                   <Text
                     style={{
                       color: colors.primary,
@@ -267,7 +271,7 @@ export default function LoginScreen({ navigation }) {
                       marginLeft: 8,
                     }}
                   >
-                    Regístrate
+                    Inicia sesión
                   </Text>
                 </Pressable>
               </View>
@@ -313,7 +317,7 @@ export default function LoginScreen({ navigation }) {
                   marginBottom: spacing.md,
                 }}
               >
-                Compra más rápido, guarda favoritos y revisa tus órdenes.
+                Crea tu cuenta para una experiencia de compra más rápida.
               </Text>
 
               <View
@@ -359,7 +363,7 @@ export default function LoginScreen({ navigation }) {
                     alignItems: "center",
                   }}
                 >
-                  <Ionicons name="person-outline" size={20} color={colors.primary} />
+                  <Ionicons name="receipt-outline" size={20} color={colors.primary} />
                 </View>
               </View>
             </View>

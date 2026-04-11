@@ -39,17 +39,17 @@ export default function MainTabs() {
       }}
     >
       <Tab.Screen
-        name="Home"
+        name="Inicio"
         component={HomeScreen}
-        options={{
+        options={({ navigation }) => ({
           headerTitle: () => (
             <Image
               source={require("../../assets/logo-cibox.png")}
-              style={{ width: 90, height: 36, resizeMode: "contain" }}
+              style={{ width: 90, height: 56, resizeMode: "contain" }}
             />
           ),
           headerTitleAlign: "left",
-        }}
+        })}
       />
       <Tab.Screen
         name="PantryTab"

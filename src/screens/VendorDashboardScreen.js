@@ -1,5 +1,11 @@
 import { useCallback, useEffect, useState } from "react";
-import { ActivityIndicator, Alert, FlatList, Text, View } from "react-native";
+import {
+  ActivityIndicator,
+  FlatList,
+  Pressable,
+  Text,
+  View,
+} from "react-native";
 import ScreenContainer from "../components/ScreenContainer";
 import AppButton from "../components/AppButton";
 import { colors, radius, spacing } from "../constants/theme";
@@ -17,6 +23,8 @@ export default function VendorDashboardScreen() {
   const [loading, setLoading] = useState(true);
 
   const { user, logout, setAuth, token } = useAuthStore();
+  const navigation = useNavigation();
+
   const cardStyle = {
     borderWidth: 1,
     borderColor: colors.border,
@@ -25,7 +33,6 @@ export default function VendorDashboardScreen() {
     padding: spacing.md,
     marginBottom: spacing.md,
   };
-  const navigation = useNavigation();
 
   const loadDashboard = useCallback(async () => {
     try {
@@ -88,7 +95,9 @@ export default function VendorDashboardScreen() {
     <ScreenContainer maxWidth={900}>
       <FlatList
         data={topProducts}
-        keyExtractor={(item) => item.product_id}
+        keyExtractor={(item, index) =>
+          String(item.product_id || item._id || index)
+        }
         contentContainerStyle={{ paddingBottom: spacing.xl }}
         ListHeaderComponent={
           <>
@@ -100,7 +109,7 @@ export default function VendorDashboardScreen() {
                 marginBottom: 6,
               }}
             >
-              Dashboard Vendor
+              Panel de vendedor
             </Text>
 
             <Text
@@ -125,7 +134,7 @@ export default function VendorDashboardScreen() {
               </Text>
 
               <Text style={{ color: colors.muted, marginBottom: 4 }}>
-                Vendor ID: {vendor.id || "—"}
+                 ID de vendedor: {vendor.id || "—"}
               </Text>
 
               <Text style={{ color: colors.muted, marginBottom: 4 }}>
@@ -137,7 +146,7 @@ export default function VendorDashboardScreen() {
               </Text>
 
               <Text style={{ color: colors.muted }}>
-                Rating: {vendor.rating ?? 0}
+                Puntuación: {vendor.rating ?? 0}
               </Text>
             </View>
 
@@ -161,26 +170,43 @@ export default function VendorDashboardScreen() {
                 >
                   Productos
                 </Text>
+
                 <AppButton
                   title="Gestionar productos"
                   onPress={() => navigation.navigate("VendorProducts")}
                 />
+
                 <Text
                   style={{
                     fontSize: 22,
                     fontWeight: "800",
                     color: colors.text,
+                    marginTop: 12,
                   }}
                 >
                   {stats.total_products ?? 0}
                 </Text>
+
                 <Text style={{ color: colors.muted, marginTop: 6 }}>
                   {stats.active_products ?? 0} activos ·{" "}
                   {stats.inactive_products ?? 0} inactivos
                 </Text>
               </View>
 
-              <View style={{ ...cardStyle, width: "48%" }}>
+              <Pressable
+                onPress={() =>
+                  navigation.navigate("MainTabs", {
+                    screen: "OrdersTab",
+                  })
+                }
+                style={({ pressed }) => [
+                  {
+                    ...cardStyle,
+                    width: "48%",
+                  },
+                  pressed && { opacity: 0.9 },
+                ]}
+              >
                 <Text
                   style={{
                     fontSize: 12,
@@ -192,6 +218,7 @@ export default function VendorDashboardScreen() {
                 >
                   Órdenes
                 </Text>
+
                 <Text
                   style={{
                     fontSize: 22,
@@ -201,10 +228,22 @@ export default function VendorDashboardScreen() {
                 >
                   {stats.total_orders ?? 0}
                 </Text>
+
                 <Text style={{ color: colors.muted, marginTop: 6 }}>
                   {stats.total_units_sold ?? 0} unidades vendidas
                 </Text>
-              </View>
+
+                <Text
+                  style={{
+                    marginTop: 10,
+                    fontSize: 13,
+                    fontWeight: "700",
+                    color: colors.text,
+                  }}
+                >
+                  Ver todas →
+                </Text>
+              </Pressable>
             </View>
 
             <View
@@ -227,6 +266,7 @@ export default function VendorDashboardScreen() {
                 >
                   Ingresos
                 </Text>
+
                 <Text
                   style={{
                     fontSize: 22,
@@ -250,6 +290,7 @@ export default function VendorDashboardScreen() {
                 >
                   Ticket promedio
                 </Text>
+
                 <Text
                   style={{
                     fontSize: 22,
@@ -308,39 +349,143 @@ export default function VendorDashboardScreen() {
                   No hay órdenes recientes.
                 </Text>
               ) : (
-                recentOrders.map((order) => (
-                  <View
-                    key={order.order_id}
-                    style={{
-                      borderTopWidth: 1,
-                      borderTopColor: colors.border,
-                      paddingTop: 12,
-                      marginTop: 12,
-                    }}
-                  >
-                    <Text
+                recentOrders.map((order) => {
+                  const normalizedStatus = String(
+                    order.status || "",
+                  ).toLowerCase();
+
+                  const statusMeta =
+                    normalizedStatus === "pending"
+                      ? {
+                          label: "Pendiente",
+                          bg: "#FEF3C7",
+                          color: "#92400E",
+                        }
+                      : normalizedStatus === "paid"
+                        ? {
+                            label: "Pagada",
+                            bg: "#DCFCE7",
+                            color: "#166534",
+                          }
+                        : normalizedStatus === "processing"
+                          ? {
+                              label: "Procesando",
+                              bg: "#DBEAFE",
+                              color: "#1D4ED8",
+                            }
+                          : normalizedStatus === "shipped"
+                            ? {
+                                label: "Enviada",
+                                bg: "#E0E7FF",
+                                color: "#4338CA",
+                              }
+                            : normalizedStatus === "delivered"
+                              ? {
+                                  label: "Entregada",
+                                  bg: "#DCFCE7",
+                                  color: "#166534",
+                                }
+                              : normalizedStatus === "cancelled"
+                                ? {
+                                    label: "Cancelada",
+                                    bg: "#FEE2E2",
+                                    color: "#B91C1C",
+                                  }
+                                : {
+                                    label: order.status || "Sin estado",
+                                    bg: "#F3F4F6",
+                                    color: "#374151",
+                                  };
+
+                  return (
+                    <View
+                      key={String(order.order_id || order._id)}
                       style={{
-                        fontWeight: "700",
-                        color: colors.text,
-                        marginBottom: 4,
+                        borderWidth: 1,
+                        borderColor: colors.border,
+                        borderRadius: radius.lg,
+                        padding: spacing.md,
+                        marginBottom: 12,
+                        backgroundColor: colors.background,
                       }}
                     >
-                      Orden #{String(order.order_id).slice(-6)}
-                    </Text>
+                      <View
+                        style={{
+                          flexDirection: "row",
+                          justifyContent: "space-between",
+                          alignItems: "flex-start",
+                          marginBottom: 10,
+                        }}
+                      >
+                        <View style={{ flex: 1, paddingRight: 10 }}>
+                          <Text
+                            style={{
+                              fontWeight: "800",
+                              color: colors.text,
+                              fontSize: 16,
+                              marginBottom: 4,
+                            }}
+                          >
+                            Orden #
+                            {String(order.order_id || order._id || "").slice(
+                              -6,
+                            )}
+                          </Text>
 
-                    <Text style={{ color: colors.muted, marginBottom: 4 }}>
-                      Estado: {order.status || "—"}
-                    </Text>
+                          <Text
+                            style={{
+                              color: colors.muted,
+                              fontSize: 13,
+                            }}
+                          >
+                            {order.items_count ?? order.items?.length ?? 0}{" "}
+                            ítem(s) · ${order.vendor_total ?? order.total ?? 0}
+                          </Text>
+                        </View>
 
-                    <Text style={{ color: colors.muted, marginBottom: 4 }}>
-                      Total vendor: ${order.vendor_total ?? 0}
-                    </Text>
+                        <View
+                          style={{
+                            backgroundColor: statusMeta.bg,
+                            paddingHorizontal: 10,
+                            paddingVertical: 6,
+                            borderRadius: 999,
+                          }}
+                        >
+                          <Text
+                            style={{
+                              color: statusMeta.color,
+                              fontWeight: "700",
+                              fontSize: 12,
+                            }}
+                          >
+                            {statusMeta.label}
+                          </Text>
+                        </View>
+                      </View>
 
-                    <Text style={{ color: colors.muted }}>
-                      Ítems: {order.items_count ?? 0}
-                    </Text>
-                  </View>
-                ))
+                      <View
+                        style={{
+                          alignItems: "flex-end",
+                        }}
+                      >
+                        <Text
+                          onPress={() =>
+                            navigation.navigate("OrderDetail", {
+                              orderId: order.order_id || order._id,
+                            })
+                          }
+                          style={{
+                            color: colors.text,
+                            fontWeight: "700",
+                            fontSize: 14,
+                          }}
+                        >
+                          Ver detalle →
+                        </Text>
+                      </View>
+                    </View>
+                  );
+                })
               )}
             </View>
 
@@ -355,7 +500,6 @@ export default function VendorDashboardScreen() {
                   fontSize: 18,
                   fontWeight: "700",
                   color: colors.text,
-                  marginBottom: 12,
                 }}
               >
                 Top productos

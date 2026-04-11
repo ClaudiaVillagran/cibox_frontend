@@ -1,6 +1,4 @@
 import { NavigationContainer } from "@react-navigation/native";
-import useAuthStore from "../store/authStore";
-import AuthStack from "./AuthStack";
 import AppStack from "./AppStack";
 
 const linking = {
@@ -13,11 +11,9 @@ const linking = {
   },
 };
 export default function RootNavigation() {
-  const { token } = useAuthStore();
-
   return (
     <NavigationContainer linking={linking}>
-      {token ? <AppStack /> : <AuthStack />}
+      <AppStack />
     </NavigationContainer>
   );
 }

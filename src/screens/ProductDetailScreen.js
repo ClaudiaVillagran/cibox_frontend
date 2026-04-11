@@ -13,7 +13,7 @@ import ScreenContainer from "../components/ScreenContainer";
 import AppButton from "../components/AppButton";
 import ProductRowSection from "../components/ProductRowSection";
 import { colors, radius, spacing } from "../constants/theme";
-import { addItemToCustomBox } from "../services/customBoxService";
+import { addItemToCart } from "../services/cartService";
 import { addItemToPantry } from "../services/pantryService";
 import {
   addFavorite,
@@ -29,10 +29,12 @@ import {
 } from "../services/reviewService";
 import { getProductById, getRelatedProducts } from "../services/productService";
 import useCartStore from "../store/cartStore";
+import useAuthStore from "../store/authStore";
 import { showAppAlert } from "../utils/appAlerts";
 
 export default function ProductDetailScreen({ route, navigation }) {
   const { productId } = route.params;
+  const { token } = useAuthStore();
 
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -72,6 +74,14 @@ export default function ProductDetailScreen({ route, navigation }) {
     borderRadius: radius.md,
     padding: 12,
     backgroundColor: colors.surface,
+  };
+
+  const requireAuth = () => {
+    showAppAlert(
+      "Inicia sesión",
+      "Debes iniciar sesión para usar esta función",
+    );
+    navigation.navigate("Auth");
   };
 
   const fetchProduct = async () => {
@@ -115,12 +125,20 @@ export default function ProductDetailScreen({ route, navigation }) {
       setReviews(Array.isArray(items) ? items : []);
     } catch (error) {
       console.log("GET REVIEWS ERROR:", error?.response?.data || error.message);
+      setReviews([]);
     } finally {
       setReviewsLoading(false);
     }
   };
 
   const fetchMyReview = async () => {
+    if (!token) {
+      setMyReview(null);
+      setReviewRating("5");
+      setReviewComment("");
+      return;
+    }
+
     try {
       const data = await getMyReviewByProduct(productId);
       const item =
@@ -141,9 +159,12 @@ export default function ProductDetailScreen({ route, navigation }) {
         error?.response?.data || error.message,
       );
       setMyReview(null);
+      setReviewRating("5");
+      setReviewComment("");
     }
   };
 
+  // ✅ ahora sí corre con o sin token
   const fetchFavoriteStatus = async () => {
     try {
       const data = await checkFavorite(productId);
@@ -155,6 +176,7 @@ export default function ProductDetailScreen({ route, navigation }) {
         "CHECK FAVORITE ERROR:",
         error?.response?.data || error.message,
       );
+      setIsFavorite(false);
     }
   };
 
@@ -164,7 +186,7 @@ export default function ProductDetailScreen({ route, navigation }) {
     try {
       setAdding(true);
 
-      await addItemToCustomBox({
+      await addItemToCart({
         productId: product._id,
         quantity: selectedQuantity,
       });
@@ -183,6 +205,11 @@ export default function ProductDetailScreen({ route, navigation }) {
   };
 
   const handleAddToPantry = async () => {
+    if (!token) {
+      requireAuth();
+      return;
+    }
+
     if (!product?._id) return;
 
     try {
@@ -209,6 +236,7 @@ export default function ProductDetailScreen({ route, navigation }) {
     }
   };
 
+  // ✅ favoritos libres
   const handleToggleFavorite = async () => {
     try {
       setFavoriteLoading(true);
@@ -232,6 +260,11 @@ export default function ProductDetailScreen({ route, navigation }) {
   };
 
   const handleSubmitReview = async () => {
+    if (!token) {
+      requireAuth();
+      return;
+    }
+
     const ratingNumber = Number(reviewRating);
 
     if (!ratingNumber || ratingNumber < 1 || ratingNumber > 5) {
@@ -275,6 +308,11 @@ export default function ProductDetailScreen({ route, navigation }) {
   };
 
   const handleDeleteReview = async () => {
+    if (!token) {
+      requireAuth();
+      return;
+    }
+
     try {
       setReviewSubmitting(true);
       await deleteMyReview(productId);
@@ -312,11 +350,18 @@ export default function ProductDetailScreen({ route, navigation }) {
 
   useEffect(() => {
     fetchProduct();
-    fetchFavoriteStatus();
-    fetchMyReview();
     fetchReviews();
     fetchRelatedProducts();
-  }, []);
+  }, [productId]);
+
+  useEffect(() => {
+    fetchFavoriteStatus();
+  }, [productId]);
+
+  // ✅ mi reseña solo con token
+  useEffect(() => {
+    fetchMyReview();
+  }, [productId, token]);
 
   useEffect(() => {
     if (product?.pricing?.tiers?.length) {
@@ -415,6 +460,7 @@ export default function ProductDetailScreen({ route, navigation }) {
               />
             </View>
           ) : null}
+
           <Text
             style={{
               fontSize: 28,
@@ -512,7 +558,7 @@ export default function ProductDetailScreen({ route, navigation }) {
           </Text>
 
           <Text style={{ color: colors.muted, marginBottom: 18 }}>
-            Rating promedio: {product?.average_rating ?? 0} · Reseñas:{" "}
+            Puntuación promedio: {product?.average_rating ?? 0} · Reseñas:{" "}
             {product?.reviews_count ?? 0}
           </Text>
 
@@ -557,11 +603,7 @@ export default function ProductDetailScreen({ route, navigation }) {
                 Opciones de precio
               </Text>
 
-              <View
-                style={{
-                  marginBottom: 16,
-                }}
-              >
+              <View style={{ marginBottom: 16 }}>
                 <Text
                   style={{
                     color: colors.muted,
@@ -733,7 +775,7 @@ export default function ProductDetailScreen({ route, navigation }) {
                         }}
                       >
                         {tier.min_qty > 1
-                          ? `${tier.label || "Pack"} · ${tier.min_qty}+ unidades`
+                          ? `Pack · ${tier.min_qty} unidades`
                           : tier.label || "Unidad"}
                       </Text>
 
@@ -761,8 +803,7 @@ export default function ProductDetailScreen({ route, navigation }) {
                               marginTop: 4,
                             }}
                           >
-                            Ahorras ${savingsAtMinimum} al pedir el mínimo de
-                            este tier
+                            Ahorras ${savingsAtMinimum}
                           </Text>
                         ) : null}
                       </>
@@ -818,63 +859,79 @@ export default function ProductDetailScreen({ route, navigation }) {
             Tu reseña
           </Text>
 
-          <Text
-            style={{ marginBottom: 6, fontWeight: "600", color: colors.text }}
-          >
-            Rating (1 a 5)
-          </Text>
+          {!token ? (
+            <Text style={{ color: colors.muted }}>
+              Inicia sesión para crear tu reseña.
+            </Text>
+          ) : (
+            <>
+              <Text
+                style={{
+                  marginBottom: 6,
+                  fontWeight: "600",
+                  color: colors.text,
+                }}
+              >
+                Puntuación (1 a 5)
+              </Text>
 
-          <TextInput
-            value={reviewRating}
-            onChangeText={setReviewRating}
-            keyboardType="numeric"
-            placeholder="5"
-            style={{
-              ...inputStyle,
-              marginBottom: 14,
-            }}
-          />
+              <TextInput
+                value={reviewRating}
+                onChangeText={setReviewRating}
+                keyboardType="numeric"
+                placeholder="5"
+                style={{
+                  ...inputStyle,
+                  marginBottom: 14,
+                }}
+              />
 
-          <Text
-            style={{ marginBottom: 6, fontWeight: "600", color: colors.text }}
-          >
-            Comentario
-          </Text>
+              <Text
+                style={{
+                  marginBottom: 6,
+                  fontWeight: "600",
+                  color: colors.text,
+                }}
+              >
+                Comentario
+              </Text>
 
-          <TextInput
-            value={reviewComment}
-            onChangeText={setReviewComment}
-            placeholder="Escribe tu reseña"
-            multiline
-            style={{
-              ...inputStyle,
-              minHeight: 110,
-              textAlignVertical: "top",
-              marginBottom: 14,
-            }}
-          />
+              <TextInput
+                value={reviewComment}
+                onChangeText={setReviewComment}
+                placeholder="Escribe tu reseña"
+                multiline
+                style={{
+                  ...inputStyle,
+                  minHeight: 110,
+                  textAlignVertical: "top",
+                  marginBottom: 14,
+                }}
+              />
 
-          <AppButton
-            title={
-              reviewSubmitting
-                ? "Guardando..."
-                : myReview?._id
-                  ? "Actualizar reseña"
-                  : "Crear reseña"
-            }
-            onPress={handleSubmitReview}
-            disabled={reviewSubmitting}
-          />
+              <AppButton
+                title={
+                  reviewSubmitting
+                    ? "Guardando..."
+                    : myReview?._id
+                      ? "Actualizar reseña"
+                      : "Crear reseña"
+                }
+                onPress={handleSubmitReview}
+                disabled={reviewSubmitting}
+              />
 
-          {myReview?._id ? (
-            <AppButton
-              title="Eliminar reseña"
-              onPress={handleDeleteReview}
-              disabled={reviewSubmitting}
-              variant="secondary"
-              style={{ marginTop: 10 }}
-            />
-          ) : null}
+              {myReview?._id ? (
+                <AppButton
+                  title="Eliminar reseña"
+                  onPress={handleDeleteReview}
+                  disabled={reviewSubmitting}
+                  variant="secondary"
+                  style={{ marginTop: 10 }}
+                />
+              ) : null}
+            </>
+          )}
         </View>
 
         <View style={{ height: spacing.md }} />

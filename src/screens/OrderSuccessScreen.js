@@ -4,7 +4,7 @@ import AppButton from "../components/AppButton";
 import { colors, spacing } from "../constants/theme";
 
 export default function OrderSuccessScreen({ route, navigation }) {
-  const { orderId } = route.params || {};
+  const { orderId, guestEmail } = route.params || {};
 
   return (
     <ScreenContainer maxWidth={720}>
@@ -53,17 +53,31 @@ export default function OrderSuccessScreen({ route, navigation }) {
             style={{
               color: colors.text,
               fontWeight: "700",
-              marginBottom: 20,
+              marginBottom: 8,
             }}
           >
             Orden: {orderId}
           </Text>
         ) : null}
 
+        {guestEmail ? (
+          <Text
+            style={{
+              color: colors.muted,
+              marginBottom: 20,
+              textAlign: "center",
+            }}
+          >
+            Correo asociado: {guestEmail}
+          </Text>
+        ) : (
+          <View style={{ marginBottom: 20 }} />
+        )}
+
         <AppButton
           title="Ver mi orden"
           onPress={() =>
-            navigation.replace("OrderDetail", { orderId })
+            navigation.replace("OrderDetail", { orderId, guestEmail })
           }
           style={{ marginBottom: 12 }}
         />
