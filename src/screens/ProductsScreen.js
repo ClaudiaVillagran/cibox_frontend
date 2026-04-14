@@ -1,8 +1,9 @@
-import { useCallback, useEffect, useLayoutEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
   FlatList,
+  Platform,
   Pressable,
   Text,
   View,
@@ -20,19 +21,24 @@ import { addItemToCart } from "../services/cartService";
 import useCartStore from "../store/cartStore";
 import { showAppAlert } from "../utils/appAlerts";
 
-export default function ProductsScreen({ navigation }) {
+export default function ProductsScreen({ navigation, route }) {
   const { width } = useWindowDimensions();
   const isWide = width >= 900;
   const numColumns = isWide ? 2 : 1;
+  const isWeb = Platform.OS === "web";
 
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const [search, setSearch] = useState("");
-  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [search, setSearch] = useState(route?.params?.search || "");
+  const [debouncedSearch, setDebouncedSearch] = useState(
+    route?.params?.search || ""
+  );
 
   const [categories, setCategories] = useState([]);
-  const [selectedCategory, setSelectedCategory] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState(
+    route?.params?.category || ""
+  );
   const [sort, setSort] = useState("");
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
@@ -125,10 +131,7 @@ export default function ProductsScreen({ navigation }) {
       await loadCartSummary();
       showAppAlert("Éxito", "Producto agregado al carrito");
     } catch (error) {
-      console.log(
-        "ADD FROM CARD ERROR:",
-        error?.response?.data || error.message
-      );
+      console.log("ADD FROM CARD ERROR:", error?.response?.data || error.message);
       Alert.alert(
         "Error",
         error?.response?.data?.message || "No se pudo agregar al carrito"
@@ -149,6 +152,8 @@ export default function ProductsScreen({ navigation }) {
   };
 
   useLayoutEffect(() => {
+    if (isWeb) return;
+
     navigation.setOptions({
       headerRight: () => (
         <Pressable
@@ -194,12 +199,25 @@ export default function ProductsScreen({ navigation }) {
         </Pressable>
       ),
     });
-  }, [navigation, cartCount]);
+  }, [navigation, cartCount, isWeb]);
 
   useEffect(() => {
     loadCartSummary();
     fetchCategories();
   }, []);
+
+  useEffect(() => {
+    if (route?.params?.search !== undefined) {
+      setSearch(route.params.search || "");
+      setDebouncedSearch(route.params.search || "");
+    }
+  }, [route?.params?.search]);
+
+  useEffect(() => {
+    if (route?.params?.category !== undefined) {
+      setSelectedCategory(route.params.category || "");
+    }
+  }, [route?.params?.category]);
 
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -285,13 +303,16 @@ export default function ProductsScreen({ navigation }) {
                 Explora el catálogo completo de CIBOX y encuentra lo que necesitas.
               </Text>
 
-              <SearchInput
-                value={search}
-                onChange={setSearch}
-                placeholder="Buscar productos..."
-              />
-
-              <View style={{ height: 12 }} />
+              {!isWeb ? (
+                <>
+                  <SearchInput
+                    value={search}
+                    onChange={setSearch}
+                    placeholder="Buscar productos..."
+                  />
+                  <View style={{ height: 12 }} />
+                </>
+              ) : null}
 
               <FilterBar
                 categories={categories}

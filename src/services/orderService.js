@@ -1,3 +1,4 @@
+import { Platform } from "react-native";
 import client from "../api/client";
 
 export const createOrderFromCart = async (payload) => {
@@ -8,7 +9,7 @@ export const createOrderFromCart = async (payload) => {
 export const createWebpayTransaction = async ({ orderId, platform }) => {
   const response = await client.post("/payments/webpay/create", {
     orderId,
-    platform,
+    Platform,
   });
 
   const data = response?.data || {};

@@ -1,8 +1,10 @@
-import { useCallback, useEffect, useLayoutEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
   FlatList,
+  Image,
+  Platform,
   Pressable,
   Text,
   View,
@@ -14,7 +16,10 @@ import ScreenContainer from "../components/ScreenContainer";
 import { colors, spacing } from "../constants/theme";
 import SearchInput from "../components/SearchInput";
 import FilterBar from "../components/FilterBar";
-import { getCategories } from "../services/categoryService";
+import {
+  getCategories,
+  getFeaturedCategories,
+} from "../services/categoryService";
 import ProductRowSection from "../components/ProductRowSection";
 import {
   getFeaturedProducts,
@@ -25,8 +30,11 @@ import { addItemToCart } from "../services/cartService";
 import useCartStore from "../store/cartStore";
 import { showAppAlert } from "../utils/appAlerts";
 import useAuthStore from "../store/authStore";
+
 export default function HomeScreen({ navigation }) {
   const { token } = useAuthStore();
+  const isWeb = Platform.OS === "web";
+  const [featuredCategories, setFeaturedCategories] = useState([]);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -99,7 +107,18 @@ export default function HomeScreen({ navigation }) {
       setSectionsLoading(false);
     }
   };
-
+  const fetchFeaturedCategories = async () => {
+    try {
+      const data = await getFeaturedCategories();
+      console.log(data);
+      setFeaturedCategories(Array.isArray(data) ? data : []);
+    } catch (error) {
+      console.log("ERROR FEATURED CATEGORIES:", error);
+    }
+  };
+  useEffect(() => {
+    fetchFeaturedCategories();
+  }, []);
   const fetchProducts = async ({ nextPage = 1, append = false } = {}) => {
     try {
       if (append) {
@@ -188,6 +207,8 @@ export default function HomeScreen({ navigation }) {
   };
 
   useLayoutEffect(() => {
+    if (isWeb) return;
+
     navigation.setOptions({
       headerRight: () => (
         <View style={{ flexDirection: "row", alignItems: "center" }}>
@@ -254,7 +275,7 @@ export default function HomeScreen({ navigation }) {
         </View>
       ),
     });
-  }, [navigation, cartCount]);
+  }, [navigation, cartCount, isWeb]);
 
   useEffect(() => {
     loadCartSummary();
@@ -293,14 +314,33 @@ export default function HomeScreen({ navigation }) {
   }
 
   return (
-    <ScreenContainer maxWidth={1100} padded={false}>
+    <ScreenContainer maxWidth={1100} padded>
       <FlatList
         key={numColumns}
-        data={products}
+        data={showSections ? [] : products}
         numColumns={numColumns}
         keyExtractor={(item) => item._id}
+        renderItem={({ item }) => (
+          <View
+            style={{
+              flex: numColumns > 1 ? 1 : undefined,
+              marginBottom: spacing.md,
+            }}
+          >
+            <ProductCard
+              product={item}
+              onPress={() =>
+                navigation.navigate("ProductDetail", {
+                  productId: item._id,
+                })
+              }
+              onAddToCart={() => handleAddFromCard(item)}
+              addingToCart={addingProductId === item._id}
+            />
+          </View>
+        )}
         columnWrapperStyle={
-          numColumns > 1
+          !showSections && numColumns > 1
             ? {
                 paddingHorizontal: spacing.md,
                 gap: spacing.md,
@@ -311,12 +351,14 @@ export default function HomeScreen({ navigation }) {
         contentContainerStyle={{
           paddingTop: spacing.sm,
           paddingBottom: spacing.xl,
-          paddingHorizontal: numColumns === 1 ? spacing.md : 0,
+          paddingHorizontal: !showSections && numColumns === 1 ? spacing.md : 0,
           backgroundColor: colors.background,
         }}
-        onEndReached={handleLoadMore}
+        onEndReached={!showSections ? handleLoadMore : undefined}
         onEndReachedThreshold={0.4}
-        ListFooterComponent={renderFooter}
+        ListFooterComponent={
+          !showSections ? renderFooter : <View style={{ height: spacing.lg }} />
+        }
         ListHeaderComponent={
           <View style={{ marginBottom: spacing.md }}>
             <View
@@ -361,49 +403,98 @@ export default function HomeScreen({ navigation }) {
                 </Text>
               </View>
 
-              <Text
-                style={{
-                  fontSize: 30,
-                  fontWeight: "900",
-                  color: colors.text,
-                  marginBottom: 4,
-                  letterSpacing: -0.5,
-                }}
-              >
-                Productos
-              </Text>
+              {!isWeb ? (
+                <>
+                  <SearchInput
+                    value={search}
+                    onChange={setSearch}
+                    placeholder="Buscar productos..."
+                  />
 
-              <Text
-                style={{
-                  color: colors.muted,
-                  fontSize: 14,
-                  marginBottom: 14,
-                }}
-              >
-                Tu supermercado digital para comprar mejor y ahorrar más.
-              </Text>
+                  <View style={{ height: 12 }} />
 
-              <SearchInput
-                value={search}
-                onChange={setSearch}
-                placeholder="Buscar productos..."
-              />
-
-              <View style={{ height: 12 }} />
-
-              <FilterBar
-                categories={categories}
-                selectedCategory={selectedCategory}
-                onSelectCategory={setSelectedCategory}
-                sort={sort}
-                onChangeSort={setSort}
-                minPrice={minPrice}
-                maxPrice={maxPrice}
-                onChangeMinPrice={setMinPrice}
-                onChangeMaxPrice={setMaxPrice}
-                onClear={handleClearFilters}
-              />
+                  <FilterBar
+                    categories={categories}
+                    selectedCategory={selectedCategory}
+                    onSelectCategory={setSelectedCategory}
+                    sort={sort}
+                    onChangeSort={setSort}
+                    minPrice={minPrice}
+                    maxPrice={maxPrice}
+                    onChangeMinPrice={setMinPrice}
+                    onChangeMaxPrice={setMaxPrice}
+                    onClear={handleClearFilters}
+                  />
+                </>
+              ) : null}
             </View>
+
+            {!!selectedCategory && (
+              <View
+                style={{
+                  marginBottom: spacing.lg,
+                  backgroundColor: colors.surface,
+                  borderRadius: 22,
+                  padding: spacing.md,
+                  borderWidth: 1,
+                  borderColor: "#ececec",
+                }}
+              >
+                <View
+                  style={{
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    marginBottom: 14,
+                    gap: 12,
+                  }}
+                >
+                  <View style={{ flex: 1 }}>
+                    <Text
+                      style={{
+                        fontSize: 24,
+                        fontWeight: "800",
+                        color: colors.text,
+                      }}
+                    >
+                      Productos de la categoría
+                    </Text>
+
+                    <Text
+                      style={{
+                        marginTop: 4,
+                        color: colors.muted,
+                        fontSize: 14,
+                      }}
+                    >
+                      Explora los productos disponibles en esta categoría.
+                    </Text>
+                  </View>
+
+                  <Pressable
+                    onPress={handleClearFilters}
+                    style={{
+                      paddingHorizontal: 14,
+                      paddingVertical: 10,
+                      borderRadius: 12,
+                      backgroundColor: "#f3f6ee",
+                      borderWidth: 1,
+                      borderColor: "#dbe7cf",
+                    }}
+                  >
+                    <Text
+                      style={{
+                        fontSize: 13,
+                        fontWeight: "800",
+                        color: colors.text,
+                      }}
+                    >
+                      Limpiar filtro
+                    </Text>
+                  </Pressable>
+                </View>
+              </View>
+            )}
 
             {showSections && (
               <View style={{ marginBottom: spacing.md }}>
@@ -462,6 +553,75 @@ export default function HomeScreen({ navigation }) {
                         addingProductId={addingProductId}
                       />
                     </View>
+
+                    {featuredCategories.length > 0 && (
+                      <View style={{ marginBottom: spacing.lg }}>
+                        <Text
+                          style={{
+                            fontSize: 24,
+                            fontWeight: "800",
+                            color: colors.text,
+                            marginBottom: 12,
+                            paddingHorizontal: 2,
+                          }}
+                        >
+                          Categorías destacadas
+                        </Text>
+
+                        <FlatList
+                          data={featuredCategories}
+                          horizontal
+                          showsHorizontalScrollIndicator={false}
+                          keyExtractor={(item) => item._id}
+                          contentContainerStyle={{ paddingRight: spacing.md }}
+                          renderItem={({ item }) => (
+                            <Pressable
+                              onPress={() =>
+                                navigation.navigate("Products", {
+                                  search: "",
+                                  category: item._id,
+                                })
+                              }
+                              style={{
+                                width: 220,
+                                marginRight: spacing.md,
+                              }}
+                            >
+                              <View
+                                style={{
+                                  backgroundColor: colors.surface,
+                                  borderRadius: 20,
+                                  overflow: "hidden",
+                                  borderWidth: 1,
+                                  borderColor: "#eee",
+                                }}
+                              >
+                                <Image
+                                  source={{ uri: item.image }}
+                                  style={{
+                                    width: "100%",
+                                    height: 120,
+                                  }}
+                                  resizeMode="cover"
+                                />
+
+                                <View style={{ padding: 12 }}>
+                                  <Text
+                                    style={{
+                                      fontWeight: "800",
+                                      fontSize: 15,
+                                      color: colors.text,
+                                    }}
+                                  >
+                                    {item.name}
+                                  </Text>
+                                </View>
+                              </View>
+                            </Pressable>
+                          )}
+                        />
+                      </View>
+                    )}
 
                     <View
                       style={{
@@ -545,39 +705,6 @@ export default function HomeScreen({ navigation }) {
                         </Pressable>
                       </View>
 
-                      <View
-                        style={{
-                          borderWidth: 1,
-                          borderColor: "#cfe3c4",
-                          backgroundColor: "#fbfdf9",
-                          borderRadius: 18,
-                          paddingHorizontal: 16,
-                          paddingVertical: 14,
-                          marginBottom: spacing.md,
-                        }}
-                      >
-                        <Text
-                          style={{
-                            color: colors.text,
-                            fontSize: 15,
-                            fontWeight: "800",
-                            marginBottom: 4,
-                          }}
-                        >
-                          Compra al detalle
-                        </Text>
-
-                        <Text
-                          style={{
-                            color: colors.muted,
-                            fontSize: 14,
-                          }}
-                        >
-                          Agrega productos directos al carrito y revisa el
-                          catálogo completo desde esta sección.
-                        </Text>
-                      </View>
-
                       <ProductRowSection
                         title=""
                         products={products.slice(0, 10)}
@@ -590,82 +717,40 @@ export default function HomeScreen({ navigation }) {
                         addingProductId={addingProductId}
                       />
                     </View>
-
-                    {token && recommendedProducts.length > 0 ? (
-                      <View style={{ marginBottom: spacing.md }}>
-                        <View
-                          style={{
-                            flexDirection: "row",
-                            alignItems: "center",
-                            marginBottom: 10,
-                            paddingHorizontal: 2,
-                          }}
-                        >
-                          <View
-                            style={{
-                              width: 8,
-                              height: 8,
-                              borderRadius: 4,
-                              backgroundColor: colors.primary,
-                              marginRight: 8,
-                            }}
-                          />
-                          <Text
-                            style={{
-                              fontSize: 24,
-                              fontWeight: "800",
-                              color: colors.text,
-                            }}
-                          >
-                            Recomendados para ti
-                          </Text>
-                        </View>
-
-                        <ProductRowSection
-                          title=""
-                          products={recommendedProducts}
-                          onPressProduct={(item) =>
-                            navigation.navigate("ProductDetail", {
-                              productId: item._id,
-                            })
-                          }
-                          onAddToCart={handleAddFromCard}
-                          addingProductId={addingProductId}
-                        />
-                      </View>
-                    ) : null}
                   </>
                 )}
               </View>
             )}
           </View>
         }
-       
         ListEmptyComponent={
-          <View
-            style={{
-              backgroundColor: colors.surface,
-              borderRadius: 18,
-              paddingHorizontal: spacing.md,
-              paddingVertical: spacing.xl,
-              alignItems: "center",
-            }}
-          >
-            <Text
+          !showSections ? (
+            <View
               style={{
-                fontSize: 20,
-                fontWeight: "700",
-                color: colors.text,
-                marginBottom: 8,
+                backgroundColor: colors.surface,
+                borderRadius: 18,
+                paddingHorizontal: spacing.md,
+                paddingVertical: spacing.xl,
+                alignItems: "center",
+                marginHorizontal: spacing.md,
               }}
             >
-              No encontramos productos
-            </Text>
+              <Text
+                style={{
+                  fontSize: 20,
+                  fontWeight: "700",
+                  color: colors.text,
+                  marginBottom: 8,
+                }}
+              >
+                No encontramos productos
+              </Text>
 
-            <Text style={{ color: colors.muted, textAlign: "center" }}>
-              Prueba cambiando la búsqueda o limpiando los filtros.
-            </Text>
-          </View>
+              <Text style={{ color: colors.muted, textAlign: "center" }}>
+                Prueba cambiando la búsqueda o limpiando los filtros.
+              </Text>
+            </View>
+          ) : null
         }
       />
     </ScreenContainer>

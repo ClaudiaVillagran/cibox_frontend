@@ -54,6 +54,26 @@ export default function CheckoutScreen({ navigation }) {
     return number.toLocaleString("es-CL");
   };
 
+  const getBoxItems = (item) => {
+    if (Array.isArray(item?.box_items) && item.box_items.length > 0) {
+      return item.box_items;
+    }
+
+    if (Array.isArray(item?.product?.box_items) && item.product.box_items.length > 0) {
+      return item.product.box_items;
+    }
+
+    return [];
+  };
+
+  const isBoxProduct = (item) => {
+    return (
+      item?.product_type === "box" ||
+      item?.product?.product_type === "box" ||
+      getBoxItems(item).length > 0
+    );
+  };
+
   const cardStyle = {
     borderWidth: 1,
     borderColor: "#DDE7D7",
@@ -569,40 +589,94 @@ export default function CheckoutScreen({ navigation }) {
           {!items.length ? (
             <Text style={{ color: colors.muted }}>Tu carrito está vacío.</Text>
           ) : (
-            items.map((item, index) => (
-              <View
-                key={item.product_id || index}
-                style={{
-                  paddingBottom: 12,
-                  marginBottom: 12,
-                  borderBottomWidth: index === items.length - 1 ? 0 : 1,
-                  borderBottomColor: "#EEF3EA",
-                }}
-              >
-                <Text
+            items.map((item, index) => {
+              const boxItems = getBoxItems(item);
+              const showBoxContents = isBoxProduct(item) && boxItems.length > 0;
+
+              return (
+                <View
+                  key={item.product_id || index}
                   style={{
-                    fontWeight: "800",
-                    color: colors.text,
-                    marginBottom: 4,
-                    fontSize: 15,
+                    paddingBottom: 12,
+                    marginBottom: 12,
+                    borderBottomWidth: index === items.length - 1 ? 0 : 1,
+                    borderBottomColor: "#EEF3EA",
                   }}
                 >
-                  {item.name}
-                </Text>
+                  <Text
+                    style={{
+                      fontWeight: "800",
+                      color: colors.text,
+                      marginBottom: 4,
+                      fontSize: 15,
+                    }}
+                  >
+                    {item.name}
+                  </Text>
 
-                <Text style={{ color: colors.muted, marginBottom: 4 }}>
-                  Cantidad: {item.quantity}
-                </Text>
+                  <Text style={{ color: colors.muted, marginBottom: 4 }}>
+                    Cantidad: {item.quantity}
+                  </Text>
 
-                <Text style={{ color: colors.muted, marginBottom: 4 }}>
-                  Precio unitario: ${formatPrice(item.unit_price)}
-                </Text>
+                  <Text style={{ color: colors.muted, marginBottom: 4 }}>
+                    Precio unitario: ${formatPrice(item.unit_price)}
+                  </Text>
 
-                <Text style={{ color: colors.text, fontWeight: "800" }}>
-                  Subtotal: ${formatPrice(item.subtotal)}
-                </Text>
-              </View>
-            ))
+                  <Text
+                    style={{
+                      color: colors.text,
+                      fontWeight: "800",
+                      marginBottom: showBoxContents ? 10 : 0,
+                    }}
+                  >
+                    Subtotal: ${formatPrice(item.subtotal)}
+                  </Text>
+
+                  {showBoxContents ? (
+                    <View
+                      style={{
+                        marginTop: 4,
+                        backgroundColor: "#F7FAF4",
+                        borderWidth: 1,
+                        borderColor: "#E3ECD9",
+                        borderRadius: 14,
+                        padding: 10,
+                      }}
+                    >
+                      <Text
+                        style={{
+                          fontSize: 13,
+                          fontWeight: "800",
+                          color: colors.text,
+                          marginBottom: 8,
+                        }}
+                      >
+                        Contiene esta caja
+                      </Text>
+
+                      {boxItems.map((boxItem, boxIndex) => (
+                        <Text
+                          key={boxItem?.product_id || boxItem?._id || boxIndex}
+                          style={{
+                            color: colors.text,
+                            fontSize: 12,
+                            lineHeight: 18,
+                            marginBottom:
+                              boxIndex === boxItems.length - 1 ? 0 : 6,
+                          }}
+                        >
+                          {boxItem?.quantity || 1} x{" "}
+                          {boxItem?.name ||
+                            boxItem?.product_name ||
+                            boxItem?.product?.name ||
+                            "Producto"}
+                        </Text>
+                      ))}
+                    </View>
+                  ) : null}
+                </View>
+              );
+            })
           )}
 
           <View

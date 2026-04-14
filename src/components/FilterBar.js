@@ -1,21 +1,28 @@
-import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
-import { colors, radius, spacing } from '../constants/theme';
+import { Text, TextInput, Pressable, ScrollView, View } from "react-native";
+import { colors, spacing, radius } from "../constants/theme";
 
 export default function FilterBar({
   categories = [],
-  selectedCategory,
+  selectedCategory = "",
   onSelectCategory,
-  sort,
+  sort = "",
   onChangeSort,
-  minPrice,
-  maxPrice,
+  minPrice = "",
+  maxPrice = "",
   onChangeMinPrice,
   onChangeMaxPrice,
   onClear,
 }) {
-  const chipStyle = (active) => ({
+  const sortOptions = [
+    { label: "Más recientes", value: "newest" },
+    { label: "Más antiguos", value: "oldest" },
+    { label: "Precio ↑", value: "price_asc" },
+    { label: "Precio ↓", value: "price_desc" },
+  ];
+
+  const chipStyle = (active = false) => ({
+    paddingHorizontal: 16,
     paddingVertical: 10,
-    paddingHorizontal: 14,
     borderRadius: 999,
     borderWidth: 1,
     borderColor: active ? colors.primary : colors.border,
@@ -23,10 +30,10 @@ export default function FilterBar({
     marginRight: 10,
   });
 
-  const chipTextStyle = (active) => ({
-    color: active ? colors.primaryText : colors.text,
-    fontWeight: '700',
-    fontSize: 13,
+  const chipTextStyle = (active = false) => ({
+    fontSize: 14,
+    fontWeight: "700",
+    color: active ? "#fff" : colors.text,
   });
 
   return (
@@ -34,48 +41,54 @@ export default function FilterBar({
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: spacing.sm }}
+        contentContainerStyle={{ paddingRight: spacing.md }}
+        style={{ marginBottom: spacing.md }}
       >
         <Pressable
-          onPress={() => onSelectCategory('')}
-          style={chipStyle(!selectedCategory)}
+          onPress={() => onSelectCategory("")}
+          style={chipStyle(selectedCategory === "")}
         >
-          <Text style={chipTextStyle(!selectedCategory)}>Todas</Text>
+          <Text style={chipTextStyle(selectedCategory === "")}>Todas</Text>
         </Pressable>
 
         {categories.map((category) => {
-          const categoryId = category._id || category.id;
-          const active = selectedCategory === categoryId;
+          const categoryId = category?._id || "";
+          const isActive = selectedCategory === categoryId;
 
           return (
             <Pressable
-              key={categoryId}
+              key={categoryId || category?.name}
               onPress={() => onSelectCategory(categoryId)}
-              style={chipStyle(active)}
+              style={chipStyle(isActive)}
             >
-              <Text style={chipTextStyle(active)}>
-                {category.name}
-              </Text>
+              <Text style={chipTextStyle(isActive)}>{category?.name}</Text>
             </Pressable>
           );
         })}
       </ScrollView>
 
-      <View style={{ flexDirection: 'row', marginBottom: spacing.sm }}>
+      <View
+        style={{
+          flexDirection: "row",
+          gap: 10,
+          marginBottom: spacing.md,
+        }}
+      >
         <TextInput
           value={minPrice}
           onChangeText={onChangeMinPrice}
           placeholder="Min"
+          placeholderTextColor={colors.muted}
           keyboardType="numeric"
           style={{
             flex: 1,
+            height: 46,
             borderWidth: 1,
             borderColor: colors.border,
-            borderRadius: radius.md,
+            borderRadius: radius.lg,
+            paddingHorizontal: 14,
             backgroundColor: colors.surface,
-            paddingHorizontal: 12,
-            height: 44,
-            marginRight: 8,
+            color: colors.text,
           }}
         />
 
@@ -83,15 +96,17 @@ export default function FilterBar({
           value={maxPrice}
           onChangeText={onChangeMaxPrice}
           placeholder="Max"
+          placeholderTextColor={colors.muted}
           keyboardType="numeric"
           style={{
             flex: 1,
+            height: 46,
             borderWidth: 1,
             borderColor: colors.border,
-            borderRadius: radius.md,
+            borderRadius: radius.lg,
+            paddingHorizontal: 14,
             backgroundColor: colors.surface,
-            paddingHorizontal: 12,
-            height: 44,
+            color: colors.text,
           }}
         />
       </View>
@@ -99,41 +114,24 @@ export default function FilterBar({
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: spacing.sm }}
+        contentContainerStyle={{ paddingRight: spacing.md }}
       >
-        {[
-          { label: 'Más recientes', value: '' },
-          { label: 'Precio ↑', value: 'price_asc' },
-          { label: 'Precio ↓', value: 'price_desc' },
-          { label: 'Puntuación', value: 'rating_desc' },
-        ].map((item) => {
-          const active = sort === item.value;
+        {sortOptions.map((option) => {
+          const isActive = sort === option.value;
 
           return (
             <Pressable
-              key={item.label}
-              onPress={() => onChangeSort(item.value)}
-              style={chipStyle(active)}
+              key={option.value}
+              onPress={() => onChangeSort(option.value)}
+              style={chipStyle(isActive)}
             >
-              <Text style={chipTextStyle(active)}>{item.label}</Text>
+              <Text style={chipTextStyle(isActive)}>{option.label}</Text>
             </Pressable>
           );
         })}
 
-        <Pressable
-          onPress={onClear}
-          style={{
-            paddingVertical: 10,
-            paddingHorizontal: 14,
-            borderRadius: 999,
-            borderWidth: 1,
-            borderColor: colors.border,
-            backgroundColor: colors.surface,
-          }}
-        >
-          <Text style={{ color: colors.text, fontWeight: '700', fontSize: 13 }}>
-            Limpiar
-          </Text>
+        <Pressable onPress={onClear} style={chipStyle(false)}>
+          <Text style={chipTextStyle(false)}>Limpiar</Text>
         </Pressable>
       </ScrollView>
     </View>

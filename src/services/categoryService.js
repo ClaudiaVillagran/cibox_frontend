@@ -5,3 +5,8 @@ export const getCategories = async () => {
   return response.data;
 };
 
+export const getFeaturedCategories = async () => {
+  const response = await client.get('/categories/featured');
+  return response.data;
+};
+

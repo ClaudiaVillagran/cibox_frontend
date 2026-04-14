@@ -39,16 +39,84 @@ export default function CartScreen({ navigation }) {
     }
   }, [loadCartSummary]);
 
+  useEffect(() => {
+    fetchCart();
+  }, [fetchCart]);
+
+  const formatPrice = (value) => {
+    const number = Number(value || 0);
+    return number.toLocaleString("es-CL");
+  };
+
+  const recalculateCart = (items = []) => {
+    const total = items.reduce(
+      (acc, item) => acc + Number(item.subtotal || 0),
+      0,
+    );
+
+    return {
+      items,
+      total,
+    };
+  };
+
+  const getBoxItems = (item) => {
+    if (Array.isArray(item?.box_items) && item.box_items.length > 0) {
+      return item.box_items;
+    }
+
+    if (Array.isArray(item?.product?.box_items) && item.product.box_items.length > 0) {
+      return item.product.box_items;
+    }
+
+    return [];
+  };
+
+  const isBoxProduct = (item) => {
+    return (
+      item?.product_type === "box" ||
+      item?.product?.product_type === "box" ||
+      getBoxItems(item).length > 0
+    );
+  };
+
   const handleIncrease = async (item) => {
     try {
       setUpdatingId(item.product_id);
 
+      const newQuantity = Number(item.quantity || 0) + 1;
+
       await updateCartItem({
         productId: item.product_id,
-        quantity: item.quantity + 1,
+        quantity: newQuantity,
       });
 
-      await fetchCart();
+      setCart((prev) => {
+        if (!prev) return prev;
+
+        const updatedItems = (prev.items || []).map((currentItem) => {
+          if (currentItem.product_id !== item.product_id) return currentItem;
+
+          const unitPrice = Number(currentItem.unit_price || 0);
+          const subtotal = unitPrice * newQuantity;
+
+          return {
+            ...currentItem,
+            quantity: newQuantity,
+            subtotal,
+          };
+        });
+
+        const recalculated = recalculateCart(updatedItems);
+
+        return {
+          ...prev,
+          items: recalculated.items,
+          total: recalculated.total,
+        };
+      });
+
+      await loadCartSummary();
     } catch (error) {
       console.log("UPDATE ITEM ERROR:", error?.response?.data || error.message);
       showAppAlert("Error", "No se pudo actualizar la cantidad");
@@ -58,7 +126,7 @@ export default function CartScreen({ navigation }) {
   };
 
   const handleDecrease = async (item) => {
-    if (item.quantity <= 1) {
+    if (Number(item.quantity || 0) <= 1) {
       await handleRemove(item.product_id);
       return;
     }
@@ -66,12 +134,39 @@ export default function CartScreen({ navigation }) {
     try {
       setUpdatingId(item.product_id);
 
+      const newQuantity = Number(item.quantity || 0) - 1;
+
       await updateCartItem({
         productId: item.product_id,
-        quantity: item.quantity - 1,
+        quantity: newQuantity,
       });
 
-      await fetchCart();
+      setCart((prev) => {
+        if (!prev) return prev;
+
+        const updatedItems = (prev.items || []).map((currentItem) => {
+          if (currentItem.product_id !== item.product_id) return currentItem;
+
+          const unitPrice = Number(currentItem.unit_price || 0);
+          const subtotal = unitPrice * newQuantity;
+
+          return {
+            ...currentItem,
+            quantity: newQuantity,
+            subtotal,
+          };
+        });
+
+        const recalculated = recalculateCart(updatedItems);
+
+        return {
+          ...prev,
+          items: recalculated.items,
+          total: recalculated.total,
+        };
+      });
+
+      await loadCartSummary();
     } catch (error) {
       console.log("UPDATE ITEM ERROR:", error?.response?.data || error.message);
       showAppAlert("Error", "No se pudo actualizar la cantidad");
@@ -83,8 +178,26 @@ export default function CartScreen({ navigation }) {
   const handleRemove = async (productId) => {
     try {
       setUpdatingId(productId);
+
       await removeCartItem(productId);
-      await fetchCart();
+
+      setCart((prev) => {
+        if (!prev) return prev;
+
+        const updatedItems = (prev.items || []).filter(
+          (item) => item.product_id !== productId,
+        );
+
+        const recalculated = recalculateCart(updatedItems);
+
+        return {
+          ...prev,
+          items: recalculated.items,
+          total: recalculated.total,
+        };
+      });
+
+      await loadCartSummary();
     } catch (error) {
       console.log("REMOVE ITEM ERROR:", error?.response?.data || error.message);
       showAppAlert("Error", "No se pudo eliminar el producto");
@@ -93,17 +206,8 @@ export default function CartScreen({ navigation }) {
     }
   };
 
-  useEffect(() => {
-    fetchCart();
-  }, [fetchCart]);
-
   const items = cart?.items || [];
   const total = cart?.total || 0;
-
-  const formatPrice = (value) => {
-    const number = Number(value || 0);
-    return number.toLocaleString("es-CL");
-  };
 
   const cardStyle = {
     borderWidth: 1,
@@ -163,9 +267,7 @@ export default function CartScreen({ navigation }) {
 
           <AppButton
             title="Ir al catálogo"
-            onPress={() =>
-              navigation.navigate("MainTabs", { screen: "HomeTab" })
-            }
+            onPress={() => navigation.navigate("Inicio")}
           />
         </View>
       </ScreenContainer>
@@ -199,16 +301,19 @@ export default function CartScreen({ navigation }) {
         }
         renderItem={({ item }) => {
           const isUpdating = updatingId === item.product_id;
+          const boxItems = getBoxItems(item);
+          const showBoxContents = isBoxProduct(item) && boxItems.length > 0;
 
           return (
             <View
               style={{
                 ...cardStyle,
                 marginBottom: 12,
+                opacity: isUpdating ? 0.7 : 1,
               }}
             >
               <View style={{ flexDirection: "row", alignItems: "flex-start" }}>
-                {(item.thumbnail || item.image || item.product?.thumbnail) ? (
+                {item.thumbnail || item.image || item.product?.thumbnail ? (
                   <View
                     style={{
                       width: 88,
@@ -226,7 +331,9 @@ export default function CartScreen({ navigation }) {
                     <Image
                       source={{
                         uri:
-                          item.thumbnail || item.image || item.product?.thumbnail,
+                          item.thumbnail ||
+                          item.image ||
+                          item.product?.thumbnail,
                       }}
                       style={{
                         width: "100%",
@@ -272,6 +379,71 @@ export default function CartScreen({ navigation }) {
                       ${formatPrice(item.subtotal)}
                     </Text>
                   </Text>
+
+                  {showBoxContents ? (
+                    <View
+                      style={{
+                        marginTop: 12,
+                        backgroundColor: "#F7FAF4",
+                        borderWidth: 1,
+                        borderColor: "#E3ECD9",
+                        borderRadius: 14,
+                        padding: 10,
+                      }}
+                    >
+                      <Text
+                        style={{
+                          fontSize: 13,
+                          fontWeight: "800",
+                          color: colors.text,
+                          marginBottom: 8,
+                        }}
+                      >
+                        Contiene esta caja
+                      </Text>
+
+                      {boxItems.map((boxItem, index) => (
+                        <View
+                          key={boxItem?.product_id || boxItem?._id || index}
+                          style={{
+                            flexDirection: "row",
+                            justifyContent: "space-between",
+                            alignItems: "flex-start",
+                            marginBottom:
+                              index === boxItems.length - 1 ? 0 : 6,
+                            gap: 10,
+                          }}
+                        >
+                          <Text
+                            style={{
+                              flex: 1,
+                              color: colors.text,
+                              fontSize: 12,
+                              lineHeight: 18,
+                            }}
+                          >
+                            {boxItem?.quantity || 1} x{" "}
+                            {boxItem?.name ||
+                              boxItem?.product_name ||
+                              boxItem?.product?.name ||
+                              "Producto"}
+                          </Text>
+
+                          {boxItem?.unit_price ? (
+                            <Text
+                              style={{
+                                color: colors.muted,
+                                fontSize: 12,
+                                fontWeight: "700",
+                              }}
+                            >
+                              ${formatPrice(boxItem.unit_price)}
+                            </Text>
+                          ) : null}
+                        </View>
+                      ))}
+                    </View>
+                  ) : null}
                 </View>
               </View>
 
@@ -360,6 +532,7 @@ export default function CartScreen({ navigation }) {
 
                 <Pressable
                   onPress={() => handleRemove(item.product_id)}
+                  disabled={isUpdating}
                   style={{
                     paddingHorizontal: 10,
                     paddingVertical: 8,

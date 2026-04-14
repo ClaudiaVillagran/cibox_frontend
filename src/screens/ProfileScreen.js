@@ -10,7 +10,7 @@ import VendorDashboardScreen from "./VendorDashboardScreen";
 import { showAppAlert } from "../utils/appAlerts";
 
 export default function ProfileScreen({ navigation }) {
-  const { user, logout, setAuth, token } = useAuthStore();
+  const { user, logout, token } = useAuthStore();
   const { cartCount } = useCartStore();
 
   const [profile, setProfile] = useState(user || null);
@@ -63,21 +63,22 @@ export default function ProfileScreen({ navigation }) {
       const data = await getMyProfile();
       const profileData = data?.user || data?.data?.user || data?.data || data;
 
-      setProfile(profileData);
-
-      if (profileData && token) {
-        await setAuth({
-          user: profileData,
-          token,
-        });
-      }
+      setProfile(profileData || null);
     } catch (error) {
       console.log("GET PROFILE ERROR:", error?.response?.data || error.message);
+
+      if (error?.response?.status === 401) {
+        await logout();
+        navigation.replace("Auth");
+        return;
+      }
+
       showAppAlert("Error", "No se pudo cargar el perfil");
+      setProfile(user || null);
     } finally {
       setLoading(false);
     }
-  }, [setAuth, token]);
+  }, [token, logout, navigation, user]);
 
   useEffect(() => {
     loadProfile();
@@ -135,17 +136,8 @@ export default function ProfileScreen({ navigation }) {
             />
 
             <AppButton
-              title="Ver favoritos"
-              onPress={() => navigation.navigate("FavoritesTab")}
-              variant="secondary"
-              style={{ marginTop: spacing.sm }}
-            />
-
-            <AppButton
               title="Volver al catálogo"
-              onPress={() =>
-                navigation.navigate("MainTabs", { screen: "HomeTab" })
-              }
+              onPress={() => navigation.navigate("Inicio")}
               variant="secondary"
               style={{ marginTop: spacing.sm }}
             />
@@ -338,7 +330,10 @@ export default function ProfileScreen({ navigation }) {
 
           <AppButton
             title="Cerrar sesión"
-            onPress={logout}
+            onPress={async () => {
+              await logout();
+              navigation.replace("Auth");
+            }}
             variant="secondary"
           />
         </View>
