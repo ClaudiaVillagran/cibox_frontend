@@ -134,7 +134,7 @@ export default function VendorDashboardScreen() {
               </Text>
 
               <Text style={{ color: colors.muted, marginBottom: 4 }}>
-                 ID de vendedor: {vendor.id || "—"}
+                ID de vendedor: {vendor.id || "—"}
               </Text>
 
               <Text style={{ color: colors.muted, marginBottom: 4 }}>
@@ -194,11 +194,7 @@ export default function VendorDashboardScreen() {
               </View>
 
               <Pressable
-                onPress={() =>
-                  navigation.navigate("MainTabs", {
-                    screen: "OrdersTab",
-                  })
-                }
+                onPress={() => navigation.navigate("OrdersTab")}
                 style={({ pressed }) => [
                   {
                     ...cardStyle,

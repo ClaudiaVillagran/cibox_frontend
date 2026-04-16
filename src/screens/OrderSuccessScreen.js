@@ -1,10 +1,25 @@
-import { Text, View } from "react-native";
+import { useMemo } from "react";
+import { Platform, Text, View } from "react-native";
 import ScreenContainer from "../components/ScreenContainer";
 import AppButton from "../components/AppButton";
 import { colors, spacing } from "../constants/theme";
 
 export default function OrderSuccessScreen({ route, navigation }) {
-  const { orderId, guestEmail } = route.params || {};
+  const params = route.params || {};
+
+  const webQuery = useMemo(() => {
+    if (Platform.OS !== "web") return {};
+
+    const search = new URLSearchParams(window.location.search);
+
+    return {
+      orderId: search.get("orderId") || "",
+      guestEmail: search.get("guestEmail") || "",
+    };
+  }, []);
+
+  const orderId = params.orderId || webQuery.orderId;
+  const guestEmail = params.guestEmail || webQuery.guestEmail;
 
   return (
     <ScreenContainer maxWidth={720}>
@@ -80,6 +95,7 @@ export default function OrderSuccessScreen({ route, navigation }) {
             navigation.replace("OrderDetail", { orderId, guestEmail })
           }
           style={{ marginBottom: 12 }}
+          disabled={!orderId}
         />
 
         <AppButton
