@@ -11,6 +11,7 @@ export const colors = {
   danger: "#d92d20",
   success: "#4E9B27",
 };
+
 export const spacing = {
   xs: 6,
   sm: 10,
@@ -34,4 +35,10 @@ export const shadows = {
     shadowOffset: { width: 0, height: 4 },
     elevation: 3,
   },
+};
+
+export const typography = {
+  regular: "Poppins_400Regular",
+  semiBold: "Poppins_600SemiBold",
+  bold: "Poppins_700Bold",
 };

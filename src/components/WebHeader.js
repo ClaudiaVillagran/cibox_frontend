@@ -14,6 +14,7 @@ import { getCategories } from "../services/categoryService";
 import { getProducts } from "../services/productService";
 import useCartStore from "../store/cartStore";
 import useAuthStore from "../store/authStore";
+import AppText from "./AppText";
 
 export default function WebHeader() {
   const navigation = useNavigation();
@@ -248,7 +249,7 @@ export default function WebHeader() {
                 color={colors.text}
                 style={{ marginRight: 8 }}
               />
-              <Text
+              <AppText
                 style={{
                   fontSize: 14,
                   fontWeight: "800",
@@ -257,7 +258,7 @@ export default function WebHeader() {
                 }}
               >
                 Categorías
-              </Text>
+              </AppText>
               <Ionicons name="chevron-down" size={16} color={colors.text} />
             </Pressable>
 
@@ -290,7 +291,7 @@ export default function WebHeader() {
                       paddingVertical: 12,
                     }}
                   >
-                    <Text
+                    <AppText
                       style={{
                         fontSize: 14,
                         color: colors.text,
@@ -298,7 +299,7 @@ export default function WebHeader() {
                       }}
                     >
                       {category?.name}
-                    </Text>
+                    </AppText>
                   </Pressable>
                 ))}
               </View>
@@ -389,13 +390,13 @@ export default function WebHeader() {
               >
                 {searchLoading ? (
                   <View style={{ paddingVertical: 14 }}>
-                    <Text style={{ color: colors.muted }}>Buscando...</Text>
+                    <AppText style={{ color: colors.muted }}>Buscando...</AppText>
                   </View>
                 ) : (
                   <>
                     {hasCategoryResults ? (
                       <View style={{ marginBottom: 14 }}>
-                        <Text
+                        <AppText
                           style={{
                             fontSize: 12,
                             fontWeight: "800",
@@ -405,7 +406,7 @@ export default function WebHeader() {
                           }}
                         >
                           Categorías
-                        </Text>
+                        </AppText>
 
                         {searchResults.categories.map((category) => (
                           <Pressable
@@ -417,7 +418,7 @@ export default function WebHeader() {
                               borderBottomColor: "#f1f1f1",
                             }}
                           >
-                            <Text
+                            <AppText
                               style={{
                                 color: colors.text,
                                 fontSize: 14,
@@ -425,7 +426,7 @@ export default function WebHeader() {
                               }}
                             >
                               {category?.name}
-                            </Text>
+                            </AppText>
                           </Pressable>
                         ))}
                       </View>
@@ -433,7 +434,7 @@ export default function WebHeader() {
 
                     {hasProductResults ? (
                       <View>
-                        <Text
+                        <AppText
                           style={{
                             fontSize: 12,
                             fontWeight: "800",
@@ -443,7 +444,7 @@ export default function WebHeader() {
                           }}
                         >
                           Productos
-                        </Text>
+                        </AppText>
 
                         {searchResults.products.map((product) => (
                           <Pressable
@@ -491,7 +492,7 @@ export default function WebHeader() {
                               )}
                             </View>
 
-                            <Text
+                            <AppText
                               numberOfLines={1}
                               style={{
                                 flex: 1,
@@ -502,7 +503,7 @@ export default function WebHeader() {
                               }}
                             >
                               {product?.name}
-                            </Text>
+                            </AppText>
                           </Pressable>
                         ))}
 
@@ -513,7 +514,7 @@ export default function WebHeader() {
                             paddingBottom: 6,
                           }}
                         >
-                          <Text
+                          <AppText
                             style={{
                               color: colors.muted,
                               fontSize: 13,
@@ -522,16 +523,16 @@ export default function WebHeader() {
                             }}
                           >
                             Ver todos los productos
-                          </Text>
+                          </AppText>
                         </Pressable>
                       </View>
                     ) : null}
 
                     {!searchLoading && !hasAnyResults ? (
                       <View style={{ paddingVertical: 8 }}>
-                        <Text style={{ color: colors.muted }}>
+                        <AppText style={{ color: colors.muted }}>
                           No encontramos resultados.
-                        </Text>
+                        </AppText>
                       </View>
                     ) : null}
                   </>
@@ -561,7 +562,7 @@ export default function WebHeader() {
               color={colors.text}
               style={{ marginRight: 6 }}
             />
-            <Text
+            <AppText
               style={{
                 fontSize: 14,
                 fontWeight: "600",
@@ -569,7 +570,7 @@ export default function WebHeader() {
               }}
             >
               {token ? "Mi cuenta" : "Acceso/Registro"}
-            </Text>
+            </AppText>
           </Pressable>
 
           <Pressable
@@ -598,7 +599,7 @@ export default function WebHeader() {
                 paddingHorizontal: 4,
               }}
             >
-              <Text
+              <AppText
                 style={{
                   color: "#fff",
                   fontSize: 10,
@@ -606,7 +607,7 @@ export default function WebHeader() {
                 }}
               >
                 {cartCount || 0}
-              </Text>
+              </AppText>
             </View>
           </Pressable>
         </View>

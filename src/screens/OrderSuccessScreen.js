@@ -3,6 +3,7 @@ import { Platform, Text, View } from "react-native";
 import ScreenContainer from "../components/ScreenContainer";
 import AppButton from "../components/AppButton";
 import { colors, spacing } from "../constants/theme";
+import AppText from "../components/AppText";
 
 export default function OrderSuccessScreen({ route, navigation }) {
   const params = route.params || {};
@@ -31,16 +32,9 @@ export default function OrderSuccessScreen({ route, navigation }) {
           paddingVertical: spacing.xl,
         }}
       >
-        <Text
-          style={{
-            fontSize: 48,
-            marginBottom: 16,
-          }}
-        >
-          🎉
-        </Text>
+        <AppText style={{ fontSize: 48, marginBottom: 16 }}>🎉</AppText>
 
-        <Text
+        <AppText
           style={{
             fontSize: 28,
             fontWeight: "800",
@@ -50,9 +44,9 @@ export default function OrderSuccessScreen({ route, navigation }) {
           }}
         >
           ¡Compra confirmada!
-        </Text>
+        </AppText>
 
-        <Text
+        <AppText
           style={{
             color: colors.muted,
             marginBottom: 20,
@@ -60,11 +54,12 @@ export default function OrderSuccessScreen({ route, navigation }) {
             maxWidth: 400,
           }}
         >
-          Tu pedido fue creado correctamente. Te notificaremos cuando avance.
-        </Text>
+          Tu pedido fue creado correctamente. Revisa tu correo para ver el
+          resumen de la compra y futuras actualizaciones del pedido.
+        </AppText>
 
         {orderId ? (
-          <Text
+          <AppText
             style={{
               color: colors.text,
               fontWeight: "700",
@@ -72,11 +67,11 @@ export default function OrderSuccessScreen({ route, navigation }) {
             }}
           >
             Orden: {orderId}
-          </Text>
+          </AppText>
         ) : null}
 
         {guestEmail ? (
-          <Text
+          <AppText
             style={{
               color: colors.muted,
               marginBottom: 20,
@@ -84,7 +79,7 @@ export default function OrderSuccessScreen({ route, navigation }) {
             }}
           >
             Correo asociado: {guestEmail}
-          </Text>
+          </AppText>
         ) : (
           <View style={{ marginBottom: 20 }} />
         )}
@@ -104,7 +99,7 @@ export default function OrderSuccessScreen({ route, navigation }) {
           onPress={() =>
             navigation.reset({
               index: 0,
-              routes: [{ name: "MainTabs" }],
+              routes: [{ name: Platform.OS === "web" ? "Inicio" : "MainTabs" }],
             })
           }
         />

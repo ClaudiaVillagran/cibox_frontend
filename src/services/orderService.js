@@ -9,7 +9,7 @@ export const createOrderFromCart = async (payload) => {
 export const createWebpayTransaction = async ({ orderId, platform }) => {
   const response = await client.post("/payments/webpay/create", {
     orderId,
-    Platform,
+    platform,
   });
 
   const data = response?.data || {};

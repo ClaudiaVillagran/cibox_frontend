@@ -16,6 +16,7 @@ import {
 import useAuthStore from "../store/authStore";
 import { useNavigation } from "@react-navigation/native";
 import { showAppAlert } from "../utils/appAlerts";
+import AppText from "../components/AppText";
 
 export default function VendorDashboardScreen() {
   const [dashboard, setDashboard] = useState(null);
@@ -76,7 +77,7 @@ export default function VendorDashboardScreen() {
         <View
           style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
         >
-          <Text>No se pudo cargar el dashboard</Text>
+          <AppText>No se pudo cargar el dashboard</AppText>
         </View>
       </ScreenContainer>
     );
@@ -101,7 +102,7 @@ export default function VendorDashboardScreen() {
         contentContainerStyle={{ paddingBottom: spacing.xl }}
         ListHeaderComponent={
           <>
-            <Text
+            <AppText
               style={{
                 fontSize: 28,
                 fontWeight: "800",
@@ -110,19 +111,19 @@ export default function VendorDashboardScreen() {
               }}
             >
               Panel de vendedor
-            </Text>
+            </AppText>
 
-            <Text
+            <AppText
               style={{
                 color: colors.muted,
                 marginBottom: spacing.md,
               }}
             >
               Resumen de tu tienda, ventas y productos.
-            </Text>
+            </AppText>
 
             <View style={cardStyle}>
-              <Text
+              <AppText
                 style={{
                   fontSize: 20,
                   fontWeight: "800",
@@ -131,23 +132,23 @@ export default function VendorDashboardScreen() {
                 }}
               >
                 {vendor.store_name || "Mi tienda"}
-              </Text>
+              </AppText>
 
-              <Text style={{ color: colors.muted, marginBottom: 4 }}>
+              <AppText style={{ color: colors.muted, marginBottom: 4 }}>
                 ID de vendedor: {vendor.id || "—"}
-              </Text>
+              </AppText>
 
-              <Text style={{ color: colors.muted, marginBottom: 4 }}>
+              <AppText style={{ color: colors.muted, marginBottom: 4 }}>
                 Aprobado: {vendor.approved ? "Sí" : "No"}
-              </Text>
+              </AppText>
 
-              <Text style={{ color: colors.muted, marginBottom: 4 }}>
+              <AppText style={{ color: colors.muted, marginBottom: 4 }}>
                 Activo: {vendor.is_active ? "Sí" : "No"}
-              </Text>
+              </AppText>
 
-              <Text style={{ color: colors.muted }}>
+              <AppText style={{ color: colors.muted }}>
                 Puntuación: {vendor.rating ?? 0}
-              </Text>
+              </AppText>
             </View>
 
             <View
@@ -159,7 +160,7 @@ export default function VendorDashboardScreen() {
               }}
             >
               <View style={{ ...cardStyle, width: "48%" }}>
-                <Text
+                <AppText
                   style={{
                     fontSize: 12,
                     fontWeight: "700",
@@ -169,14 +170,14 @@ export default function VendorDashboardScreen() {
                   }}
                 >
                   Productos
-                </Text>
+                </AppText>
 
                 <AppButton
                   title="Gestionar productos"
                   onPress={() => navigation.navigate("VendorProducts")}
                 />
 
-                <Text
+                <AppText
                   style={{
                     fontSize: 22,
                     fontWeight: "800",
@@ -185,12 +186,12 @@ export default function VendorDashboardScreen() {
                   }}
                 >
                   {stats.total_products ?? 0}
-                </Text>
+                </AppText>
 
-                <Text style={{ color: colors.muted, marginTop: 6 }}>
+                <AppText style={{ color: colors.muted, marginTop: 6 }}>
                   {stats.active_products ?? 0} activos ·{" "}
                   {stats.inactive_products ?? 0} inactivos
-                </Text>
+                </AppText>
               </View>
 
               <Pressable
@@ -203,7 +204,7 @@ export default function VendorDashboardScreen() {
                   pressed && { opacity: 0.9 },
                 ]}
               >
-                <Text
+                <AppText
                   style={{
                     fontSize: 12,
                     fontWeight: "700",
@@ -213,9 +214,9 @@ export default function VendorDashboardScreen() {
                   }}
                 >
                   Órdenes
-                </Text>
+                </AppText>
 
-                <Text
+                <AppText
                   style={{
                     fontSize: 22,
                     fontWeight: "800",
@@ -223,13 +224,13 @@ export default function VendorDashboardScreen() {
                   }}
                 >
                   {stats.total_orders ?? 0}
-                </Text>
+                </AppText>
 
-                <Text style={{ color: colors.muted, marginTop: 6 }}>
+                <AppText style={{ color: colors.muted, marginTop: 6 }}>
                   {stats.total_units_sold ?? 0} unidades vendidas
-                </Text>
+                </AppText>
 
-                <Text
+                <AppText
                   style={{
                     marginTop: 10,
                     fontSize: 13,
@@ -238,7 +239,7 @@ export default function VendorDashboardScreen() {
                   }}
                 >
                   Ver todas →
-                </Text>
+                </AppText>
               </Pressable>
             </View>
 
@@ -251,7 +252,7 @@ export default function VendorDashboardScreen() {
               }}
             >
               <View style={{ ...cardStyle, width: "48%" }}>
-                <Text
+                <AppText
                   style={{
                     fontSize: 12,
                     fontWeight: "700",
@@ -261,9 +262,9 @@ export default function VendorDashboardScreen() {
                   }}
                 >
                   Ingresos
-                </Text>
+                </AppText>
 
-                <Text
+                <AppText
                   style={{
                     fontSize: 22,
                     fontWeight: "800",
@@ -271,11 +272,11 @@ export default function VendorDashboardScreen() {
                   }}
                 >
                   ${stats.total_revenue ?? 0}
-                </Text>
+                </AppText>
               </View>
 
               <View style={{ ...cardStyle, width: "48%" }}>
-                <Text
+                <AppText
                   style={{
                     fontSize: 12,
                     fontWeight: "700",
@@ -285,9 +286,9 @@ export default function VendorDashboardScreen() {
                   }}
                 >
                   Ticket promedio
-                </Text>
+                </AppText>
 
-                <Text
+                <AppText
                   style={{
                     fontSize: 22,
                     fontWeight: "800",
@@ -295,12 +296,12 @@ export default function VendorDashboardScreen() {
                   }}
                 >
                   ${salesSummary?.average_ticket ?? 0}
-                </Text>
+                </AppText>
               </View>
             </View>
 
             <View style={cardStyle}>
-              <Text
+              <AppText
                 style={{
                   fontSize: 18,
                   fontWeight: "700",
@@ -309,27 +310,27 @@ export default function VendorDashboardScreen() {
                 }}
               >
                 Resumen de ventas
-              </Text>
+              </AppText>
 
-              <Text style={{ color: colors.muted, marginBottom: 4 }}>
+              <AppText style={{ color: colors.muted, marginBottom: 4 }}>
                 Órdenes: {salesSummary?.total_orders ?? 0}
-              </Text>
+              </AppText>
 
-              <Text style={{ color: colors.muted, marginBottom: 4 }}>
+              <AppText style={{ color: colors.muted, marginBottom: 4 }}>
                 Unidades vendidas: {salesSummary?.total_units_sold ?? 0}
-              </Text>
+              </AppText>
 
-              <Text style={{ color: colors.muted, marginBottom: 4 }}>
+              <AppText style={{ color: colors.muted, marginBottom: 4 }}>
                 Ingresos: ${salesSummary?.total_revenue ?? 0}
-              </Text>
+              </AppText>
 
-              <Text style={{ color: colors.muted }}>
+              <AppText style={{ color: colors.muted }}>
                 Ticket promedio: ${salesSummary?.average_ticket ?? 0}
-              </Text>
+              </AppText>
             </View>
 
             <View style={cardStyle}>
-              <Text
+              <AppText
                 style={{
                   fontSize: 18,
                   fontWeight: "700",
@@ -338,12 +339,12 @@ export default function VendorDashboardScreen() {
                 }}
               >
                 Órdenes recientes
-              </Text>
+              </AppText>
 
               {!recentOrders.length ? (
-                <Text style={{ color: colors.muted }}>
+                <AppText style={{ color: colors.muted }}>
                   No hay órdenes recientes.
-                </Text>
+                </AppText>
               ) : (
                 recentOrders.map((order) => {
                   const normalizedStatus = String(
@@ -414,7 +415,7 @@ export default function VendorDashboardScreen() {
                         }}
                       >
                         <View style={{ flex: 1, paddingRight: 10 }}>
-                          <Text
+                          <AppText
                             style={{
                               fontWeight: "800",
                               color: colors.text,
@@ -426,9 +427,9 @@ export default function VendorDashboardScreen() {
                             {String(order.order_id || order._id || "").slice(
                               -6,
                             )}
-                          </Text>
+                          </AppText>
 
-                          <Text
+                          <AppText
                             style={{
                               color: colors.muted,
                               fontSize: 13,
@@ -436,7 +437,7 @@ export default function VendorDashboardScreen() {
                           >
                             {order.items_count ?? order.items?.length ?? 0}{" "}
                             ítem(s) · ${order.vendor_total ?? order.total ?? 0}
-                          </Text>
+                          </AppText>
                         </View>
 
                         <View
@@ -447,7 +448,7 @@ export default function VendorDashboardScreen() {
                             borderRadius: 999,
                           }}
                         >
-                          <Text
+                          <AppText
                             style={{
                               color: statusMeta.color,
                               fontWeight: "700",
@@ -455,7 +456,7 @@ export default function VendorDashboardScreen() {
                             }}
                           >
                             {statusMeta.label}
-                          </Text>
+                          </AppText>
                         </View>
                       </View>
 
@@ -464,7 +465,7 @@ export default function VendorDashboardScreen() {
                           alignItems: "flex-end",
                         }}
                       >
-                        <Text
+                        <AppText
                           onPress={() =>
                             navigation.navigate("OrderDetail", {
                               orderId: order.order_id || order._id,
@@ -477,7 +478,7 @@ export default function VendorDashboardScreen() {
                           }}
                         >
                           Ver detalle →
-                        </Text>
+                        </AppText>
                       </View>
                     </View>
                   );
@@ -491,7 +492,7 @@ export default function VendorDashboardScreen() {
                 marginBottom: spacing.md,
               }}
             >
-              <Text
+              <AppText
                 style={{
                   fontSize: 18,
                   fontWeight: "700",
@@ -499,13 +500,13 @@ export default function VendorDashboardScreen() {
                 }}
               >
                 Top productos
-              </Text>
+              </AppText>
             </View>
           </>
         }
         renderItem={({ item }) => (
           <View style={cardStyle}>
-            <Text
+            <AppText
               style={{
                 fontSize: 16,
                 fontWeight: "700",
@@ -514,15 +515,15 @@ export default function VendorDashboardScreen() {
               }}
             >
               {item.name}
-            </Text>
+            </AppText>
 
-            <Text style={{ color: colors.muted, marginBottom: 4 }}>
+            <AppText style={{ color: colors.muted, marginBottom: 4 }}>
               Unidades vendidas: {item.total_quantity ?? 0}
-            </Text>
+            </AppText>
 
-            <Text style={{ color: colors.muted }}>
+            <AppText style={{ color: colors.muted }}>
               Ingresos: ${item.total_revenue ?? 0}
-            </Text>
+            </AppText>
           </View>
         )}
       />

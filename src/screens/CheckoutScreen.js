@@ -27,6 +27,7 @@ import {
 } from "../utils/checkoutStorage";
 import { showAppAlert } from "../utils/appAlerts";
 import { CHILE_REGIONS } from "../constants/chileLocations";
+import AppText from "../components/AppText";
 
 const normalizeEmail = (email = "") => String(email).trim().toLowerCase();
 
@@ -116,7 +117,7 @@ function SelectField({
 
   return (
     <View style={{ marginBottom: error ? 6 : 14, zIndex }}>
-      <Text
+      <AppText
         style={{
           color: colors.text,
           fontWeight: "700",
@@ -125,7 +126,7 @@ function SelectField({
         }}
       >
         {label}
-      </Text>
+      </AppText>
 
       <View ref={containerRef} style={{ position: "relative", zIndex }}>
         <Pressable
@@ -146,16 +147,16 @@ function SelectField({
             justifyContent: "space-between",
           }}
         >
-          <Text
+          <AppText
             style={{
               color: selectedLabel ? colors.text : "#999",
               fontSize: 15,
             }}
           >
             {selectedLabel || placeholder}
-          </Text>
+          </AppText>
 
-          <Text
+          <AppText
             style={{
               color: "#6B7280",
               fontSize: 14,
@@ -163,7 +164,7 @@ function SelectField({
             }}
           >
             {open ? "▲" : "▼"}
-          </Text>
+          </AppText>
         </Pressable>
 
         {open ? (
@@ -218,7 +219,7 @@ function SelectField({
                           item.value === value ? "#F4F9EF" : "#FFFFFF",
                       }}
                     >
-                      <Text
+                      <AppText
                         style={{
                           color: colors.text,
                           fontSize: 14,
@@ -226,14 +227,14 @@ function SelectField({
                         }}
                       >
                         {item.label}
-                      </Text>
+                      </AppText>
                     </Pressable>
                   ))
                 ) : (
                   <View style={{ paddingHorizontal: 14, paddingVertical: 12 }}>
-                    <Text style={{ color: "#6B7280" }}>
+                    <AppText style={{ color: "#6B7280" }}>
                       No hay opciones disponibles
-                    </Text>
+                    </AppText>
                   </View>
                 )}
               </ScrollView>
@@ -243,7 +244,7 @@ function SelectField({
       </View>
 
       {!!error && (
-        <Text
+        <AppText
           style={{
             color: "#b91c1c",
             fontSize: 12,
@@ -251,7 +252,7 @@ function SelectField({
           }}
         >
           {error}
-        </Text>
+        </AppText>
       )}
     </View>
   );
@@ -668,7 +669,7 @@ export default function CheckoutScreen({ navigation }) {
         keyboardShouldPersistTaps="handled"
         contentContainerStyle={{ paddingBottom: spacing.xl }}
       >
-        <Text
+        <AppText
           style={{
             fontSize: 28,
             fontWeight: "800",
@@ -677,9 +678,9 @@ export default function CheckoutScreen({ navigation }) {
           }}
         >
           Checkout
-        </Text>
+        </AppText>
 
-        <Text
+        <AppText
           style={{
             color: colors.muted,
             marginBottom: spacing.md,
@@ -687,10 +688,10 @@ export default function CheckoutScreen({ navigation }) {
           }}
         >
           Completa tus datos y revisa tu compra antes de confirmar.
-        </Text>
+        </AppText>
 
         <View style={cardStyle}>
-          <Text
+          <AppText
             style={{
               fontSize: 20,
               fontWeight: "800",
@@ -699,9 +700,9 @@ export default function CheckoutScreen({ navigation }) {
             }}
           >
             Contacto
-          </Text>
+          </AppText>
 
-          <Text style={labelStyle}>Nombre completo</Text>
+          <AppText style={labelStyle}>Nombre completo</AppText>
           <TextInput
             value={fullName}
             onChangeText={(value) => {
@@ -715,10 +716,10 @@ export default function CheckoutScreen({ navigation }) {
             placeholderTextColor="#999"
           />
           {!!errors.fullName && (
-            <Text style={errorTextStyle}>{errors.fullName}</Text>
+            <AppText style={errorTextStyle}>{errors.fullName}</AppText>
           )}
 
-          <Text style={labelStyle}>RUT</Text>
+          <AppText style={labelStyle}>RUT</AppText>
           <TextInput
             value={rut}
             onChangeText={(value) => {
@@ -730,9 +731,11 @@ export default function CheckoutScreen({ navigation }) {
             style={{ ...inputStyle, marginBottom: errors.rut ? 0 : 14 }}
             placeholderTextColor="#999"
           />
-          {!!errors.rut && <Text style={errorTextStyle}>{errors.rut}</Text>}
+          {!!errors.rut && (
+            <AppText style={errorTextStyle}>{errors.rut}</AppText>
+          )}
 
-          <Text style={labelStyle}>Correo electrónico</Text>
+          <AppText style={labelStyle}>Correo electrónico</AppText>
           <TextInput
             value={email}
             onChangeText={(value) => {
@@ -745,9 +748,11 @@ export default function CheckoutScreen({ navigation }) {
             style={{ ...inputStyle, marginBottom: errors.email ? 0 : 14 }}
             placeholderTextColor="#999"
           />
-          {!!errors.email && <Text style={errorTextStyle}>{errors.email}</Text>}
+          {!!errors.email && (
+            <AppText style={errorTextStyle}>{errors.email}</AppText>
+          )}
 
-          <Text style={labelStyle}>Teléfono</Text>
+          <AppText style={labelStyle}>Teléfono</AppText>
           <TextInput
             value={phone}
             onChangeText={(value) => {
@@ -759,11 +764,13 @@ export default function CheckoutScreen({ navigation }) {
             style={inputStyle}
             placeholderTextColor="#999"
           />
-          {!!errors.phone && <Text style={errorTextStyle}>{errors.phone}</Text>}
+          {!!errors.phone && (
+            <AppText style={errorTextStyle}>{errors.phone}</AppText>
+          )}
         </View>
 
         <View style={cardStyle}>
-          <Text
+          <AppText
             style={{
               fontSize: 20,
               fontWeight: "800",
@@ -772,9 +779,9 @@ export default function CheckoutScreen({ navigation }) {
             }}
           >
             Envío
-          </Text>
+          </AppText>
 
-          <Text
+          <AppText
             style={{
               color: colors.muted,
               marginBottom: 14,
@@ -784,7 +791,7 @@ export default function CheckoutScreen({ navigation }) {
           >
             Usamos tu última dirección guardada si existe. Puedes editarla antes
             de confirmar.
-          </Text>
+          </AppText>
 
           <SelectField
             label="Región"
@@ -823,7 +830,7 @@ export default function CheckoutScreen({ navigation }) {
             zIndex={2000}
           />
 
-          <Text style={labelStyle}>Dirección</Text>
+          <AppText style={labelStyle}>Dirección</AppText>
           <TextInput
             value={address}
             onChangeText={(value) => {
@@ -837,10 +844,10 @@ export default function CheckoutScreen({ navigation }) {
             placeholderTextColor="#999"
           />
           {!!errors.address && (
-            <Text style={errorTextStyle}>{errors.address}</Text>
+            <AppText style={errorTextStyle}>{errors.address}</AppText>
           )}
 
-          <Text style={labelStyle}>Depto / Casa / Oficina</Text>
+          <AppText style={labelStyle}>Depto / Casa / Oficina</AppText>
           <TextInput
             value={addressLine2}
             onChangeText={setAddressLine2}
@@ -849,7 +856,7 @@ export default function CheckoutScreen({ navigation }) {
             placeholderTextColor="#999"
           />
 
-          <Text style={labelStyle}>Referencia</Text>
+          <AppText style={labelStyle}>Referencia</AppText>
           <TextInput
             value={reference}
             onChangeText={setReference}
@@ -860,7 +867,9 @@ export default function CheckoutScreen({ navigation }) {
 
           <View style={{ marginTop: 16 }}>
             {shippingLoading ? (
-              <Text style={{ color: colors.muted }}>Calculando envío...</Text>
+              <AppText style={{ color: colors.muted }}>
+                Calculando envío...
+              </AppText>
             ) : shippingQuote ? (
               <View
                 style={{
@@ -871,27 +880,27 @@ export default function CheckoutScreen({ navigation }) {
                   padding: 12,
                 }}
               >
-                <Text style={{ color: colors.text, fontWeight: "800" }}>
+                <AppText style={{ color: colors.text, fontWeight: "800" }}>
                   {shippingQuote.name}
-                </Text>
-                <Text
+                </AppText>
+                <AppText
                   style={{ color: "#4E9B27", fontWeight: "800", marginTop: 4 }}
                 >
                   Envío: {formatPrice(shippingQuote.amount)}
-                </Text>
+                </AppText>
               </View>
             ) : shippingError ? (
-              <Text style={{ color: "#b91c1c" }}>{shippingError}</Text>
+              <AppText style={{ color: "#b91c1c" }}>{shippingError}</AppText>
             ) : (
-              <Text style={{ color: colors.muted }}>
+              <AppText style={{ color: colors.muted }}>
                 Ingresa tu dirección para calcular el envío.
-              </Text>
+              </AppText>
             )}
           </View>
         </View>
 
         <View style={cardStyle}>
-          <Text
+          <AppText
             style={{
               fontSize: 20,
               fontWeight: "800",
@@ -900,11 +909,11 @@ export default function CheckoutScreen({ navigation }) {
             }}
           >
             Pago
-          </Text>
+          </AppText>
 
-          <Text style={{ color: colors.muted, marginBottom: 12 }}>
+          <AppText style={{ color: colors.muted, marginBottom: 12 }}>
             Selecciona cómo quieres pagar tu pedido.
-          </Text>
+          </AppText>
 
           <View style={{ gap: 10 }}>
             <Pressable
@@ -919,7 +928,7 @@ export default function CheckoutScreen({ navigation }) {
                 paddingHorizontal: 14,
               }}
             >
-              <Text
+              <AppText
                 style={{
                   color: colors.text,
                   fontWeight: "800",
@@ -927,16 +936,16 @@ export default function CheckoutScreen({ navigation }) {
                 }}
               >
                 Webpay
-              </Text>
-              <Text style={{ color: colors.muted, fontSize: 13 }}>
+              </AppText>
+              <AppText style={{ color: colors.muted, fontSize: 13 }}>
                 Pago online con tarjeta.
-              </Text>
+              </AppText>
             </Pressable>
           </View>
         </View>
 
         <View style={cardStyle}>
-          <Text
+          <AppText
             style={{
               fontSize: 20,
               fontWeight: "800",
@@ -945,9 +954,9 @@ export default function CheckoutScreen({ navigation }) {
             }}
           >
             Cupón y notas
-          </Text>
+          </AppText>
 
-          <Text style={labelStyle}>Código de cupón</Text>
+          <AppText style={labelStyle}>Código de cupón</AppText>
           <TextInput
             value={couponCode}
             onChangeText={setCouponCode}
@@ -957,7 +966,7 @@ export default function CheckoutScreen({ navigation }) {
             placeholderTextColor="#999"
           />
 
-          <Text style={labelStyle}>Notas para la entrega</Text>
+          <AppText style={labelStyle}>Notas para la entrega</AppText>
           <TextInput
             value={deliveryNotes}
             onChangeText={setDeliveryNotes}
@@ -974,7 +983,7 @@ export default function CheckoutScreen({ navigation }) {
         </View>
 
         <View style={cardStyle}>
-          <Text
+          <AppText
             style={{
               fontSize: 20,
               fontWeight: "800",
@@ -983,10 +992,12 @@ export default function CheckoutScreen({ navigation }) {
             }}
           >
             Resumen del pedido
-          </Text>
+          </AppText>
 
           {!items.length ? (
-            <Text style={{ color: colors.muted }}>Tu carrito está vacío.</Text>
+            <AppText style={{ color: colors.muted }}>
+              Tu carrito está vacío.
+            </AppText>
           ) : (
             items.map((item, index) => {
               const boxItems = getBoxItems(item);
@@ -1002,7 +1013,7 @@ export default function CheckoutScreen({ navigation }) {
                     borderBottomColor: "#EEF3EA",
                   }}
                 >
-                  <Text
+                  <AppText
                     style={{
                       fontWeight: "800",
                       color: colors.text,
@@ -1011,17 +1022,17 @@ export default function CheckoutScreen({ navigation }) {
                     }}
                   >
                     {item.name}
-                  </Text>
+                  </AppText>
 
-                  <Text style={{ color: colors.muted, marginBottom: 4 }}>
+                  <AppText style={{ color: colors.muted, marginBottom: 4 }}>
                     Cantidad: {item.quantity}
-                  </Text>
+                  </AppText>
 
-                  <Text style={{ color: colors.muted, marginBottom: 4 }}>
+                  <AppText style={{ color: colors.muted, marginBottom: 4 }}>
                     Precio unitario: {formatPrice(item.unit_price)}
-                  </Text>
+                  </AppText>
 
-                  <Text
+                  <AppText
                     style={{
                       color: colors.text,
                       fontWeight: "800",
@@ -1029,7 +1040,7 @@ export default function CheckoutScreen({ navigation }) {
                     }}
                   >
                     Subtotal: {formatPrice(item.subtotal)}
-                  </Text>
+                  </AppText>
 
                   {showBoxContents ? (
                     <View
@@ -1042,7 +1053,7 @@ export default function CheckoutScreen({ navigation }) {
                         padding: 10,
                       }}
                     >
-                      <Text
+                      <AppText
                         style={{
                           fontSize: 13,
                           fontWeight: "800",
@@ -1051,10 +1062,10 @@ export default function CheckoutScreen({ navigation }) {
                         }}
                       >
                         Contiene esta caja
-                      </Text>
+                      </AppText>
 
                       {boxItems.map((boxItem, boxIndex) => (
-                        <Text
+                        <AppText
                           key={boxItem?.product_id || boxIndex}
                           style={{
                             color: colors.text,
@@ -1066,7 +1077,7 @@ export default function CheckoutScreen({ navigation }) {
                         >
                           {boxItem?.quantity || 1} x{" "}
                           {boxItem?.name || "Producto"}
-                        </Text>
+                        </AppText>
                       ))}
                     </View>
                   ) : null}
@@ -1084,16 +1095,16 @@ export default function CheckoutScreen({ navigation }) {
               gap: 6,
             }}
           >
-            <Text style={{ color: colors.muted }}>
+            <AppText style={{ color: colors.muted }}>
               Total productos: {formatPrice(productsTotal)}
-            </Text>
+            </AppText>
 
-            <Text style={{ color: colors.muted }}>
+            <AppText style={{ color: colors.muted }}>
               Envío:{" "}
               {shippingQuote ? formatPrice(shippingAmount) : "Por calcular"}
-            </Text>
+            </AppText>
 
-            <Text
+            <AppText
               style={{
                 fontSize: 24,
                 fontWeight: "800",
@@ -1102,10 +1113,21 @@ export default function CheckoutScreen({ navigation }) {
               }}
             >
               Total final: {formatPrice(finalTotal)}
-            </Text>
+            </AppText>
           </View>
         </View>
-
+        <AppText
+          style={{
+            color: colors.muted,
+            fontSize: 13,
+            lineHeight: 18,
+            marginTop: 12,
+            marginBottom: 10,
+          }}
+        >
+          Al confirmar tu compra, te enviaremos un correo con el resumen del
+          pedido y te notificaremos por email cuando el estado cambie.
+        </AppText>
         <AppButton
           title={submitting ? "Procesando..." : "Confirmar compra"}
           onPress={handleCheckout}

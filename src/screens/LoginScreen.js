@@ -5,15 +5,18 @@ import {
   Platform,
   Pressable,
   SafeAreaView,
-  Text,
   TextInput,
   View,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { loginRequest } from "../services/authService";
+import {
+  loginRequest,
+  resendVerificationRequest,
+} from "../services/authService";
 import useAuthStore from "../store/authStore";
 import { showAppAlert } from "../utils/appAlerts";
-import { colors, spacing, radius, shadows } from "../constants/theme";
+import { colors, spacing, shadows } from "../constants/theme";
+import AppText from "../components/AppText";
 
 export default function LoginScreen({ navigation }) {
   const { setAuth } = useAuthStore();
@@ -44,11 +47,58 @@ export default function LoginScreen({ navigation }) {
       }
 
       await setAuth({ user, token });
+
+      if (Platform.OS === "web" && typeof window !== "undefined") {
+        window.history.replaceState({}, "", "/");
+      }
+
+      navigation.reset({
+        index: 0,
+        routes: [{ name: Platform.OS === "web" ? "Inicio" : "MainTabs" }],
+      });
     } catch (error) {
       console.log("LOGIN ERROR:", error?.response?.data || error.message);
+
+      const message = error?.response?.data?.message || "Login fallido";
+
+      if (message.includes("verificar tu correo")) {
+        showAppAlert(
+          "Correo no verificado",
+          "Debes verificar tu correo antes de iniciar sesión.",
+        );
+        return;
+      }
+
+      showAppAlert("Error", message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResendVerification = async () => {
+    if (!email.trim()) {
+      showAppAlert(
+        "Falta correo",
+        "Ingresa tu correo para reenviar verificación",
+      );
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      await resendVerificationRequest({
+        email: email.trim().toLowerCase(),
+      });
+
+      showAppAlert(
+        "Correo reenviado",
+        "Te enviamos nuevamente el correo de verificación.",
+      );
+    } catch (error) {
       showAppAlert(
         "Error",
-        error?.response?.data?.message || "Login fallido"
+        error?.response?.data?.message || "No se pudo reenviar el correo",
       );
     } finally {
       setLoading(false);
@@ -98,7 +148,7 @@ export default function LoginScreen({ navigation }) {
 
             <View style={{ marginTop: 28 }}>
               <View style={{ marginBottom: spacing.lg }}>
-                <Text
+                <AppText
                   style={{
                     fontSize: 30,
                     fontWeight: "900",
@@ -108,9 +158,9 @@ export default function LoginScreen({ navigation }) {
                   }}
                 >
                   Iniciar sesión
-                </Text>
+                </AppText>
 
-                <Text
+                <AppText
                   style={{
                     color: colors.muted,
                     textAlign: "center",
@@ -121,7 +171,7 @@ export default function LoginScreen({ navigation }) {
                 >
                   Accede a tu cuenta CIBOX para revisar pedidos, favoritos y tu
                   perfil.
-                </Text>
+                </AppText>
               </View>
 
               <View style={{ marginBottom: spacing.md }}>
@@ -210,7 +260,7 @@ export default function LoginScreen({ navigation }) {
                 {loading ? (
                   <ActivityIndicator color={colors.primaryText} />
                 ) : (
-                  <Text
+                  <AppText
                     style={{
                       color: colors.primaryText,
                       fontSize: 16,
@@ -219,23 +269,18 @@ export default function LoginScreen({ navigation }) {
                     }}
                   >
                     INGRESAR
-                  </Text>
+                  </AppText>
                 )}
               </Pressable>
 
               <Pressable
-                onPress={() =>
-                  showAppAlert(
-                    "Próximamente",
-                    "La recuperación de contraseña estará disponible pronto."
-                  )
-                }
+                onPress={() => navigation.navigate("ForgotPassword")}
                 style={{
                   marginTop: spacing.sm,
                   alignItems: "center",
                 }}
               >
-                <Text
+                <AppText
                   style={{
                     color: colors.muted,
                     fontSize: 12,
@@ -243,7 +288,25 @@ export default function LoginScreen({ navigation }) {
                   }}
                 >
                   ¿Olvidaste tu contraseña?
-                </Text>
+                </AppText>
+              </Pressable>
+
+              <Pressable
+                onPress={handleResendVerification}
+                style={{
+                  marginTop: spacing.sm,
+                  alignItems: "center",
+                }}
+              >
+                <AppText
+                  style={{
+                    color: colors.primary,
+                    fontSize: 12,
+                    fontWeight: "700",
+                  }}
+                >
+                  Reenviar verificación de correo
+                </AppText>
               </Pressable>
 
               <View
@@ -254,12 +317,12 @@ export default function LoginScreen({ navigation }) {
                   alignItems: "center",
                 }}
               >
-                <Text style={{ color: colors.muted, fontSize: 14 }}>
+                <AppText style={{ color: colors.muted, fontSize: 14 }}>
                   ¿No tienes cuenta?
-                </Text>
+                </AppText>
 
                 <Pressable onPress={() => navigation.navigate("Register")}>
-                  <Text
+                  <AppText
                     style={{
                       color: colors.primary,
                       fontWeight: "800",
@@ -268,99 +331,8 @@ export default function LoginScreen({ navigation }) {
                     }}
                   >
                     Regístrate
-                  </Text>
+                  </AppText>
                 </Pressable>
-              </View>
-
-              <View
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  marginTop: spacing.lg,
-                  marginBottom: spacing.md,
-                }}
-              >
-                <View
-                  style={{
-                    flex: 1,
-                    height: 1,
-                    backgroundColor: colors.border,
-                  }}
-                />
-                <Text
-                  style={{
-                    marginHorizontal: 12,
-                    color: colors.muted,
-                    fontWeight: "700",
-                  }}
-                >
-                  O
-                </Text>
-                <View
-                  style={{
-                    flex: 1,
-                    height: 1,
-                    backgroundColor: colors.border,
-                  }}
-                />
-              </View>
-
-              <Text
-                style={{
-                  textAlign: "center",
-                  color: colors.muted,
-                  fontSize: 13,
-                  marginBottom: spacing.md,
-                }}
-              >
-                Compra más rápido, guarda favoritos y revisa tus órdenes.
-              </Text>
-
-              <View
-                style={{
-                  flexDirection: "row",
-                  justifyContent: "center",
-                  gap: 14,
-                }}
-              >
-                <View
-                  style={{
-                    width: 42,
-                    height: 42,
-                    borderRadius: 21,
-                    backgroundColor: `${colors.primaryLight}55`,
-                    justifyContent: "center",
-                    alignItems: "center",
-                  }}
-                >
-                  <Ionicons name="bag-handle-outline" size={20} color={colors.primary} />
-                </View>
-
-                <View
-                  style={{
-                    width: 42,
-                    height: 42,
-                    borderRadius: 21,
-                    backgroundColor: `${colors.primaryLight}55`,
-                    justifyContent: "center",
-                    alignItems: "center",
-                  }}
-                >
-                  <Ionicons name="heart-outline" size={20} color={colors.primary} />
-                </View>
-
-                <View
-                  style={{
-                    width: 42,
-                    height: 42,
-                    borderRadius: 21,
-                    backgroundColor: `${colors.primaryLight}55`,
-                    justifyContent: "center",
-                    alignItems: "center",
-                  }}
-                >
-                  <Ionicons name="person-outline" size={20} color={colors.primary} />
-                </View>
               </View>
             </View>
           </View>

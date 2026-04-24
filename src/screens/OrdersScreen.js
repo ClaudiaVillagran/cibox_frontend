@@ -11,6 +11,7 @@ import { colors, radius, spacing, shadows } from "../constants/theme";
 import { getMyOrders } from "../services/orderService";
 import useAuthStore from "../store/authStore";
 import { showAppAlert } from "../utils/appAlerts";
+import AppText from "../components/AppText";
 
 export default function OrdersScreen({ navigation }) {
   const { token } = useAuthStore();
@@ -79,7 +80,7 @@ export default function OrdersScreen({ navigation }) {
               ...shadows.card,
             }}
           >
-            <Text
+            <AppText
               style={{
                 fontSize: 26,
                 fontWeight: "800",
@@ -89,9 +90,9 @@ export default function OrdersScreen({ navigation }) {
               }}
             >
               Inicia sesión para ver tus órdenes
-            </Text>
+            </AppText>
 
-            <Text
+            <AppText
               style={{
                 color: colors.muted,
                 textAlign: "center",
@@ -101,7 +102,7 @@ export default function OrdersScreen({ navigation }) {
             >
               Desde aquí podrás revisar el estado y detalle de tus compras
               asociadas a tu cuenta.
-            </Text>
+            </AppText>
 
             <Pressable
               onPress={() => navigation.navigate("Auth")}
@@ -113,7 +114,7 @@ export default function OrdersScreen({ navigation }) {
                 marginBottom: spacing.sm,
               }}
             >
-              <Text
+              <AppText
                 style={{
                   color: colors.primaryText,
                   fontWeight: "800",
@@ -121,7 +122,7 @@ export default function OrdersScreen({ navigation }) {
                 }}
               >
                 Iniciar sesión
-              </Text>
+              </AppText>
             </Pressable>
 
             <Pressable
@@ -134,7 +135,7 @@ export default function OrdersScreen({ navigation }) {
                 alignItems: "center",
               }}
             >
-              <Text
+              <AppText
                 style={{
                   color: colors.primary,
                   fontWeight: "700",
@@ -142,7 +143,7 @@ export default function OrdersScreen({ navigation }) {
                 }}
               >
                 Volver al catálogo
-              </Text>
+              </AppText>
             </Pressable>
           </View>
         </View>
@@ -155,9 +156,9 @@ export default function OrdersScreen({ navigation }) {
       <ScreenContainer maxWidth={720}>
         <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
           <ActivityIndicator size="large" color={colors.primary} />
-          <Text style={{ marginTop: spacing.sm, color: colors.muted }}>
+          <AppText style={{ marginTop: spacing.sm, color: colors.muted }}>
             Cargando órdenes...
-          </Text>
+          </AppText>
         </View>
       </ScreenContainer>
     );
@@ -185,7 +186,7 @@ export default function OrdersScreen({ navigation }) {
               ...shadows.card,
             }}
           >
-            <Text
+            <AppText
               style={{
                 fontSize: 24,
                 fontWeight: "800",
@@ -195,9 +196,9 @@ export default function OrdersScreen({ navigation }) {
               }}
             >
               Aún no tienes órdenes
-            </Text>
+            </AppText>
 
-            <Text
+            <AppText
               style={{
                 color: colors.muted,
                 textAlign: "center",
@@ -206,7 +207,7 @@ export default function OrdersScreen({ navigation }) {
               }}
             >
               Cuando completes una compra asociada a tu cuenta, aparecerá aquí.
-            </Text>
+            </AppText>
 
             <Pressable
               onPress={() =>
@@ -219,7 +220,7 @@ export default function OrdersScreen({ navigation }) {
                 alignItems: "center",
               }}
             >
-              <Text
+              <AppText
                 style={{
                   color: colors.primaryText,
                   fontWeight: "800",
@@ -227,7 +228,7 @@ export default function OrdersScreen({ navigation }) {
                 }}
               >
                 Ir al catálogo
-              </Text>
+              </AppText>
             </Pressable>
           </View>
         </View>
@@ -243,7 +244,7 @@ export default function OrdersScreen({ navigation }) {
         contentContainerStyle={{ paddingBottom: spacing.xl }}
         ListHeaderComponent={
           <View style={{ marginBottom: spacing.md }}>
-            <Text
+            <AppText
               style={{
                 fontSize: 28,
                 fontWeight: "800",
@@ -252,11 +253,11 @@ export default function OrdersScreen({ navigation }) {
               }}
             >
               Mis órdenes
-            </Text>
+            </AppText>
 
-            <Text style={{ color: colors.muted }}>
+            <AppText style={{ color: colors.muted }}>
               Revisa el estado y detalle de tus compras.
-            </Text>
+            </AppText>
           </View>
         }
         renderItem={({ item }) => (
@@ -264,7 +265,7 @@ export default function OrdersScreen({ navigation }) {
             onPress={() => navigation.navigate("OrderDetail", { orderId: item._id })}
             style={cardStyle}
           >
-            <Text
+            <AppText
               style={{
                 fontSize: 17,
                 fontWeight: "700",
@@ -273,19 +274,19 @@ export default function OrdersScreen({ navigation }) {
               }}
             >
               Orden #{item._id?.slice(-6)}
-            </Text>
+            </AppText>
 
-            <Text style={{ color: colors.muted, marginBottom: 4 }}>
+            <AppText style={{ color: colors.muted, marginBottom: 4 }}>
               Estado: {item.status || "—"}
-            </Text>
+            </AppText>
 
-            <Text style={{ color: colors.muted, marginBottom: 4 }}>
+            <AppText style={{ color: colors.muted, marginBottom: 4 }}>
               Total: ${formatPrice(item.total)}
-            </Text>
+            </AppText>
 
-            <Text style={{ color: colors.muted }}>
+            <AppText style={{ color: colors.muted }}>
               Productos: {item.items?.length ?? 0}
-            </Text>
+            </AppText>
           </Pressable>
         )}
       />

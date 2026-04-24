@@ -17,6 +17,7 @@ import {
 } from "../services/cartService";
 import useCartStore from "../store/cartStore";
 import { showAppAlert } from "../utils/appAlerts";
+import AppText from "../components/AppText";
 
 export default function CartScreen({ navigation }) {
   const [cart, setCart] = useState(null);
@@ -243,7 +244,7 @@ export default function CartScreen({ navigation }) {
             paddingVertical: spacing.xl,
           }}
         >
-          <Text
+          <AppText
             style={{
               fontSize: 24,
               fontWeight: "800",
@@ -252,9 +253,9 @@ export default function CartScreen({ navigation }) {
             }}
           >
             Tu carrito está vacío
-          </Text>
+          </AppText>
 
-          <Text
+          <AppText
             style={{
               color: colors.muted,
               marginBottom: 20,
@@ -263,7 +264,7 @@ export default function CartScreen({ navigation }) {
             }}
           >
             Agrega productos de tu supermercado CIBOX para comenzar tu compra.
-          </Text>
+          </AppText>
 
           <AppButton
             title="Ir al catálogo"
@@ -283,7 +284,7 @@ export default function CartScreen({ navigation }) {
         contentContainerStyle={{ paddingBottom: spacing.xl }}
         ListHeaderComponent={
           <View style={{ marginBottom: spacing.md }}>
-            <Text
+            <AppText
               style={{
                 fontSize: 28,
                 fontWeight: "800",
@@ -292,11 +293,11 @@ export default function CartScreen({ navigation }) {
               }}
             >
               Mi carrito
-            </Text>
+            </AppText>
 
-            <Text style={{ color: colors.muted, fontSize: 15 }}>
+            <AppText style={{ color: colors.muted, fontSize: 15 }}>
               Revisa tus productos antes de continuar al checkout.
-            </Text>
+            </AppText>
           </View>
         }
         renderItem={({ item }) => {
@@ -345,7 +346,7 @@ export default function CartScreen({ navigation }) {
                 ) : null}
 
                 <View style={{ flex: 1 }}>
-                  <Text
+                  <AppText
                     numberOfLines={2}
                     style={{
                       fontSize: 15,
@@ -355,9 +356,9 @@ export default function CartScreen({ navigation }) {
                     }}
                   >
                     {item.name}
-                  </Text>
+                  </AppText>
 
-                  <Text
+                  <AppText
                     style={{
                       color: colors.text,
                       fontSize: 15,
@@ -366,19 +367,19 @@ export default function CartScreen({ navigation }) {
                     }}
                   >
                     ${formatPrice(item.unit_price)}
-                  </Text>
+                  </AppText>
 
-                  <Text
+                  <AppText
                     style={{
                       color: colors.muted,
                       fontSize: 12,
                     }}
                   >
                     Subtotal:{" "}
-                    <Text style={{ color: colors.text, fontWeight: "800" }}>
+                    <AppText style={{ color: colors.text, fontWeight: "800" }}>
                       ${formatPrice(item.subtotal)}
-                    </Text>
-                  </Text>
+                    </AppText>
+                  </AppText>
 
                   {showBoxContents ? (
                     <View
@@ -391,7 +392,7 @@ export default function CartScreen({ navigation }) {
                         padding: 10,
                       }}
                     >
-                      <Text
+                      <AppText
                         style={{
                           fontSize: 13,
                           fontWeight: "800",
@@ -400,7 +401,7 @@ export default function CartScreen({ navigation }) {
                         }}
                       >
                         Contiene esta caja
-                      </Text>
+                      </AppText>
 
                       {boxItems.map((boxItem, index) => (
                         <View
@@ -414,7 +415,7 @@ export default function CartScreen({ navigation }) {
                             gap: 10,
                           }}
                         >
-                          <Text
+                          <AppText
                             style={{
                               flex: 1,
                               color: colors.text,
@@ -427,10 +428,10 @@ export default function CartScreen({ navigation }) {
                               boxItem?.product_name ||
                               boxItem?.product?.name ||
                               "Producto"}
-                          </Text>
+                          </AppText>
 
                           {boxItem?.unit_price ? (
-                            <Text
+                            <AppText
                               style={{
                                 color: colors.muted,
                                 fontSize: 12,
@@ -438,7 +439,7 @@ export default function CartScreen({ navigation }) {
                               }}
                             >
                               ${formatPrice(boxItem.unit_price)}
-                            </Text>
+                            </AppText>
                           ) : null}
                         </View>
                       ))}
@@ -482,7 +483,7 @@ export default function CartScreen({ navigation }) {
                       alignItems: "center",
                     }}
                   >
-                    <Text
+                    <AppText
                       style={{
                         fontSize: 18,
                         fontWeight: "800",
@@ -490,10 +491,10 @@ export default function CartScreen({ navigation }) {
                       }}
                     >
                       -
-                    </Text>
+                    </AppText>
                   </Pressable>
 
-                  <Text
+                  <AppText
                     style={{
                       fontSize: 14,
                       fontWeight: "800",
@@ -504,7 +505,7 @@ export default function CartScreen({ navigation }) {
                     }}
                   >
                     {item.quantity}
-                  </Text>
+                  </AppText>
 
                   <Pressable
                     onPress={() => handleIncrease(item)}
@@ -518,7 +519,7 @@ export default function CartScreen({ navigation }) {
                       alignItems: "center",
                     }}
                   >
-                    <Text
+                    <AppText
                       style={{
                         fontSize: 18,
                         fontWeight: "800",
@@ -526,7 +527,7 @@ export default function CartScreen({ navigation }) {
                       }}
                     >
                       +
-                    </Text>
+                    </AppText>
                   </Pressable>
                 </View>
 
@@ -538,7 +539,7 @@ export default function CartScreen({ navigation }) {
                     paddingVertical: 8,
                   }}
                 >
-                  <Text
+                  <AppText
                     style={{
                       color: "#C2410C",
                       fontWeight: "700",
@@ -546,7 +547,7 @@ export default function CartScreen({ navigation }) {
                     }}
                   >
                     Eliminar
-                  </Text>
+                  </AppText>
                 </Pressable>
               </View>
             </View>
@@ -561,7 +562,7 @@ export default function CartScreen({ navigation }) {
               borderColor: "#DDE7D7",
             }}
           >
-            <Text
+            <AppText
               style={{
                 fontSize: 14,
                 color: colors.muted,
@@ -569,9 +570,9 @@ export default function CartScreen({ navigation }) {
               }}
             >
               Total de tu compra
-            </Text>
+            </AppText>
 
-            <Text
+            <AppText
               style={{
                 fontSize: 26,
                 fontWeight: "800",
@@ -580,7 +581,7 @@ export default function CartScreen({ navigation }) {
               }}
             >
               ${formatPrice(total)}
-            </Text>
+            </AppText>
 
             <AppButton
               title="Continuar al checkout"

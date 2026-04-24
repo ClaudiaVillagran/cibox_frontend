@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import { getFavorites, removeFavorite } from "../services/favoriteService";
 import { showAppAlert } from "../utils/appAlerts";
+import AppText from "../components/AppText";
 
 export default function FavoritesScreen({ navigation }) {
   const [favorites, setFavorites] = useState([]);
@@ -72,12 +73,12 @@ export default function FavoritesScreen({ navigation }) {
             padding: 24,
           }}
         >
-          <Text style={{ fontSize: 22, fontWeight: "bold", marginBottom: 10 }}>
+          <AppText style={{ fontSize: 22, fontWeight: "bold", marginBottom: 10 }}>
             No tienes favoritos
-          </Text>
-          <Text style={{ color: "#666", textAlign: "center" }}>
+          </AppText>
+          <AppText style={{ color: "#666", textAlign: "center" }}>
             Guarda productos para revisarlos más tarde.
-          </Text>
+          </AppText>
         </View>
       </SafeAreaView>
     );
@@ -119,21 +120,21 @@ export default function FavoritesScreen({ navigation }) {
                   navigation.navigate("ProductDetail", { productId })
                 }
               >
-                <Text
+                <AppText
                   style={{ fontSize: 16, fontWeight: "bold", marginBottom: 6 }}
                 >
                   {productName}
-                </Text>
+                </AppText>
 
-                <Text style={{ color: "#666", marginBottom: 12 }}>
+                <AppText style={{ color: "#666", marginBottom: 12 }}>
                   ${price}
-                </Text>
+                </AppText>
               </Pressable>
 
               <Pressable onPress={() => handleRemove(productId)}>
-                <Text style={{ color: "red", fontWeight: "bold" }}>
+                <AppText style={{ color: "red", fontWeight: "bold" }}>
                   Quitar de favoritos
-                </Text>
+                </AppText>
               </Pressable>
             </View>
           );

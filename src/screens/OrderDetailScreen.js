@@ -8,6 +8,7 @@ import {
 } from "../services/orderService";
 import useAuthStore from "../store/authStore";
 import { showAppAlert } from "../utils/appAlerts";
+import AppText from "../components/AppText";
 
 export default function OrderDetailScreen({ route, navigation }) {
   const { token } = useAuthStore();
@@ -180,7 +181,7 @@ export default function OrderDetailScreen({ route, navigation }) {
         <View
           style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
         >
-          <Text>No se encontró la orden</Text>
+          <AppText>No se encontró la orden</AppText>
         </View>
       </ScreenContainer>
     );
@@ -193,7 +194,7 @@ export default function OrderDetailScreen({ route, navigation }) {
   return (
     <ScreenContainer maxWidth={720}>
       <View style={{ marginBottom: spacing.md }}>
-        <Text
+        <AppText
           onPress={() => navigation.goBack()}
           style={{
             color: colors.text,
@@ -202,7 +203,7 @@ export default function OrderDetailScreen({ route, navigation }) {
           }}
         >
           ← Volver
-        </Text>
+        </AppText>
       </View>
 
       <FlatList
@@ -214,7 +215,7 @@ export default function OrderDetailScreen({ route, navigation }) {
         ListHeaderComponent={
           <>
             <View style={cardStyle}>
-              <Text
+              <AppText
                 style={{
                   fontSize: 28,
                   fontWeight: "800",
@@ -223,7 +224,7 @@ export default function OrderDetailScreen({ route, navigation }) {
                 }}
               >
                 Orden #{String(order._id || order.id || "").slice(-6)}
-              </Text>
+              </AppText>
 
               <View
                 style={{
@@ -235,7 +236,7 @@ export default function OrderDetailScreen({ route, navigation }) {
                   marginBottom: 12,
                 }}
               >
-                <Text
+                <AppText
                   style={{
                     color: statusMeta.textColor,
                     fontWeight: "700",
@@ -243,24 +244,24 @@ export default function OrderDetailScreen({ route, navigation }) {
                   }}
                 >
                   {statusMeta.label}
-                </Text>
+                </AppText>
               </View>
 
-              <Text style={{ color: colors.muted, marginBottom: 4 }}>
+              <AppText style={{ color: colors.muted, marginBottom: 4 }}>
                 Total: ${order.total ?? "—"}
-              </Text>
+              </AppText>
 
-              <Text style={{ color: colors.muted, marginBottom: 4 }}>
+              <AppText style={{ color: colors.muted, marginBottom: 4 }}>
                 Ítems: {orderItems.length}
-              </Text>
+              </AppText>
 
-              <Text style={{ color: colors.muted }}>
+              <AppText style={{ color: colors.muted }}>
                 ID: {order._id || order.id || "—"}
-              </Text>
+              </AppText>
             </View>
 
             <View style={cardStyle}>
-              <Text
+              <AppText
                 style={{
                   fontSize: 18,
                   fontWeight: "700",
@@ -269,7 +270,7 @@ export default function OrderDetailScreen({ route, navigation }) {
                 }}
               >
                 Progreso del pedido
-              </Text>
+              </AppText>
 
               {progressSteps.map((step, index) => {
                 const isLast = index === progressSteps.length - 1;
@@ -306,7 +307,7 @@ export default function OrderDetailScreen({ route, navigation }) {
                       </View>
 
                       <View style={{ flex: 1, paddingVertical: 4 }}>
-                        <Text
+                        <AppText
                           style={{
                             color: step.done ? colors.text : colors.muted,
                             fontWeight:
@@ -314,7 +315,7 @@ export default function OrderDetailScreen({ route, navigation }) {
                           }}
                         >
                           {step.label}
-                        </Text>
+                        </AppText>
                       </View>
                     </View>
 
@@ -336,7 +337,7 @@ export default function OrderDetailScreen({ route, navigation }) {
             </View>
 
             <View style={cardStyle}>
-              <Text
+              <AppText
                 style={{
                   fontSize: 18,
                   fontWeight: "700",
@@ -345,27 +346,27 @@ export default function OrderDetailScreen({ route, navigation }) {
                 }}
               >
                 Envío
-              </Text>
+              </AppText>
 
-              <Text style={{ color: colors.muted, marginBottom: 4 }}>
+              <AppText style={{ color: colors.muted, marginBottom: 4 }}>
                 Región: {order.shipping?.region || "—"}
-              </Text>
+              </AppText>
 
-              <Text style={{ color: colors.muted, marginBottom: 4 }}>
+              <AppText style={{ color: colors.muted, marginBottom: 4 }}>
                 Ciudad: {order.shipping?.city || "—"}
-              </Text>
+              </AppText>
 
-              <Text style={{ color: colors.muted, marginBottom: 4 }}>
+              <AppText style={{ color: colors.muted, marginBottom: 4 }}>
                 Dirección: {order.shipping?.address || "—"}
-              </Text>
+              </AppText>
 
-              <Text style={{ color: colors.muted }}>
+              <AppText style={{ color: colors.muted }}>
                 Servicio: {order.shipping?.service_name || "—"}
-              </Text>
+              </AppText>
             </View>
 
             <View style={cardStyle}>
-              <Text
+              <AppText
                 style={{
                   fontSize: 18,
                   fontWeight: "700",
@@ -374,19 +375,19 @@ export default function OrderDetailScreen({ route, navigation }) {
                 }}
               >
                 Pago
-              </Text>
+              </AppText>
 
-              <Text style={{ color: colors.muted, marginBottom: 4 }}>
+              <AppText style={{ color: colors.muted, marginBottom: 4 }}>
                 Método: {order.payment?.method || "—"}
-              </Text>
+              </AppText>
 
-              <Text style={{ color: colors.muted }}>
+              <AppText style={{ color: colors.muted }}>
                 Estado pago: {order.payment?.status || order.status || "—"}
-              </Text>
+              </AppText>
             </View>
 
             <View style={cardStyle}>
-              <Text
+              <AppText
                 style={{
                   fontSize: 18,
                   fontWeight: "700",
@@ -394,7 +395,7 @@ export default function OrderDetailScreen({ route, navigation }) {
                 }}
               >
                 Productos
-              </Text>
+              </AppText>
             </View>
           </>
         }
@@ -404,7 +405,7 @@ export default function OrderDetailScreen({ route, navigation }) {
 
           return (
             <View style={cardStyle}>
-              <Text
+              <AppText
                 style={{
                   fontWeight: "700",
                   fontSize: 16,
@@ -413,7 +414,7 @@ export default function OrderDetailScreen({ route, navigation }) {
                 }}
               >
                 {item.name || "Producto"}
-              </Text>
+              </AppText>
 
               {item.tier_label ? (
                 <View
@@ -426,7 +427,7 @@ export default function OrderDetailScreen({ route, navigation }) {
                     marginBottom: 8,
                   }}
                 >
-                  <Text
+                  <AppText
                     style={{
                       color: colors.primaryText,
                       fontSize: 11,
@@ -434,41 +435,41 @@ export default function OrderDetailScreen({ route, navigation }) {
                     }}
                   >
                     {item.tier_label}
-                  </Text>
+                  </AppText>
                 </View>
               ) : null}
 
-              <Text style={{ color: colors.muted, marginBottom: 4 }}>
+              <AppText style={{ color: colors.muted, marginBottom: 4 }}>
                 Cantidad: {item.quantity ?? "—"}
-              </Text>
+              </AppText>
 
-              <Text style={{ color: colors.muted, marginBottom: 4 }}>
+              <AppText style={{ color: colors.muted, marginBottom: 4 }}>
                 Precio unitario: ${unitPrice}
-              </Text>
+              </AppText>
 
               {item.discount_applied ? (
-                <Text style={{ color: colors.success, marginBottom: 4 }}>
+                <AppText style={{ color: colors.success, marginBottom: 4 }}>
                   Descuento {item.discount_source || "aplicado"}: -
                   {item.discount_percent || 0}%
-                </Text>
+                </AppText>
               ) : null}
 
-              <Text
+              <AppText
                 style={{
                   color: colors.text,
                   fontWeight: "700",
                 }}
               >
                 Subtotal: ${subtotal}
-              </Text>
+              </AppText>
             </View>
           );
         }}
         ListEmptyComponent={
           <View style={cardStyle}>
-            <Text style={{ color: colors.muted }}>
+            <AppText style={{ color: colors.muted }}>
               Esta orden no tiene productos.
-            </Text>
+            </AppText>
           </View>
         }
       />

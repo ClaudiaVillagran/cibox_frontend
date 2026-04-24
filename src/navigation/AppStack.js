@@ -22,6 +22,9 @@ import VendorProductsScreen from "../screens/VendorProductsScreen";
 import CreateProductScreen from "../screens/CreateProductScreen";
 import EditProductScreen from "../screens/EditProductScreen";
 import WebpayScreen from "../screens/WebpayScreen";
+import VerifyEmailScreen from "../screens/VerifyEmailScreen";
+import ResetPasswordScreen from "../screens/ResetPasswordScreen";
+import ForgotPasswordScreen from "../screens/ForgotPasswordScreen";
 
 const Stack = createNativeStackNavigator();
 
@@ -90,17 +93,51 @@ export default function AppStack() {
       )}
 
       {!token && (
-        <Stack.Screen
-          name="Auth"
-          component={AuthStack}
-          options={{ headerShown: false }}
-        />
+        <>
+          <Stack.Screen
+            name="Auth"
+            component={AuthStack}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="VerifyEmail"
+            component={
+              isWeb ? withWebLayout(VerifyEmailScreen) : VerifyEmailScreen
+            }
+            options={
+              isWeb ? { headerShown: false } : { title: "Verificar correo" }
+            }
+          />
+          <Stack.Screen
+            name="ForgotPassword"
+            component={
+              isWeb ? withWebLayout(ForgotPasswordScreen) : ForgotPasswordScreen
+            }
+            options={
+              isWeb ? { headerShown: false } : { title: "Recuperar contraseña" }
+            }
+          />
+
+          <Stack.Screen
+            name="ResetPassword"
+            component={
+              isWeb ? withWebLayout(ResetPasswordScreen) : ResetPasswordScreen
+            }
+            options={
+              isWeb ? { headerShown: false } : { title: "Nueva contraseña" }
+            }
+          />
+        </>
       )}
 
       <Stack.Screen
         name="ProductDetail"
-        component={isWeb ? withWebLayout(ProductDetailScreen) : ProductDetailScreen}
-        options={isWeb ? { headerShown: false } : { title: "Detalle del producto" }}
+        component={
+          isWeb ? withWebLayout(ProductDetailScreen) : ProductDetailScreen
+        }
+        options={
+          isWeb ? { headerShown: false } : { title: "Detalle del producto" }
+        }
       />
 
       <Stack.Screen
@@ -123,25 +160,33 @@ export default function AppStack() {
 
       <Stack.Screen
         name="Notifications"
-        component={isWeb ? withWebLayout(NotificationsScreen) : NotificationsScreen}
+        component={
+          isWeb ? withWebLayout(NotificationsScreen) : NotificationsScreen
+        }
         options={isWeb ? { headerShown: false } : { title: "Notificaciones" }}
       />
 
       <Stack.Screen
         name="OrderSuccess"
-        component={isWeb ? withWebLayout(OrderSuccessScreen) : OrderSuccessScreen}
+        component={
+          isWeb ? withWebLayout(OrderSuccessScreen) : OrderSuccessScreen
+        }
         options={isWeb ? { headerShown: false } : { title: "Compra exitosa" }}
       />
 
       <Stack.Screen
         name="VendorProducts"
-        component={isWeb ? withWebLayout(VendorProductsScreen) : VendorProductsScreen}
+        component={
+          isWeb ? withWebLayout(VendorProductsScreen) : VendorProductsScreen
+        }
         options={isWeb ? { headerShown: false } : { title: "Mis productos" }}
       />
 
       <Stack.Screen
         name="CreateProduct"
-        component={isWeb ? withWebLayout(CreateProductScreen) : CreateProductScreen}
+        component={
+          isWeb ? withWebLayout(CreateProductScreen) : CreateProductScreen
+        }
         options={isWeb ? { headerShown: false } : { title: "Crear producto" }}
       />
 

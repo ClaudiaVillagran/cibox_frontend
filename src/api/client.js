@@ -3,7 +3,7 @@ import useAuthStore from "../store/authStore";
 import { getGuestId } from "../utils/guestId";
 
 const client = axios.create({
-  baseURL: "http://192.168.1.3:3000/api",
+  baseURL: "https://jarring-mashing-buckshot.ngrok-free.dev/api",
 });
 
 client.interceptors.request.use(

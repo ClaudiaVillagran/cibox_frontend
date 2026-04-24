@@ -30,6 +30,7 @@ import { addItemToCart } from "../services/cartService";
 import useCartStore from "../store/cartStore";
 import { showAppAlert } from "../utils/appAlerts";
 import useAuthStore from "../store/authStore";
+import AppText from "../components/AppText";
 
 export default function HomeScreen({ navigation }) {
   const { token } = useAuthStore();
@@ -260,7 +261,7 @@ export default function HomeScreen({ navigation }) {
                   paddingHorizontal: 4,
                 }}
               >
-                <Text
+                <AppText
                   style={{
                     color: "#fff",
                     fontSize: 10,
@@ -268,7 +269,7 @@ export default function HomeScreen({ navigation }) {
                   }}
                 >
                   {cartCount}
-                </Text>
+                </AppText>
               </View>
             ) : null}
           </Pressable>
@@ -319,6 +320,8 @@ export default function HomeScreen({ navigation }) {
         key={numColumns}
         data={showSections ? [] : products}
         numColumns={numColumns}
+        nestedScrollEnabled
+        keyboardShouldPersistTaps="handled"
         keyExtractor={(item) => item._id}
         renderItem={({ item }) => (
           <View
@@ -383,7 +386,7 @@ export default function HomeScreen({ navigation }) {
                   marginBottom: spacing.md,
                 }}
               >
-                <Text
+                <AppText
                   style={{
                     fontSize: 14,
                     fontWeight: "800",
@@ -391,8 +394,8 @@ export default function HomeScreen({ navigation }) {
                   }}
                 >
                   Ahorra más en tu despensa con CIBOX
-                </Text>
-                <Text
+                </AppText>
+                <AppText
                   style={{
                     marginTop: 4,
                     fontSize: 13,
@@ -400,7 +403,7 @@ export default function HomeScreen({ navigation }) {
                   }}
                 >
                   Compras inteligentes para tu hogar.
-                </Text>
+                </AppText>
               </View>
 
               {!isWeb ? (
@@ -450,7 +453,7 @@ export default function HomeScreen({ navigation }) {
                   }}
                 >
                   <View style={{ flex: 1 }}>
-                    <Text
+                    <AppText
                       style={{
                         fontSize: 24,
                         fontWeight: "800",
@@ -458,9 +461,9 @@ export default function HomeScreen({ navigation }) {
                       }}
                     >
                       Productos de la categoría
-                    </Text>
+                    </AppText>
 
-                    <Text
+                    <AppText
                       style={{
                         marginTop: 4,
                         color: colors.muted,
@@ -468,7 +471,7 @@ export default function HomeScreen({ navigation }) {
                       }}
                     >
                       Explora los productos disponibles en esta categoría.
-                    </Text>
+                    </AppText>
                   </View>
 
                   <Pressable
@@ -482,7 +485,7 @@ export default function HomeScreen({ navigation }) {
                       borderColor: "#dbe7cf",
                     }}
                   >
-                    <Text
+                    <AppText
                       style={{
                         fontSize: 13,
                         fontWeight: "800",
@@ -490,7 +493,7 @@ export default function HomeScreen({ navigation }) {
                       }}
                     >
                       Limpiar filtro
-                    </Text>
+                    </AppText>
                   </Pressable>
                 </View>
               </View>
@@ -506,9 +509,9 @@ export default function HomeScreen({ navigation }) {
                       padding: spacing.md,
                     }}
                   >
-                    <Text style={{ color: colors.muted }}>
+                    <AppText style={{ color: colors.muted }}>
                       Cargando destacados...
-                    </Text>
+                    </AppText>
                   </View>
                 ) : (
                   <>
@@ -530,7 +533,7 @@ export default function HomeScreen({ navigation }) {
                             marginRight: 8,
                           }}
                         />
-                        <Text
+                        <AppText
                           style={{
                             fontSize: 24,
                             fontWeight: "800",
@@ -538,7 +541,7 @@ export default function HomeScreen({ navigation }) {
                           }}
                         >
                           Destacados
-                        </Text>
+                        </AppText>
                       </View>
 
                       <ProductRowSection
@@ -556,7 +559,7 @@ export default function HomeScreen({ navigation }) {
 
                     {featuredCategories.length > 0 && (
                       <View style={{ marginBottom: spacing.lg }}>
-                        <Text
+                        <AppText
                           style={{
                             fontSize: 24,
                             fontWeight: "800",
@@ -566,12 +569,13 @@ export default function HomeScreen({ navigation }) {
                           }}
                         >
                           Categorías destacadas
-                        </Text>
+                        </AppText>
 
                         <FlatList
                           data={featuredCategories}
                           horizontal
-                          showsHorizontalScrollIndicator={false}
+                          nestedScrollEnabled
+                          keyboardShouldPersistTaps="handled"
                           keyExtractor={(item) => item._id}
                           contentContainerStyle={{ paddingRight: spacing.md }}
                           renderItem={({ item }) => (
@@ -606,7 +610,7 @@ export default function HomeScreen({ navigation }) {
                                 />
 
                                 <View style={{ padding: 12 }}>
-                                  <Text
+                                  <AppText
                                     style={{
                                       fontWeight: "800",
                                       fontSize: 15,
@@ -614,7 +618,7 @@ export default function HomeScreen({ navigation }) {
                                     }}
                                   >
                                     {item.name}
-                                  </Text>
+                                  </AppText>
                                 </View>
                               </View>
                             </Pressable>
@@ -659,7 +663,7 @@ export default function HomeScreen({ navigation }) {
                                 marginRight: 10,
                               }}
                             />
-                            <Text
+                            <AppText
                               style={{
                                 fontSize: 24,
                                 fontWeight: "800",
@@ -667,10 +671,10 @@ export default function HomeScreen({ navigation }) {
                               }}
                             >
                               Productos individuales
-                            </Text>
+                            </AppText>
                           </View>
 
-                          <Text
+                          <AppText
                             style={{
                               color: colors.muted,
                               fontSize: 14,
@@ -679,7 +683,7 @@ export default function HomeScreen({ navigation }) {
                           >
                             Compra al detalle y agrega productos directo al
                             carrito.
-                          </Text>
+                          </AppText>
                         </View>
 
                         <Pressable
@@ -693,7 +697,7 @@ export default function HomeScreen({ navigation }) {
                             borderRadius: 14,
                           }}
                         >
-                          <Text
+                          <AppText
                             style={{
                               color: colors.text,
                               fontSize: 13,
@@ -701,7 +705,7 @@ export default function HomeScreen({ navigation }) {
                             }}
                           >
                             Ver todos
-                          </Text>
+                          </AppText>
                         </Pressable>
                       </View>
 
@@ -735,7 +739,7 @@ export default function HomeScreen({ navigation }) {
                 marginHorizontal: spacing.md,
               }}
             >
-              <Text
+              <AppText
                 style={{
                   fontSize: 20,
                   fontWeight: "700",
@@ -744,11 +748,11 @@ export default function HomeScreen({ navigation }) {
                 }}
               >
                 No encontramos productos
-              </Text>
+              </AppText>
 
-              <Text style={{ color: colors.muted, textAlign: "center" }}>
+              <AppText style={{ color: colors.muted, textAlign: "center" }}>
                 Prueba cambiando la búsqueda o limpiando los filtros.
-              </Text>
+              </AppText>
             </View>
           ) : null
         }

@@ -1,5 +1,6 @@
 import { Image, Pressable, Text, View } from "react-native";
 import { colors, radius, shadows, spacing } from "../constants/theme";
+import AppText from "./AppText";
 
 export default function ProductCard({
   product,
@@ -68,7 +69,7 @@ export default function ProductCard({
               resizeMode="contain"
             />
           ) : (
-            <Text
+            <AppText
               style={{
                 color: colors.muted,
                 fontSize: 13,
@@ -76,7 +77,7 @@ export default function ProductCard({
               }}
             >
               Sin imagen
-            </Text>
+            </AppText>
           )}
         </View>
 
@@ -91,17 +92,17 @@ export default function ProductCard({
         >
           {hasPackTier ? (
             <View style={chipStyle(colors.primary)}>
-              <Text style={{ color: "#fff", fontSize: 11, fontWeight: "800" }}>
+              <AppText style={{ color: "#fff", fontSize: 11, fontWeight: "800" }}>
                 Pack disponible
-              </Text>
+              </AppText>
             </View>
           ) : null}
 
           {ciboxPlusEnabled ? (
             <View style={chipStyle("#6d28d9")}>
-              <Text style={{ color: "#fff", fontSize: 11, fontWeight: "800" }}>
+              <AppText style={{ color: "#fff", fontSize: 11, fontWeight: "800" }}>
                 Cibox+
-              </Text>
+              </AppText>
             </View>
           ) : null}
         </View>
@@ -113,7 +114,7 @@ export default function ProductCard({
             marginBottom: 8,
           }}
         >
-          <Text
+          <AppText
             numberOfLines={2}
             style={{
               fontSize: compact ? 16 : 17,
@@ -123,7 +124,7 @@ export default function ProductCard({
             }}
           >
             {product?.name || "Producto"}
-          </Text>
+          </AppText>
         </View>
 
         <View
@@ -133,7 +134,7 @@ export default function ProductCard({
             marginBottom: 4,
           }}
         >
-          <Text
+          <AppText
             style={{
               fontSize: compact ? 18 : 20,
               fontWeight: "900",
@@ -141,7 +142,7 @@ export default function ProductCard({
             }}
           >
             {formatPrice(basePrice)}
-          </Text>
+          </AppText>
         </View>
 
         <View
@@ -151,7 +152,7 @@ export default function ProductCard({
             marginBottom: 6,
           }}
         >
-          <Text
+          <AppText
             numberOfLines={1}
             style={{
               color: colors.muted,
@@ -159,7 +160,7 @@ export default function ProductCard({
             }}
           >
             {product?.category?.name || "Sin categoría"}
-          </Text>
+          </AppText>
         </View>
 
         <View
@@ -170,7 +171,7 @@ export default function ProductCard({
           }}
         >
           {hasReviews ? (
-            <Text
+            <AppText
               numberOfLines={1}
               style={{
                 color: colors.muted,
@@ -179,16 +180,16 @@ export default function ProductCard({
               }}
             >
               {averageRating.toFixed(1)} de valoración · {reviewsCount} reseñas
-            </Text>
+            </AppText>
           ) : (
-            <Text
+            <AppText
               style={{
                 color: colors.muted,
                 fontSize: 12,
               }}
             >
               Aún sin reseñas
-            </Text>
+            </AppText>
           )}
         </View>
       </Pressable>
@@ -213,15 +214,9 @@ export default function ProductCard({
             opacity: adding ? 0.7 : 1,
           }}
         >
-          <Text
-            style={{
-              color: "#fff",
-              fontSize: 14,
-              fontWeight: "800",
-            }}
-          >
+          <AppText>
             {adding ? "Agregando..." : "Añadir"}
-          </Text>
+          </AppText>
         </Pressable>
 
         <Pressable
@@ -232,7 +227,7 @@ export default function ProductCard({
             justifyContent: "center",
           }}
         >
-          <Text
+          <AppText
             style={{
               color: colors.primary,
               fontSize: 13,
@@ -240,7 +235,7 @@ export default function ProductCard({
             }}
           >
             Ver detalle
-          </Text>
+          </AppText>
         </Pressable>
       </View>
     </View>

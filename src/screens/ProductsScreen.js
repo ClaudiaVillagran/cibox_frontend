@@ -20,6 +20,7 @@ import { getCategories } from "../services/categoryService";
 import { addItemToCart } from "../services/cartService";
 import useCartStore from "../store/cartStore";
 import { showAppAlert } from "../utils/appAlerts";
+import AppText from "../components/AppText";
 
 export default function ProductsScreen({ navigation, route }) {
   const { width } = useWindowDimensions();
@@ -185,7 +186,7 @@ export default function ProductsScreen({ navigation, route }) {
                 paddingHorizontal: 4,
               }}
             >
-              <Text
+              <AppText
                 style={{
                   color: colors.primaryText,
                   fontSize: 10,
@@ -193,7 +194,7 @@ export default function ProductsScreen({ navigation, route }) {
                 }}
               >
                 {cartCount}
-              </Text>
+              </AppText>
             </View>
           ) : null}
         </Pressable>
@@ -237,9 +238,9 @@ export default function ProductsScreen({ navigation, route }) {
       <ScreenContainer maxWidth={1100}>
         <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
           <ActivityIndicator size="large" color={colors.primary} />
-          <Text style={{ marginTop: spacing.sm, color: colors.muted }}>
+          <AppText style={{ marginTop: spacing.sm, color: colors.muted }}>
             Cargando productos...
-          </Text>
+          </AppText>
         </View>
       </ScreenContainer>
     );
@@ -281,7 +282,7 @@ export default function ProductsScreen({ navigation, route }) {
                 ...shadows.card,
               }}
             >
-              <Text
+              <AppText
                 style={{
                   fontSize: 30,
                   fontWeight: "900",
@@ -291,9 +292,9 @@ export default function ProductsScreen({ navigation, route }) {
                 }}
               >
                 Todos los productos
-              </Text>
+              </AppText>
 
-              <Text
+              <AppText
                 style={{
                   color: colors.muted,
                   fontSize: 14,
@@ -301,7 +302,7 @@ export default function ProductsScreen({ navigation, route }) {
                 }}
               >
                 Explora el catálogo completo de CIBOX y encuentra lo que necesitas.
-              </Text>
+              </AppText>
 
               {!isWeb ? (
                 <>
@@ -338,7 +339,7 @@ export default function ProductsScreen({ navigation, route }) {
                 borderColor: colors.border,
               }}
             >
-              <Text
+              <AppText
                 style={{
                   color: colors.text,
                   fontWeight: "800",
@@ -347,11 +348,11 @@ export default function ProductsScreen({ navigation, route }) {
                 }}
               >
                 Resultados
-              </Text>
+              </AppText>
 
-              <Text style={{ color: colors.muted }}>
+              <AppText style={{ color: colors.muted }}>
                 {products.length} producto(s) encontrados
-              </Text>
+              </AppText>
             </View>
           </View>
         }
@@ -384,7 +385,7 @@ export default function ProductsScreen({ navigation, route }) {
               marginHorizontal: spacing.md,
             }}
           >
-            <Text
+            <AppText
               style={{
                 fontSize: 20,
                 fontWeight: "700",
@@ -393,11 +394,11 @@ export default function ProductsScreen({ navigation, route }) {
               }}
             >
               No encontramos productos
-            </Text>
+            </AppText>
 
-            <Text style={{ color: colors.muted, textAlign: "center" }}>
+            <AppText style={{ color: colors.muted, textAlign: "center" }}>
               Prueba cambiando la búsqueda o limpiando los filtros.
-            </Text>
+            </AppText>
           </View>
         }
       />

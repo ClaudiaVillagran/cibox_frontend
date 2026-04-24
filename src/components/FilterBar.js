@@ -1,5 +1,6 @@
 import { Text, TextInput, Pressable, ScrollView, View } from "react-native";
 import { colors, spacing, radius } from "../constants/theme";
+import AppText from "./AppText";
 
 export default function FilterBar({
   categories = [],
@@ -40,7 +41,6 @@ export default function FilterBar({
     <View>
       <ScrollView
         horizontal
-        showsHorizontalScrollIndicator={false}
         contentContainerStyle={{ paddingRight: spacing.md }}
         style={{ marginBottom: spacing.md }}
       >
@@ -48,7 +48,7 @@ export default function FilterBar({
           onPress={() => onSelectCategory("")}
           style={chipStyle(selectedCategory === "")}
         >
-          <Text style={chipTextStyle(selectedCategory === "")}>Todas</Text>
+          <AppText style={chipTextStyle(selectedCategory === "")}>Todas</AppText>
         </Pressable>
 
         {categories.map((category) => {
@@ -61,7 +61,7 @@ export default function FilterBar({
               onPress={() => onSelectCategory(categoryId)}
               style={chipStyle(isActive)}
             >
-              <Text style={chipTextStyle(isActive)}>{category?.name}</Text>
+              <AppText style={chipTextStyle(isActive)}>{category?.name}</AppText>
             </Pressable>
           );
         })}
@@ -125,13 +125,13 @@ export default function FilterBar({
               onPress={() => onChangeSort(option.value)}
               style={chipStyle(isActive)}
             >
-              <Text style={chipTextStyle(isActive)}>{option.label}</Text>
+              <AppText style={chipTextStyle(isActive)}>{option.label}</AppText>
             </Pressable>
           );
         })}
 
         <Pressable onPress={onClear} style={chipStyle(false)}>
-          <Text style={chipTextStyle(false)}>Limpiar</Text>
+          <AppText style={chipTextStyle(false)}>Limpiar</AppText>
         </Pressable>
       </ScrollView>
     </View>

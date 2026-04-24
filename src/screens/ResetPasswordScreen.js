@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
@@ -9,43 +9,84 @@ import {
   View,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { registerRequest } from "../services/authService";
+import { resetPasswordRequest } from "../services/authService";
 import { showAppAlert } from "../utils/appAlerts";
 import { colors, spacing, shadows } from "../constants/theme";
 import AppText from "../components/AppText";
 
-export default function RegisterScreen({ navigation }) {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
+export default function ResetPasswordScreen({ navigation, route }) {
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [tokenError, setTokenError] = useState("");
 
-  const handleRegister = async () => {
-    if (!name.trim() || !email.trim() || !password.trim()) {
-      showAppAlert("Faltan datos", "Completa nombre, correo y contraseña");
+  const token = useMemo(() => {
+    if (route?.params?.token) return route.params.token;
+
+    if (Platform.OS === "web" && typeof window !== "undefined") {
+      const search = new URLSearchParams(window.location.search);
+      return search.get("token") || "";
+    }
+
+    return "";
+  }, [route?.params]);
+
+  useEffect(() => {
+    if (!token) {
+      setTokenError("Token de recuperación no encontrado o inválido.");
+    }
+  }, [token]);
+
+  const handleSubmit = async () => {
+    if (!token) {
+      showAppAlert("Error", "Token de recuperación no encontrado.");
+      return;
+    }
+
+    if (!password.trim() || !confirmPassword.trim()) {
+      showAppAlert("Faltan datos", "Completa ambos campos.");
+      return;
+    }
+
+    if (password.length < 6) {
+      showAppAlert(
+        "Contraseña inválida",
+        "La contraseña debe tener al menos 6 caracteres.",
+      );
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      showAppAlert("No coinciden", "Las contraseñas no coinciden.");
       return;
     }
 
     try {
       setLoading(true);
 
-      await registerRequest({
-        name: name.trim(),
-        email: email.trim().toLowerCase(),
+      const response = await resetPasswordRequest({
+        token,
         password,
       });
 
       showAppAlert(
-        "Revisa tu correo",
-        "Te enviamos un enlace para verificar tu cuenta antes de iniciar sesión."
+        "Contraseña actualizada",
+        response?.message || "Tu contraseña fue actualizada correctamente.",
       );
 
-      navigation.goBack();
+      if (Platform.OS === "web" && typeof window !== "undefined") {
+        window.history.replaceState({}, "", "/");
+      }
+
+      navigation.reset({
+        index: 0,
+        routes: [{ name: "Auth" }],
+      });
     } catch (error) {
-      console.log("REGISTER ERROR:", error?.response?.data || error.message);
       showAppAlert(
         "Error",
-        error?.response?.data?.message || "No se pudo crear la cuenta"
+        error?.response?.data?.message ||
+          "No se pudo restablecer la contraseña. El enlace puede haber expirado.",
       );
     } finally {
       setLoading(false);
@@ -71,8 +112,6 @@ export default function RegisterScreen({ navigation }) {
               borderRadius: 28,
               paddingHorizontal: spacing.lg,
               paddingVertical: spacing.xl,
-              minHeight: 660,
-              justifyContent: "center",
               borderWidth: 1,
               borderColor: "#dfe8d8",
               ...shadows.card,
@@ -93,105 +132,47 @@ export default function RegisterScreen({ navigation }) {
               <Ionicons name="arrow-back" size={22} color={colors.muted} />
             </Pressable>
 
-            <View style={{ marginTop: 20 }}>
-              <View style={{ marginBottom: spacing.lg }}>
-                <AppText
-                  style={{
-                    fontSize: 30,
-                    fontWeight: "900",
-                    color: colors.text,
-                    textAlign: "center",
-                    marginBottom: 8,
-                  }}
-                >
-                  Crear cuenta
-                </AppText>
+            <View style={{ marginTop: 28 }}>
+              <AppText
+                style={{
+                  fontSize: 28,
+                  fontWeight: "900",
+                  color: colors.text,
+                  textAlign: "center",
+                  marginBottom: 8,
+                }}
+              >
+                Nueva contraseña
+              </AppText>
 
+              <AppText
+                style={{
+                  color: colors.muted,
+                  textAlign: "center",
+                  lineHeight: 20,
+                  fontSize: 14,
+                  marginBottom: spacing.lg,
+                }}
+              >
+                Ingresa tu nueva contraseña para recuperar el acceso a tu
+                cuenta.
+              </AppText>
+
+              {!!tokenError && (
                 <AppText
                   style={{
-                    color: colors.muted,
+                    color: colors.danger,
                     textAlign: "center",
-                    lineHeight: 20,
+                    marginBottom: spacing.md,
                     fontSize: 14,
-                    paddingHorizontal: 8,
+                    fontWeight: "700",
                   }}
                 >
-                  Regístrate en CIBOX para guardar tus pedidos, favoritos y datos
-                  de compra.
+                  {tokenError}
                 </AppText>
-              </View>
+              )}
 
               <View style={{ marginBottom: spacing.md }}>
-                <View
-                  style={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                    borderWidth: 1.5,
-                    borderColor: "#cfdcc6",
-                    borderRadius: 999,
-                    paddingHorizontal: 16,
-                    height: 54,
-                    backgroundColor: colors.surface,
-                  }}
-                >
-                  <Ionicons
-                    name="person-outline"
-                    size={18}
-                    color={colors.muted}
-                    style={{ marginRight: 10 }}
-                  />
-
-                  <TextInput
-                    placeholder="Nombre"
-                    placeholderTextColor="#9a9a9a"
-                    value={name}
-                    onChangeText={setName}
-                    style={{
-                      flex: 1,
-                      color: colors.text,
-                      fontSize: 15,
-                    }}
-                  />
-                </View>
-              </View>
-
-              <View style={{ marginBottom: spacing.md }}>
-                <View
-                  style={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                    borderWidth: 1.5,
-                    borderColor: "#cfdcc6",
-                    borderRadius: 999,
-                    paddingHorizontal: 16,
-                    height: 54,
-                    backgroundColor: colors.surface,
-                  }}
-                >
-                  <Ionicons
-                    name="mail-outline"
-                    size={18}
-                    color={colors.muted}
-                    style={{ marginRight: 10 }}
-                  />
-
-                  <TextInput
-                    placeholder="Correo electrónico"
-                    placeholderTextColor="#9a9a9a"
-                    value={email}
-                    onChangeText={setEmail}
-                    autoCapitalize="none"
-                    keyboardType="email-address"
-                    style={{
-                      flex: 1,
-                      color: colors.text,
-                      fontSize: 15,
-                    }}
-                  />
-                </View>
-              </View>
-
-              <View style={{ marginBottom: spacing.lg }}>
                 <View
                   style={{
                     flexDirection: "row",
@@ -212,11 +193,46 @@ export default function RegisterScreen({ navigation }) {
                   />
 
                   <TextInput
-                    placeholder="Contraseña"
+                    placeholder="Nueva contraseña"
                     placeholderTextColor="#9a9a9a"
-                    secureTextEntry
                     value={password}
                     onChangeText={setPassword}
+                    secureTextEntry
+                    style={{
+                      flex: 1,
+                      color: colors.text,
+                      fontSize: 15,
+                    }}
+                  />
+                </View>
+              </View>
+
+              <View style={{ marginBottom: spacing.lg }}>
+                <View
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    borderWidth: 1.5,
+                    borderColor: "#cfdcc6",
+                    borderRadius: 999,
+                    paddingHorizontal: 16,
+                    height: 54,
+                    backgroundColor: colors.surface,
+                  }}
+                >
+                  <Ionicons
+                    name="shield-checkmark-outline"
+                    size={18}
+                    color={colors.muted}
+                    style={{ marginRight: 10 }}
+                  />
+
+                  <TextInput
+                    placeholder="Confirmar contraseña"
+                    placeholderTextColor="#9a9a9a"
+                    value={confirmPassword}
+                    onChangeText={setConfirmPassword}
+                    secureTextEntry
                     style={{
                       flex: 1,
                       color: colors.text,
@@ -227,12 +243,13 @@ export default function RegisterScreen({ navigation }) {
               </View>
 
               <Pressable
-                onPress={handleRegister}
-                disabled={loading}
+                onPress={handleSubmit}
+                disabled={loading || !token}
                 style={{
                   height: 54,
                   borderRadius: 999,
-                  backgroundColor: loading ? colors.muted : colors.primary,
+                  backgroundColor:
+                    loading || !token ? colors.muted : colors.primary,
                   justifyContent: "center",
                   alignItems: "center",
                   ...shadows.card,
@@ -246,39 +263,12 @@ export default function RegisterScreen({ navigation }) {
                       color: colors.primaryText,
                       fontSize: 16,
                       fontWeight: "800",
-                      letterSpacing: 0.4,
                     }}
                   >
-                    REGISTRARME
+                    ACTUALIZAR CONTRASEÑA
                   </AppText>
                 )}
               </Pressable>
-
-              <View
-                style={{
-                  flexDirection: "row",
-                  justifyContent: "center",
-                  marginTop: spacing.lg,
-                  alignItems: "center",
-                }}
-              >
-                <AppText style={{ color: colors.muted, fontSize: 14 }}>
-                  ¿Ya tienes cuenta?
-                </AppText>
-
-                <Pressable onPress={() => navigation.goBack()}>
-                  <AppText
-                    style={{
-                      color: colors.primary,
-                      fontWeight: "800",
-                      fontSize: 14,
-                      marginLeft: 8,
-                    }}
-                  >
-                    Inicia sesión
-                  </AppText>
-                </Pressable>
-              </View>
             </View>
           </View>
         </View>

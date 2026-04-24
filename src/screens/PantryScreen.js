@@ -12,6 +12,7 @@ import { getPantry, movePantryItemToCart } from "../services/pantryService";
 import useAuthStore from "../store/authStore";
 import { showAppAlert } from "../utils/appAlerts";
 import { colors, spacing, radius, shadows } from "../constants/theme";
+import AppText from "../components/AppText";
 
 export default function PantryScreen({ navigation }) {
   const { token } = useAuthStore();
@@ -93,7 +94,7 @@ export default function PantryScreen({ navigation }) {
               ...shadows.card,
             }}
           >
-            <Text
+            <AppText
               style={{
                 fontSize: 26,
                 fontWeight: "800",
@@ -103,9 +104,9 @@ export default function PantryScreen({ navigation }) {
               }}
             >
               Inicia sesión para ver tu despensa
-            </Text>
+            </AppText>
 
-            <Text
+            <AppText
               style={{
                 color: colors.muted,
                 textAlign: "center",
@@ -115,7 +116,7 @@ export default function PantryScreen({ navigation }) {
             >
               Guarda productos frecuentes y mantén una lista recurrente de compra
               para agregarlos fácilmente cuando quieras.
-            </Text>
+            </AppText>
 
             <Pressable
               onPress={() => navigation.navigate("Auth")}
@@ -128,7 +129,7 @@ export default function PantryScreen({ navigation }) {
                 marginBottom: spacing.sm,
               }}
             >
-              <Text
+              <AppText
                 style={{
                   color: colors.primaryText,
                   fontWeight: "800",
@@ -136,7 +137,7 @@ export default function PantryScreen({ navigation }) {
                 }}
               >
                 Iniciar sesión
-              </Text>
+              </AppText>
             </Pressable>
 
             <Pressable
@@ -150,7 +151,7 @@ export default function PantryScreen({ navigation }) {
                 alignItems: "center",
               }}
             >
-              <Text
+              <AppText
                 style={{
                   color: colors.primary,
                   fontWeight: "700",
@@ -158,7 +159,7 @@ export default function PantryScreen({ navigation }) {
                 }}
               >
                 Volver al catálogo
-              </Text>
+              </AppText>
             </Pressable>
           </View>
         </View>
@@ -173,14 +174,14 @@ export default function PantryScreen({ navigation }) {
       <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
         <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
           <ActivityIndicator size="large" color={colors.primary} />
-          <Text
+          <AppText
             style={{
               marginTop: spacing.sm,
               color: colors.muted,
             }}
           >
             Cargando despensa...
-          </Text>
+          </AppText>
         </View>
       </SafeAreaView>
     );
@@ -211,7 +212,7 @@ export default function PantryScreen({ navigation }) {
               ...shadows.card,
             }}
           >
-            <Text
+            <AppText
               style={{
                 fontSize: 24,
                 fontWeight: "800",
@@ -221,9 +222,9 @@ export default function PantryScreen({ navigation }) {
               }}
             >
               Tu despensa está vacía
-            </Text>
+            </AppText>
 
-            <Text
+            <AppText
               style={{
                 color: colors.muted,
                 textAlign: "center",
@@ -232,7 +233,7 @@ export default function PantryScreen({ navigation }) {
               }}
             >
               Agrega productos para mantener una lista recurrente de compra.
-            </Text>
+            </AppText>
 
             <Pressable
               onPress={() =>
@@ -246,7 +247,7 @@ export default function PantryScreen({ navigation }) {
                 alignItems: "center",
               }}
             >
-              <Text
+              <AppText
                 style={{
                   color: colors.primaryText,
                   fontWeight: "800",
@@ -254,7 +255,7 @@ export default function PantryScreen({ navigation }) {
                 }}
               >
                 Ir al catálogo
-              </Text>
+              </AppText>
             </Pressable>
           </View>
         </View>
@@ -276,7 +277,7 @@ export default function PantryScreen({ navigation }) {
         }}
         ListHeaderComponent={
           <View style={{ marginBottom: spacing.lg }}>
-            <Text
+            <AppText
               style={{
                 fontSize: 28,
                 fontWeight: "800",
@@ -285,16 +286,16 @@ export default function PantryScreen({ navigation }) {
               }}
             >
               Mi despensa
-            </Text>
+            </AppText>
 
-            <Text
+            <AppText
               style={{
                 color: colors.muted,
                 fontSize: 15,
               }}
             >
               Guarda productos frecuentes y agrégalos al carrito cuando quieras.
-            </Text>
+            </AppText>
           </View>
         }
         renderItem={({ item }) => {
@@ -312,7 +313,7 @@ export default function PantryScreen({ navigation }) {
                 ...shadows.card,
               }}
             >
-              <Text
+              <AppText
                 style={{
                   fontSize: 17,
                   fontWeight: "800",
@@ -321,34 +322,34 @@ export default function PantryScreen({ navigation }) {
                 }}
               >
                 {item.name}
-              </Text>
+              </AppText>
 
-              <Text
+              <AppText
                 style={{
                   color: colors.muted,
                   marginBottom: spacing.xs,
                 }}
               >
                 Cantidad: {item.quantity}
-              </Text>
+              </AppText>
 
-              <Text
+              <AppText
                 style={{
                   color: colors.muted,
                   marginBottom: spacing.xs,
                 }}
               >
                 Frecuencia: {item.frequency || "monthly"}
-              </Text>
+              </AppText>
 
-              <Text
+              <AppText
                 style={{
                   color: colors.muted,
                   marginBottom: spacing.md,
                 }}
               >
                 Precio referencia: ${item.price ?? "—"}
-              </Text>
+              </AppText>
 
               <Pressable
                 onPress={() => handleMoveToCart(item.product_id)}
@@ -360,7 +361,7 @@ export default function PantryScreen({ navigation }) {
                   alignItems: "center",
                 }}
               >
-                <Text
+                <AppText
                   style={{
                     color: colors.primaryText,
                     fontWeight: "800",
@@ -368,7 +369,7 @@ export default function PantryScreen({ navigation }) {
                   }}
                 >
                   {isMoving ? "Agregando..." : "Agregar al carrito"}
-                </Text>
+                </AppText>
               </Pressable>
             </View>
           );

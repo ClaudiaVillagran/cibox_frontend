@@ -32,6 +32,7 @@ import { getProductById, getRelatedProducts } from "../services/productService";
 import useCartStore from "../store/cartStore";
 import useAuthStore from "../store/authStore";
 import { showAppAlert } from "../utils/appAlerts";
+import AppText from "../components/AppText";
 
 export default function ProductDetailScreen({ route, navigation }) {
   const { productId } = route.params;
@@ -410,9 +411,9 @@ export default function ProductDetailScreen({ route, navigation }) {
         <View
           style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
         >
-          <Text style={{ color: colors.text }}>
+          <AppText style={{ color: colors.text }}>
             No se pudo cargar el producto
-          </Text>
+          </AppText>
         </View>
       </ScreenContainer>
     );
@@ -430,7 +431,7 @@ export default function ProductDetailScreen({ route, navigation }) {
 
     return (
       <View style={cardStyle}>
-        <Text
+        <AppText
           style={{
             fontSize: 22,
             fontWeight: "800",
@@ -439,9 +440,9 @@ export default function ProductDetailScreen({ route, navigation }) {
           }}
         >
           Qué contiene esta caja
-        </Text>
+        </AppText>
 
-        <Text
+        <AppText
           style={{
             color: colors.muted,
             marginBottom: 16,
@@ -449,7 +450,7 @@ export default function ProductDetailScreen({ route, navigation }) {
           }}
         >
           Esta caja incluye los siguientes productos:
-        </Text>
+        </AppText>
 
         {boxItems.map((item, index) => {
           const childProduct = item.product_id;
@@ -493,7 +494,7 @@ export default function ProductDetailScreen({ route, navigation }) {
               </View>
 
               <View style={{ flex: 1 }}>
-                <Text
+                <AppText
                   style={{
                     fontSize: 15,
                     fontWeight: "700",
@@ -502,10 +503,10 @@ export default function ProductDetailScreen({ route, navigation }) {
                   }}
                 >
                   {item.quantity} x {childProduct?.name || "Producto"}
-                </Text>
+                </AppText>
 
                 {childProduct?.brand ? (
-                  <Text
+                  <AppText
                     style={{
                       color: colors.muted,
                       fontSize: 13,
@@ -513,17 +514,17 @@ export default function ProductDetailScreen({ route, navigation }) {
                     }}
                   >
                     Marca: {childProduct.brand}
-                  </Text>
+                  </AppText>
                 ) : null}
 
-                <Text
+                <AppText
                   style={{
                     color: colors.muted,
                     fontSize: 13,
                   }}
                 >
                   Precio referencia: ${unitPrice}
-                </Text>
+                </AppText>
               </View>
             </View>
           );
@@ -545,7 +546,7 @@ export default function ProductDetailScreen({ route, navigation }) {
           : {}),
       }}
     >
-      <Text
+      <AppText
         style={{
           fontSize: isWeb ? 30 : 28,
           fontWeight: "800",
@@ -554,9 +555,9 @@ export default function ProductDetailScreen({ route, navigation }) {
         }}
       >
         {product.name}
-      </Text>
+      </AppText>
 
-      <Text
+      <AppText
         style={{
           fontSize: 28,
           fontWeight: "800",
@@ -565,13 +566,13 @@ export default function ProductDetailScreen({ route, navigation }) {
         }}
       >
         ${selectedTierPrice || "—"}
-      </Text>
+      </AppText>
 
-      <Text style={{ color: colors.muted, marginBottom: 14 }}>
+      <AppText style={{ color: colors.muted, marginBottom: 14 }}>
         {product?.product_type === "box"
           ? "Precio de la caja completa"
           : "Precio por unidad según opción seleccionada"}
-      </Text>
+      </AppText>
 
       <View
         style={{
@@ -591,10 +592,10 @@ export default function ProductDetailScreen({ route, navigation }) {
               marginBottom: 8,
             }}
           >
-            <Text style={{ color: "#fff", fontSize: 12, fontWeight: "700" }}>
+            <AppText style={{ color: "#fff", fontSize: 12, fontWeight: "700" }}>
               ⭐ {(product?.average_rating ?? 0).toFixed(1)} ·{" "}
               {product?.reviews_count} reseñas
-            </Text>
+            </AppText>
           </View>
         ) : null}
 
@@ -609,9 +610,9 @@ export default function ProductDetailScreen({ route, navigation }) {
               marginBottom: 8,
             }}
           >
-            <Text style={{ color: "#fff", fontSize: 12, fontWeight: "700" }}>
+            <AppText style={{ color: "#fff", fontSize: 12, fontWeight: "700" }}>
               Pack disponible
-            </Text>
+            </AppText>
           </View>
         ) : null}
 
@@ -626,9 +627,9 @@ export default function ProductDetailScreen({ route, navigation }) {
               marginBottom: 8,
             }}
           >
-            <Text style={{ color: "#fff", fontSize: 12, fontWeight: "700" }}>
+            <AppText style={{ color: "#fff", fontSize: 12, fontWeight: "700" }}>
               Beneficio Cibox+
-            </Text>
+            </AppText>
           </View>
         ) : null}
 
@@ -643,21 +644,21 @@ export default function ProductDetailScreen({ route, navigation }) {
               marginBottom: 8,
             }}
           >
-            <Text style={{ color: "#fff", fontSize: 12, fontWeight: "700" }}>
+            <AppText style={{ color: "#fff", fontSize: 12, fontWeight: "700" }}>
               Caja CIBOX
-            </Text>
+            </AppText>
           </View>
         ) : null}
       </View>
 
-      <Text style={{ color: colors.muted, marginBottom: 6 }}>
+      <AppText style={{ color: colors.muted, marginBottom: 6 }}>
         Categoría: {product?.category?.name || "Sin categoría"}
-      </Text>
+      </AppText>
 
-      <Text style={{ color: colors.muted, marginBottom: 18 }}>
+      <AppText style={{ color: colors.muted, marginBottom: 18 }}>
         Puntuación promedio: {product?.average_rating ?? 0} · Reseñas:{" "}
         {product?.reviews_count ?? 0}
-      </Text>
+      </AppText>
 
       {(product?.pricing?.tiers?.length || 0) > 0 ? (
         <View
@@ -668,7 +669,7 @@ export default function ProductDetailScreen({ route, navigation }) {
             marginBottom: 20,
           }}
         >
-          <Text
+          <AppText
             style={{
               fontWeight: "700",
               color: colors.text,
@@ -679,17 +680,17 @@ export default function ProductDetailScreen({ route, navigation }) {
             {product?.product_type === "box"
               ? "Opciones de compra"
               : "Opciones de precio"}
-          </Text>
+          </AppText>
 
           <View style={{ marginBottom: 16 }}>
-            <Text
+            <AppText
               style={{
                 color: colors.muted,
                 marginBottom: 10,
               }}
             >
               Cantidad seleccionada: {selectedQuantity}
-            </Text>
+            </AppText>
 
             <View
               style={{
@@ -709,7 +710,7 @@ export default function ProductDetailScreen({ route, navigation }) {
                   marginRight: 12,
                 }}
               >
-                <Text
+                <AppText
                   style={{
                     fontSize: 18,
                     fontWeight: "800",
@@ -717,10 +718,10 @@ export default function ProductDetailScreen({ route, navigation }) {
                   }}
                 >
                   -
-                </Text>
+                </AppText>
               </Pressable>
 
-              <Text
+              <AppText
                 style={{
                   fontSize: 16,
                   fontWeight: "700",
@@ -731,7 +732,7 @@ export default function ProductDetailScreen({ route, navigation }) {
                 }}
               >
                 {selectedQuantity}
-              </Text>
+              </AppText>
 
               <Pressable
                 onPress={handleIncreaseQuantity}
@@ -744,7 +745,7 @@ export default function ProductDetailScreen({ route, navigation }) {
                   alignItems: "center",
                 }}
               >
-                <Text
+                <AppText
                   style={{
                     fontSize: 18,
                     fontWeight: "800",
@@ -752,12 +753,12 @@ export default function ProductDetailScreen({ route, navigation }) {
                   }}
                 >
                   +
-                </Text>
+                </AppText>
               </Pressable>
             </View>
 
             {selectedTier?.min_qty > 1 ? (
-              <Text
+              <AppText
                 style={{
                   color: colors.muted,
                   fontSize: 12,
@@ -765,7 +766,7 @@ export default function ProductDetailScreen({ route, navigation }) {
                 }}
               >
                 Mínimo para este tier: {selectedTier.min_qty} unidades
-              </Text>
+              </AppText>
             ) : null}
           </View>
 
@@ -779,7 +780,7 @@ export default function ProductDetailScreen({ route, navigation }) {
               marginBottom: 14,
             }}
           >
-            <Text
+            <AppText
               style={{
                 color: colors.text,
                 fontWeight: "700",
@@ -787,19 +788,19 @@ export default function ProductDetailScreen({ route, navigation }) {
               }}
             >
               Resumen estimado
-            </Text>
+            </AppText>
 
-            <Text style={{ color: colors.muted, marginBottom: 4 }}>
+            <AppText style={{ color: colors.muted, marginBottom: 4 }}>
               {product?.product_type === "box"
                 ? `Precio por caja: $${selectedTierPrice}`
                 : `Precio unitario: $${selectedTierPrice}`}
-            </Text>
+            </AppText>
 
-            <Text style={{ color: colors.muted, marginBottom: 4 }}>
+            <AppText style={{ color: colors.muted, marginBottom: 4 }}>
               Cantidad: {selectedQuantity}
-            </Text>
+            </AppText>
 
-            <Text
+            <AppText
               style={{
                 color: colors.text,
                 fontWeight: "700",
@@ -807,12 +808,12 @@ export default function ProductDetailScreen({ route, navigation }) {
               }}
             >
               Subtotal estimado: ${estimatedSubtotal}
-            </Text>
+            </AppText>
 
             {estimatedSavings > 0 ? (
-              <Text style={{ color: colors.success, fontSize: 12 }}>
+              <AppText style={{ color: colors.success, fontSize: 12 }}>
                 Ahorro estimado vs precio base: ${estimatedSavings}
-              </Text>
+              </AppText>
             ) : null}
           </View>
 
@@ -846,7 +847,7 @@ export default function ProductDetailScreen({ route, navigation }) {
                     marginBottom: 6,
                   }}
                 >
-                  <Text
+                  <AppText
                     style={{
                       color: colors.text,
                       fontWeight: "700",
@@ -855,26 +856,26 @@ export default function ProductDetailScreen({ route, navigation }) {
                     {tier.min_qty > 1
                       ? `${product?.product_type === "box" ? "Pack de cajas" : "Pack"} · ${tier.min_qty} unidades`
                       : tier.label || "Unidad"}
-                  </Text>
+                  </AppText>
 
-                  <Text
+                  <AppText
                     style={{
                       color: colors.text,
                       fontWeight: "800",
                     }}
                   >
                     ${tier.price}
-                  </Text>
+                  </AppText>
                 </View>
 
                 {tier.min_qty > 1 ? (
                   <>
-                    <Text style={{ color: colors.success, fontSize: 12 }}>
+                    <AppText style={{ color: colors.success, fontSize: 12 }}>
                       Mejor precio por volumen
-                    </Text>
+                    </AppText>
 
                     {savingsAtMinimum > 0 ? (
-                      <Text
+                      <AppText
                         style={{
                           color: colors.muted,
                           fontSize: 12,
@@ -882,7 +883,7 @@ export default function ProductDetailScreen({ route, navigation }) {
                         }}
                       >
                         Ahorras ${savingsAtMinimum}
-                      </Text>
+                      </AppText>
                     ) : null}
                   </>
                 ) : null}
@@ -980,7 +981,7 @@ export default function ProductDetailScreen({ route, navigation }) {
 
             {renderPurchaseCard()}
 
-            <Text
+            <AppText
               style={{
                 fontWeight: "700",
                 color: colors.text,
@@ -990,9 +991,9 @@ export default function ProductDetailScreen({ route, navigation }) {
               }}
             >
               Descripción
-            </Text>
+            </AppText>
 
-            <Text
+            <AppText
               style={{
                 color: colors.muted,
                 lineHeight: 22,
@@ -1000,7 +1001,7 @@ export default function ProductDetailScreen({ route, navigation }) {
               }}
             >
               {product.description || "Sin descripción"}
-            </Text>
+            </AppText>
 
             {renderBoxContents()}
           </View>
@@ -1008,7 +1009,7 @@ export default function ProductDetailScreen({ route, navigation }) {
           <View style={{ height: spacing.md }} />
 
           <View style={cardStyle}>
-            <Text
+            <AppText
               style={{
                 fontSize: 20,
                 fontWeight: "800",
@@ -1017,15 +1018,15 @@ export default function ProductDetailScreen({ route, navigation }) {
               }}
             >
               Tu reseña
-            </Text>
+            </AppText>
 
             {!token ? (
-              <Text style={{ color: colors.muted }}>
+              <AppText style={{ color: colors.muted }}>
                 Inicia sesión para crear tu reseña.
-              </Text>
+              </AppText>
             ) : (
               <>
-                <Text
+                <AppText
                   style={{
                     marginBottom: 6,
                     fontWeight: "600",
@@ -1033,7 +1034,7 @@ export default function ProductDetailScreen({ route, navigation }) {
                   }}
                 >
                   Puntuación (1 a 5)
-                </Text>
+                </AppText>
 
                 <TextInput
                   value={reviewRating}
@@ -1046,7 +1047,7 @@ export default function ProductDetailScreen({ route, navigation }) {
                   }}
                 />
 
-                <Text
+                <AppText
                   style={{
                     marginBottom: 6,
                     fontWeight: "600",
@@ -1054,7 +1055,7 @@ export default function ProductDetailScreen({ route, navigation }) {
                   }}
                 >
                   Comentario
-                </Text>
+                </AppText>
 
                 <TextInput
                   value={reviewComment}
@@ -1097,7 +1098,7 @@ export default function ProductDetailScreen({ route, navigation }) {
           <View style={{ height: spacing.md }} />
 
           <View style={cardStyle}>
-            <Text
+            <AppText
               style={{
                 fontSize: 20,
                 fontWeight: "800",
@@ -1106,14 +1107,14 @@ export default function ProductDetailScreen({ route, navigation }) {
               }}
             >
               Reseñas del producto
-            </Text>
+            </AppText>
 
             {reviewsLoading ? (
-              <Text style={{ color: colors.muted }}>Cargando reseñas...</Text>
+              <AppText style={{ color: colors.muted }}>Cargando reseñas...</AppText>
             ) : !reviews.length ? (
-              <Text style={{ color: colors.muted }}>
+              <AppText style={{ color: colors.muted }}>
                 Este producto aún no tiene reseñas.
-              </Text>
+              </AppText>
             ) : (
               reviews.map((item) => (
                 <View
@@ -1125,7 +1126,7 @@ export default function ProductDetailScreen({ route, navigation }) {
                     marginTop: 12,
                   }}
                 >
-                  <Text
+                  <AppText
                     style={{
                       fontWeight: "700",
                       marginBottom: 4,
@@ -1133,18 +1134,18 @@ export default function ProductDetailScreen({ route, navigation }) {
                     }}
                   >
                     Rating: {item.rating}/5
-                  </Text>
+                  </AppText>
 
-                  <Text style={{ color: colors.muted, marginBottom: 4 }}>
+                  <AppText style={{ color: colors.muted, marginBottom: 4 }}>
                     {item.comment || "Sin comentario"}
-                  </Text>
+                  </AppText>
 
-                  <Text style={{ color: colors.muted, fontSize: 12 }}>
+                  <AppText style={{ color: colors.muted, fontSize: 12 }}>
                     {item.user_id?.name ||
                       item.user?.name ||
                       item.user?.email ||
                       "Cliente"}
-                  </Text>
+                  </AppText>
                 </View>
               ))
             )}
@@ -1154,9 +1155,9 @@ export default function ProductDetailScreen({ route, navigation }) {
 
           <View style={{ marginTop: spacing.md }}>
             {relatedLoading ? (
-              <Text style={{ color: colors.muted }}>
+              <AppText style={{ color: colors.muted }}>
                 Cargando productos relacionados...
-              </Text>
+              </AppText>
             ) : (
               <ProductRowSection
                 title="Productos relacionados"
@@ -1251,7 +1252,7 @@ export default function ProductDetailScreen({ route, navigation }) {
             <View style={{ height: spacing.md }} />
 
             <View style={cardStyle}>
-              <Text
+              <AppText
                 style={{
                   fontSize: 22,
                   fontWeight: "800",
@@ -1260,16 +1261,16 @@ export default function ProductDetailScreen({ route, navigation }) {
                 }}
               >
                 Descripción
-              </Text>
+              </AppText>
 
-              <Text
+              <AppText
                 style={{
                   color: colors.muted,
                   lineHeight: 24,
                 }}
               >
                 {product.description || "Sin descripción"}
-              </Text>
+              </AppText>
             </View>
 
             {product?.product_type === "box" && boxItems.length ? (
@@ -1282,7 +1283,7 @@ export default function ProductDetailScreen({ route, navigation }) {
             <View style={{ height: spacing.md }} />
 
             <View style={cardStyle}>
-              <Text
+              <AppText
                 style={{
                   fontSize: 22,
                   fontWeight: "800",
@@ -1291,15 +1292,15 @@ export default function ProductDetailScreen({ route, navigation }) {
                 }}
               >
                 Tu reseña
-              </Text>
+              </AppText>
 
               {!token ? (
-                <Text style={{ color: colors.muted }}>
+                <AppText style={{ color: colors.muted }}>
                   Inicia sesión para crear tu reseña.
-                </Text>
+                </AppText>
               ) : (
                 <>
-                  <Text
+                  <AppText
                     style={{
                       marginBottom: 6,
                       fontWeight: "600",
@@ -1307,7 +1308,7 @@ export default function ProductDetailScreen({ route, navigation }) {
                     }}
                   >
                     Puntuación (1 a 5)
-                  </Text>
+                  </AppText>
 
                   <TextInput
                     value={reviewRating}
@@ -1320,7 +1321,7 @@ export default function ProductDetailScreen({ route, navigation }) {
                     }}
                   />
 
-                  <Text
+                  <AppText
                     style={{
                       marginBottom: 6,
                       fontWeight: "600",
@@ -1328,7 +1329,7 @@ export default function ProductDetailScreen({ route, navigation }) {
                     }}
                   >
                     Comentario
-                  </Text>
+                  </AppText>
 
                   <TextInput
                     value={reviewComment}
@@ -1371,7 +1372,7 @@ export default function ProductDetailScreen({ route, navigation }) {
             <View style={{ height: spacing.md }} />
 
             <View style={cardStyle}>
-              <Text
+              <AppText
                 style={{
                   fontSize: 22,
                   fontWeight: "800",
@@ -1380,14 +1381,14 @@ export default function ProductDetailScreen({ route, navigation }) {
                 }}
               >
                 Reseñas del producto
-              </Text>
+              </AppText>
 
               {reviewsLoading ? (
-                <Text style={{ color: colors.muted }}>Cargando reseñas...</Text>
+                <AppText style={{ color: colors.muted }}>Cargando reseñas...</AppText>
               ) : !reviews.length ? (
-                <Text style={{ color: colors.muted }}>
+                <AppText style={{ color: colors.muted }}>
                   Este producto aún no tiene reseñas.
-                </Text>
+                </AppText>
               ) : (
                 reviews.map((item) => (
                   <View
@@ -1399,7 +1400,7 @@ export default function ProductDetailScreen({ route, navigation }) {
                       marginTop: 14,
                     }}
                   >
-                    <Text
+                    <AppText
                       style={{
                         fontWeight: "700",
                         marginBottom: 4,
@@ -1407,18 +1408,18 @@ export default function ProductDetailScreen({ route, navigation }) {
                       }}
                     >
                       Rating: {item.rating}/5
-                    </Text>
+                    </AppText>
 
-                    <Text style={{ color: colors.muted, marginBottom: 4 }}>
+                    <AppText style={{ color: colors.muted, marginBottom: 4 }}>
                       {item.comment || "Sin comentario"}
-                    </Text>
+                    </AppText>
 
-                    <Text style={{ color: colors.muted, fontSize: 12 }}>
+                    <AppText style={{ color: colors.muted, fontSize: 12 }}>
                       {item.user_id?.name ||
                         item.user?.name ||
                         item.user?.email ||
                         "Cliente"}
-                    </Text>
+                    </AppText>
                   </View>
                 ))
               )}
@@ -1432,9 +1433,9 @@ export default function ProductDetailScreen({ route, navigation }) {
 
         <View style={{ marginTop: spacing.md }}>
           {relatedLoading ? (
-            <Text style={{ color: colors.muted }}>
+            <AppText style={{ color: colors.muted }}>
               Cargando productos relacionados...
-            </Text>
+            </AppText>
           ) : (
             <ProductRowSection
               title="Productos relacionados"

@@ -8,6 +8,7 @@ import {
   View,
 } from "react-native";
 import { colors, radius, spacing } from "../constants/theme";
+import AppText from "./AppText";
 
 export default function StockEditModal({
   visible,
@@ -65,7 +66,7 @@ export default function StockEditModal({
             borderColor: colors.border,
           }}
         >
-          <Text
+          <AppText
             style={{
               fontSize: 22,
               fontWeight: "800",
@@ -74,18 +75,18 @@ export default function StockEditModal({
             }}
           >
             Editar stock
-          </Text>
+          </AppText>
 
-          <Text
+          <AppText
             style={{
               color: colors.muted,
               marginBottom: spacing.md,
             }}
           >
             {product?.name || "Producto"}
-          </Text>
+          </AppText>
 
-          <Text
+          <AppText
             style={{
               fontSize: 14,
               fontWeight: "700",
@@ -94,7 +95,7 @@ export default function StockEditModal({
             }}
           >
             Nuevo stock
-          </Text>
+          </AppText>
 
           <TextInput
             value={stockValue}
@@ -129,9 +130,9 @@ export default function StockEditModal({
                 marginRight: 8,
               }}
             >
-              <Text style={{ color: colors.text, fontWeight: "700" }}>
+              <AppText style={{ color: colors.text, fontWeight: "700" }}>
                 Cancelar
-              </Text>
+              </AppText>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -150,14 +151,14 @@ export default function StockEditModal({
               {loading ? (
                 <ActivityIndicator color={colors.background} />
               ) : (
-                <Text
+                <AppText
                   style={{
                     color: colors.background,
                     fontWeight: "700",
                   }}
                 >
                   Guardar
-                </Text>
+                </AppText>
               )}
             </TouchableOpacity>
           </View>

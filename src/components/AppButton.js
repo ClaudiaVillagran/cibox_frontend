@@ -1,5 +1,6 @@
 import { Pressable, Text } from 'react-native';
 import { colors, radius } from '../constants/theme';
+import AppText from './AppText';
 
 export default function AppButton({
   title,
@@ -29,7 +30,7 @@ export default function AppButton({
         ...style,
       }}
     >
-      <Text
+      <AppText
         style={{
           color: isPrimary ? colors.primaryText : colors.text,
           fontWeight: '700',
@@ -37,7 +38,7 @@ export default function AppButton({
         }}
       >
         {title}
-      </Text>
+      </AppText>
     </Pressable>
   );
 }

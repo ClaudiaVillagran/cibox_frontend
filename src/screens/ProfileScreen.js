@@ -8,6 +8,7 @@ import { colors, radius, spacing, shadows } from "../constants/theme";
 import { getMyProfile } from "../services/userService";
 import VendorDashboardScreen from "./VendorDashboardScreen";
 import { showAppAlert } from "../utils/appAlerts";
+import AppText from "../components/AppText";
 
 export default function ProfileScreen({ navigation }) {
   const { user, logout, token } = useAuthStore();
@@ -106,7 +107,7 @@ export default function ProfileScreen({ navigation }) {
               ...shadows.card,
             }}
           >
-            <Text
+            <AppText
               style={{
                 fontSize: 26,
                 fontWeight: "800",
@@ -116,9 +117,9 @@ export default function ProfileScreen({ navigation }) {
               }}
             >
               Inicia sesión para ver tu perfil
-            </Text>
+            </AppText>
 
-            <Text
+            <AppText
               style={{
                 color: colors.muted,
                 textAlign: "center",
@@ -128,7 +129,7 @@ export default function ProfileScreen({ navigation }) {
             >
               Accede a tu cuenta para revisar tus datos, tus órdenes y tus accesos
               rápidos en CIBOX.
-            </Text>
+            </AppText>
 
             <AppButton
               title="Iniciar sesión"
@@ -154,14 +155,14 @@ export default function ProfileScreen({ navigation }) {
           style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
         >
           <ActivityIndicator size="large" color={colors.primary} />
-          <Text
+          <AppText
             style={{
               marginTop: spacing.sm,
               color: colors.muted,
             }}
           >
             Cargando perfil...
-          </Text>
+          </AppText>
         </View>
       </ScreenContainer>
     );
@@ -173,7 +174,7 @@ export default function ProfileScreen({ navigation }) {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: spacing.xl }}
       >
-        <Text
+        <AppText
           style={{
             fontSize: 28,
             fontWeight: "800",
@@ -182,19 +183,19 @@ export default function ProfileScreen({ navigation }) {
           }}
         >
           Mi perfil
-        </Text>
+        </AppText>
 
-        <Text
+        <AppText
           style={{
             color: colors.muted,
             marginBottom: spacing.md,
           }}
         >
           Revisa tu cuenta y tus accesos rápidos.
-        </Text>
+        </AppText>
 
         <View style={cardStyle}>
-          <Text
+          <AppText
             style={{
               fontSize: 22,
               fontWeight: "800",
@@ -203,11 +204,11 @@ export default function ProfileScreen({ navigation }) {
             }}
           >
             Hola, {getDisplayName()}
-          </Text>
+          </AppText>
 
-          <Text style={{ color: colors.muted }}>
+          <AppText style={{ color: colors.muted }}>
             Email: {profile?.email || "—"}
-          </Text>
+          </AppText>
         </View>
 
         {isVendor && (
@@ -225,7 +226,7 @@ export default function ProfileScreen({ navigation }) {
           }}
         >
           <View style={halfCardStyle}>
-            <Text
+            <AppText
               style={{
                 fontSize: 12,
                 fontWeight: "700",
@@ -235,9 +236,9 @@ export default function ProfileScreen({ navigation }) {
               }}
             >
               Rol actual
-            </Text>
+            </AppText>
 
-            <Text
+            <AppText
               style={{
                 fontSize: 18,
                 fontWeight: "800",
@@ -245,11 +246,11 @@ export default function ProfileScreen({ navigation }) {
               }}
             >
               {profile?.role || "—"}
-            </Text>
+            </AppText>
           </View>
 
           <View style={halfCardStyle}>
-            <Text
+            <AppText
               style={{
                 fontSize: 12,
                 fontWeight: "700",
@@ -259,9 +260,9 @@ export default function ProfileScreen({ navigation }) {
               }}
             >
               Carrito
-            </Text>
+            </AppText>
 
-            <Text
+            <AppText
               style={{
                 fontSize: 18,
                 fontWeight: "800",
@@ -269,12 +270,12 @@ export default function ProfileScreen({ navigation }) {
               }}
             >
               {cartCount} Producto(s)
-            </Text>
+            </AppText>
           </View>
         </View>
 
         <View style={cardStyle}>
-          <Text
+          <AppText
             style={{
               fontSize: 18,
               fontWeight: "700",
@@ -283,7 +284,7 @@ export default function ProfileScreen({ navigation }) {
             }}
           >
             Accesos rápidos
-          </Text>
+          </AppText>
 
           <AppButton title="Refrescar perfil" onPress={loadProfile} />
 
@@ -317,7 +318,7 @@ export default function ProfileScreen({ navigation }) {
         </View>
 
         <View style={cardStyle}>
-          <Text
+          <AppText
             style={{
               fontSize: 18,
               fontWeight: "700",
@@ -326,7 +327,7 @@ export default function ProfileScreen({ navigation }) {
             }}
           >
             Sesión
-          </Text>
+          </AppText>
 
           <AppButton
             title="Cerrar sesión"

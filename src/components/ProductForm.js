@@ -15,6 +15,7 @@ import { colors, radius, spacing } from "../constants/theme";
 import { pickMultipleImages } from "../utils/imagePicker";
 import { uploadMultipleImagesAsync } from "../services/uploadService";
 import { showAppAlert } from "../utils/appAlerts";
+import AppText from "./AppText";
 
 export default function ProductForm({
   mode = "create",
@@ -308,7 +309,7 @@ export default function ProductForm({
       contentContainerStyle={{ paddingBottom: spacing.xl }}
       keyboardShouldPersistTaps="handled"
     >
-      <Text
+      <AppText
         style={{
           fontSize: 28,
           fontWeight: "800",
@@ -317,9 +318,9 @@ export default function ProductForm({
         }}
       >
         {mode === "create" ? "Crear producto" : "Editar producto"}
-      </Text>
+      </AppText>
 
-      <Text
+      <AppText
         style={{
           color: colors.muted,
           marginBottom: spacing.lg,
@@ -328,9 +329,9 @@ export default function ProductForm({
         {mode === "create"
           ? "Completa la información básica del producto."
           : "Modifica la información del producto."}
-      </Text>
+      </AppText>
 
-      <Text style={labelStyle}>Nombre</Text>
+      <AppText style={labelStyle}>Nombre</AppText>
       <TextInput
         value={name}
         onChangeText={setName}
@@ -339,7 +340,7 @@ export default function ProductForm({
         style={inputStyle}
       />
 
-      <Text style={labelStyle}>Descripción</Text>
+      <AppText style={labelStyle}>Descripción</AppText>
       <TextInput
         value={description}
         onChangeText={setDescription}
@@ -349,7 +350,7 @@ export default function ProductForm({
         multiline
       />
 
-      <Text style={labelStyle}>SKU</Text>
+      <AppText style={labelStyle}>SKU</AppText>
       <TextInput
         value={sku}
         onChangeText={setSku}
@@ -358,7 +359,7 @@ export default function ProductForm({
         style={inputStyle}
       />
 
-      <Text style={labelStyle}>Marca</Text>
+      <AppText style={labelStyle}>Marca</AppText>
       <TextInput
         value={brand}
         onChangeText={setBrand}
@@ -367,7 +368,7 @@ export default function ProductForm({
         style={inputStyle}
       />
 
-      <Text
+      <AppText
         style={{
           fontSize: 18,
           fontWeight: "800",
@@ -377,9 +378,9 @@ export default function ProductForm({
         }}
       >
         Peso
-      </Text>
+      </AppText>
 
-      <Text style={labelStyle}>Peso</Text>
+      <AppText style={labelStyle}>Peso</AppText>
       <TextInput
         value={weightValue}
         onChangeText={setWeightValue}
@@ -389,7 +390,7 @@ export default function ProductForm({
         style={inputStyle}
       />
 
-      <Text style={labelStyle}>Unidad de peso</Text>
+      <AppText style={labelStyle}>Unidad de peso</AppText>
       <TextInput
         value={weightUnit}
         onChangeText={setWeightUnit}
@@ -398,7 +399,7 @@ export default function ProductForm({
         style={inputStyle}
       />
 
-      <Text
+      <AppText
         style={{
           fontSize: 18,
           fontWeight: "800",
@@ -408,9 +409,9 @@ export default function ProductForm({
         }}
       >
         Dimensiones
-      </Text>
+      </AppText>
 
-      <Text style={labelStyle}>Largo</Text>
+      <AppText style={labelStyle}>Largo</AppText>
       <TextInput
         value={length}
         onChangeText={setLength}
@@ -420,7 +421,7 @@ export default function ProductForm({
         style={inputStyle}
       />
 
-      <Text style={labelStyle}>Ancho</Text>
+      <AppText style={labelStyle}>Ancho</AppText>
       <TextInput
         value={width}
         onChangeText={setWidth}
@@ -430,7 +431,7 @@ export default function ProductForm({
         style={inputStyle}
       />
 
-      <Text style={labelStyle}>Alto</Text>
+      <AppText style={labelStyle}>Alto</AppText>
       <TextInput
         value={height}
         onChangeText={setHeight}
@@ -440,7 +441,7 @@ export default function ProductForm({
         style={inputStyle}
       />
 
-      <Text style={labelStyle}>Unidad de dimensiones</Text>
+      <AppText style={labelStyle}>Unidad de dimensiones</AppText>
       <TextInput
         value={dimensionUnit}
         onChangeText={setDimensionUnit}
@@ -449,10 +450,10 @@ export default function ProductForm({
         style={inputStyle}
       />
 
-      <Text style={labelStyle}>Categoría</Text>
+      <AppText style={labelStyle}>Categoría</AppText>
       <CategorySelect value={selectedCategory} onChange={setSelectedCategory} />
 
-      <Text style={labelStyle}>Stock</Text>
+      <AppText style={labelStyle}>Stock</AppText>
       <TextInput
         value={stock}
         onChangeText={setStock}
@@ -462,7 +463,7 @@ export default function ProductForm({
         style={inputStyle}
       />
 
-      <Text
+      <AppText
         style={{
           fontSize: 18,
           fontWeight: "800",
@@ -472,9 +473,9 @@ export default function ProductForm({
         }}
       >
         Precio base
-      </Text>
+      </AppText>
 
-      <Text style={labelStyle}>Precio</Text>
+      <AppText style={labelStyle}>Precio</AppText>
       <TextInput
         value={basePrice}
         onChangeText={setBasePrice}
@@ -484,7 +485,7 @@ export default function ProductForm({
         style={inputStyle}
       />
 
-      <Text style={labelStyle}>Label</Text>
+      <AppText>Label</AppText>
       <TextInput
         value={baseLabel}
         onChangeText={setBaseLabel}
@@ -493,7 +494,7 @@ export default function ProductForm({
         style={inputStyle}
       />
 
-      <Text
+      <AppText
         style={{
           fontSize: 18,
           fontWeight: "800",
@@ -503,9 +504,9 @@ export default function ProductForm({
         }}
       >
         Precio pack opcional
-      </Text>
+      </AppText>
 
-      <Text style={labelStyle}>Cantidad mínima pack</Text>
+      <AppText style={labelStyle}>Cantidad mínima pack</AppText>
       <TextInput
         value={packMinQty}
         onChangeText={setPackMinQty}
@@ -515,7 +516,7 @@ export default function ProductForm({
         style={inputStyle}
       />
 
-      <Text style={labelStyle}>Precio pack</Text>
+      <AppText style={labelStyle}>Precio pack</AppText>
       <TextInput
         value={packPrice}
         onChangeText={setPackPrice}
@@ -525,7 +526,7 @@ export default function ProductForm({
         style={inputStyle}
       />
 
-      <Text style={labelStyle}>Label pack</Text>
+      <AppText style={labelStyle}>Label pack</AppText>
       <TextInput
         value={packLabel}
         onChangeText={setPackLabel}
@@ -548,7 +549,7 @@ export default function ProductForm({
         }}
       >
         <View style={{ flex: 1, paddingRight: 10 }}>
-          <Text
+          <AppText
             style={{
               color: colors.text,
               fontWeight: "700",
@@ -556,16 +557,16 @@ export default function ProductForm({
             }}
           >
             CIBOX Plus
-          </Text>
-          <Text style={{ color: colors.muted }}>
+          </AppText>
+          <AppText style={{ color: colors.muted }}>
             Activa si este producto aplica beneficios para clientes CIBOX+.
-          </Text>
+          </AppText>
         </View>
 
         <Switch value={ciboxPlusEnabled} onValueChange={setCiboxPlusEnabled} />
       </View>
 
-      <Text style={labelStyle}>Imágenes del producto</Text>
+      <AppText style={labelStyle}>Imágenes del producto</AppText>
 
       <TouchableOpacity
         onPress={handlePickImages}
@@ -581,17 +582,17 @@ export default function ProductForm({
           minHeight: 120,
         }}
       >
-        <Text style={{ color: colors.text, fontWeight: "700", marginBottom: 4 }}>
+        <AppText style={{ color: colors.text, fontWeight: "700", marginBottom: 4 }}>
           Agregar imágenes
-        </Text>
-        <Text style={{ color: colors.muted }}>
+        </AppText>
+        <AppText style={{ color: colors.muted }}>
           Puedes subir hasta 6 imágenes
-        </Text>
+        </AppText>
       </TouchableOpacity>
 
       {currentImageUrls.length ? (
         <View style={{ marginBottom: spacing.md }}>
-          <Text
+          <AppText
             style={{
               color: colors.text,
               fontWeight: "700",
@@ -599,7 +600,7 @@ export default function ProductForm({
             }}
           >
             Imágenes actuales
-          </Text>
+          </AppText>
 
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
             {currentImageUrls.map((url, index) => (
@@ -634,11 +635,11 @@ export default function ProductForm({
                       marginBottom: 6,
                     }}
                   >
-                    <Text
+                    <AppText
                       style={{ color: "#fff", fontWeight: "700", fontSize: 12 }}
                     >
                       Principal
-                    </Text>
+                    </AppText>
                   </View>
                 ) : (
                   <TouchableOpacity
@@ -652,7 +653,7 @@ export default function ProductForm({
                       marginBottom: 6,
                     }}
                   >
-                    <Text
+                    <AppText
                       style={{
                         color: "#2f8f4e",
                         fontWeight: "700",
@@ -660,7 +661,7 @@ export default function ProductForm({
                       }}
                     >
                       Usar como principal
-                    </Text>
+                    </AppText>
                   </TouchableOpacity>
                 )}
 
@@ -674,9 +675,9 @@ export default function ProductForm({
                     alignItems: "center",
                   }}
                 >
-                  <Text style={{ color: "#d33", fontWeight: "700", fontSize: 12 }}>
+                  <AppText style={{ color: "#d33", fontWeight: "700", fontSize: 12 }}>
                     Quitar
-                  </Text>
+                  </AppText>
                 </TouchableOpacity>
               </View>
             ))}
@@ -686,7 +687,7 @@ export default function ProductForm({
 
       {selectedImages.length ? (
         <View style={{ marginBottom: spacing.md }}>
-          <Text
+          <AppText
             style={{
               color: colors.text,
               fontWeight: "700",
@@ -694,7 +695,7 @@ export default function ProductForm({
             }}
           >
             Nuevas imágenes
-          </Text>
+          </AppText>
 
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
             {selectedImages.map((asset, index) => (
@@ -729,11 +730,11 @@ export default function ProductForm({
                       marginBottom: 6,
                     }}
                   >
-                    <Text
+                    <AppText
                       style={{ color: "#fff", fontWeight: "700", fontSize: 12 }}
                     >
                       Principal
-                    </Text>
+                    </AppText>
                   </View>
                 ) : (
                   <TouchableOpacity
@@ -747,7 +748,7 @@ export default function ProductForm({
                       marginBottom: 6,
                     }}
                   >
-                    <Text
+                    <AppText
                       style={{
                         color: "#2f8f4e",
                         fontWeight: "700",
@@ -755,7 +756,7 @@ export default function ProductForm({
                       }}
                     >
                       Usar como principal
-                    </Text>
+                    </AppText>
                   </TouchableOpacity>
                 )}
 
@@ -769,9 +770,9 @@ export default function ProductForm({
                     alignItems: "center",
                   }}
                 >
-                  <Text style={{ color: "#d33", fontWeight: "700", fontSize: 12 }}>
+                  <AppText style={{ color: "#d33", fontWeight: "700", fontSize: 12 }}>
                     Quitar
-                  </Text>
+                  </AppText>
                 </TouchableOpacity>
               </View>
             ))}
@@ -780,9 +781,9 @@ export default function ProductForm({
       ) : null}
 
       {uploadingImage ? (
-        <Text style={{ color: colors.muted, marginBottom: spacing.md }}>
+        <AppText style={{ color: colors.muted, marginBottom: spacing.md }}>
           Subiendo imágenes...
-        </Text>
+        </AppText>
       ) : null}
 
       {saving ? (

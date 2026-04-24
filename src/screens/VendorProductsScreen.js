@@ -21,6 +21,7 @@ import {
 } from "../services/productService";
 import StockEditModal from "../components/StockEditModal";
 import { showAppAlert, confirmAppAction } from "../utils/appAlerts";
+import AppText from "../components/AppText";
 export default function VendorProductsScreen() {
   const navigation = useNavigation();
   const [products, setProducts] = useState([]);
@@ -275,7 +276,7 @@ export default function VendorProductsScreen() {
         contentContainerStyle={{ paddingBottom: spacing.xl }}
         ListHeaderComponent={
           <View style={{ marginBottom: spacing.md }}>
-            <Text
+            <AppText
               style={{
                 fontSize: 28,
                 fontWeight: "800",
@@ -284,16 +285,16 @@ export default function VendorProductsScreen() {
               }}
             >
               Mis productos
-            </Text>
+            </AppText>
 
-            <Text
+            <AppText
               style={{
                 color: colors.muted,
                 marginBottom: spacing.md,
               }}
             >
               Gestiona los productos de tu tienda.
-            </Text>
+            </AppText>
             <TextInput
               value={search}
               onChangeText={setSearch}
@@ -316,31 +317,31 @@ export default function VendorProductsScreen() {
                 onPress={() => setStatusFilter("all")}
                 style={filterButtonStyle(statusFilter === "all")}
               >
-                <Text style={filterTextStyle(statusFilter === "all")}>
+                <AppText style={filterTextStyle(statusFilter === "all")}>
                   Todos
-                </Text>
+                </AppText>
               </TouchableOpacity>
 
               <TouchableOpacity
                 onPress={() => setStatusFilter("active")}
                 style={filterButtonStyle(statusFilter === "active")}
               >
-                <Text style={filterTextStyle(statusFilter === "active")}>
+                <AppText style={filterTextStyle(statusFilter === "active")}>
                   Activos
-                </Text>
+                </AppText>
               </TouchableOpacity>
 
               <TouchableOpacity
                 onPress={() => setStatusFilter("inactive")}
                 style={filterButtonStyle(statusFilter === "inactive")}
               >
-                <Text style={filterTextStyle(statusFilter === "inactive")}>
+                <AppText style={filterTextStyle(statusFilter === "inactive")}>
                   Inactivos
-                </Text>
+                </AppText>
               </TouchableOpacity>
             </View>
 
-            <Text
+            <AppText
               style={{
                 color: colors.muted,
                 marginBottom: spacing.md,
@@ -348,8 +349,8 @@ export default function VendorProductsScreen() {
             >
               {sortedProducts.length} resultado
               {sortedProducts.length === 1 ? "" : "s"}
-            </Text>
-            <Text
+            </AppText>
+            <AppText
               style={{
                 color: colors.text,
                 fontWeight: "800",
@@ -357,7 +358,7 @@ export default function VendorProductsScreen() {
               }}
             >
               Ordenar por
-            </Text>
+            </AppText>
 
             <View
               style={{
@@ -370,54 +371,54 @@ export default function VendorProductsScreen() {
                 onPress={() => setSortBy("newest")}
                 style={sortButtonStyle(sortBy === "newest")}
               >
-                <Text style={sortTextStyle(sortBy === "newest")}>
+                <AppText style={sortTextStyle(sortBy === "newest")}>
                   Más nuevos
-                </Text>
+                </AppText>
               </TouchableOpacity>
 
               <TouchableOpacity
                 onPress={() => setSortBy("oldest")}
                 style={sortButtonStyle(sortBy === "oldest")}
               >
-                <Text style={sortTextStyle(sortBy === "oldest")}>
+                <AppText style={sortTextStyle(sortBy === "oldest")}>
                   Más antiguos
-                </Text>
+                </AppText>
               </TouchableOpacity>
 
               <TouchableOpacity
                 onPress={() => setSortBy("name_asc")}
                 style={sortButtonStyle(sortBy === "name_asc")}
               >
-                <Text style={sortTextStyle(sortBy === "name_asc")}>
+                <AppText style={sortTextStyle(sortBy === "name_asc")}>
                   Nombre A-Z
-                </Text>
+                </AppText>
               </TouchableOpacity>
 
               <TouchableOpacity
                 onPress={() => setSortBy("name_desc")}
                 style={sortButtonStyle(sortBy === "name_desc")}
               >
-                <Text style={sortTextStyle(sortBy === "name_desc")}>
+                <AppText style={sortTextStyle(sortBy === "name_desc")}>
                   Nombre Z-A
-                </Text>
+                </AppText>
               </TouchableOpacity>
 
               <TouchableOpacity
                 onPress={() => setSortBy("stock_asc")}
                 style={sortButtonStyle(sortBy === "stock_asc")}
               >
-                <Text style={sortTextStyle(sortBy === "stock_asc")}>
+                <AppText style={sortTextStyle(sortBy === "stock_asc")}>
                   Stock menor
-                </Text>
+                </AppText>
               </TouchableOpacity>
 
               <TouchableOpacity
                 onPress={() => setSortBy("stock_desc")}
                 style={sortButtonStyle(sortBy === "stock_desc")}
               >
-                <Text style={sortTextStyle(sortBy === "stock_desc")}>
+                <AppText style={sortTextStyle(sortBy === "stock_desc")}>
                   Stock mayor
-                </Text>
+                </AppText>
               </TouchableOpacity>
             </View>
             <AppButton
@@ -428,7 +429,7 @@ export default function VendorProductsScreen() {
         }
         ListEmptyComponent={
           <View style={cardStyle}>
-            <Text
+            <AppText
               style={{
                 fontSize: 16,
                 fontWeight: "700",
@@ -439,13 +440,13 @@ export default function VendorProductsScreen() {
               {products.length
                 ? "No hay resultados"
                 : "Aún no tienes productos"}
-            </Text>
+            </AppText>
 
-            <Text style={{ color: colors.muted, marginBottom: spacing.md }}>
+            <AppText style={{ color: colors.muted, marginBottom: spacing.md }}>
               {products.length
                 ? "Prueba con otra búsqueda o cambia el filtro."
                 : "Crea tu primer producto para empezar a vender."}
-            </Text>
+            </AppText>
 
             {!products.length ? (
               <AppButton
@@ -481,7 +482,7 @@ export default function VendorProductsScreen() {
               </View>
             ) : null}
 
-            <Text
+            <AppText
               style={{
                 fontSize: 18,
                 fontWeight: "800",
@@ -490,7 +491,7 @@ export default function VendorProductsScreen() {
               }}
             >
               {item.name}
-            </Text>
+            </AppText>
             <View
               style={{
                 flexDirection: "row",
@@ -500,35 +501,35 @@ export default function VendorProductsScreen() {
             >
               {!item.is_active ? (
                 <View style={badgeStyle("#d33")}>
-                  <Text style={badgeTextStyle}>Inactivo</Text>
+                  <AppText style={badgeTextStyle}>Inactivo</AppText>
                 </View>
               ) : null}
 
               {(item.stock ?? 0) <= 0 ? (
                 <View style={badgeStyle("#ff8c00")}>
-                  <Text style={badgeTextStyle}>Sin stock</Text>
+                  <AppText style={badgeTextStyle}>Sin stock</AppText>
                 </View>
               ) : null}
 
               {item?.cibox_plus?.enabled ? (
                 <View style={badgeStyle("#111")}>
-                  <Text style={badgeTextStyle}>CIBOX+</Text>
+                  <AppText style={badgeTextStyle}>CIBOX+</AppText>
                 </View>
               ) : null}
 
               {hasPackPricing(item) ? (
                 <View style={badgeStyle("#2f8f4e")}>
-                  <Text style={badgeTextStyle}>Pack</Text>
+                  <AppText style={badgeTextStyle}>Pack</AppText>
                 </View>
               ) : null}
 
             </View>
 
-            <Text style={{ color: colors.muted, marginBottom: 4 }}>
+            <AppText style={{ color: colors.muted, marginBottom: 4 }}>
               Precio base:{" "}
               {getBasePrice(item) ? `$${getBasePrice(item)}` : "No definido"}
-            </Text>
-            <Text
+            </AppText>
+            <AppText
               style={{
                 color: (item.stock ?? 0) > 0 ? colors.muted : "#d33",
                 marginBottom: 4,
@@ -536,31 +537,31 @@ export default function VendorProductsScreen() {
               }}
             >
               Stock: {item.stock ?? 0}
-            </Text>
+            </AppText>
             {item.brand ? (
               <View style={badgeStyle("#6b7280")}>
-                <Text style={badgeTextStyle}>{item.brand}</Text>
+                <AppText style={badgeTextStyle}>{item.brand}</AppText>
               </View>
             ) : null}
             {item.sku ? (
-              <Text style={{ color: colors.muted, marginBottom: 4 }}>
+              <AppText style={{ color: colors.muted, marginBottom: 4 }}>
                 SKU: {item.sku}
-              </Text>
+              </AppText>
             ) : null}
 
             {item.brand ? (
-              <Text style={{ color: colors.muted, marginBottom: 4 }}>
+              <AppText style={{ color: colors.muted, marginBottom: 4 }}>
                 Marca: {item.brand}
-              </Text>
+              </AppText>
             ) : null}
 
             {item.weight?.value ? (
-              <Text style={{ color: colors.muted, marginBottom: 4 }}>
+              <AppText style={{ color: colors.muted, marginBottom: 4 }}>
                 Peso: {item.weight.value} {item.weight.unit}
-              </Text>
+              </AppText>
             ) : null}
 
-            <Text
+            <AppText
               style={{
                 color: item.is_active ? "#2f8f4e" : "#d33",
                 fontWeight: "700",
@@ -568,7 +569,7 @@ export default function VendorProductsScreen() {
               }}
             >
               {item.is_active ? "Activo" : "Inactivo"}
-            </Text>
+            </AppText>
 
             <View
               style={{ flexDirection: "row", marginTop: 8, flexWrap: "wrap" }}
@@ -587,9 +588,9 @@ export default function VendorProductsScreen() {
                   marginRight: 8,
                 }}
               >
-                <Text style={{ color: colors.text, fontWeight: "700" }}>
+                <AppText style={{ color: colors.text, fontWeight: "700" }}>
                   Editar
-                </Text>
+                </AppText>
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={() => handleQuickStockEdit(item)}
@@ -603,9 +604,9 @@ export default function VendorProductsScreen() {
                   marginRight: 8,
                 }}
               >
-                <Text style={{ color: "#c98a00", fontWeight: "700" }}>
+                <AppText style={{ color: "#c98a00", fontWeight: "700" }}>
                   Editar stock
-                </Text>
+                </AppText>
               </TouchableOpacity>
 
               <TouchableOpacity
@@ -623,14 +624,14 @@ export default function VendorProductsScreen() {
                   alignItems: "center",
                 }}
               >
-                <Text
+                <AppText
                   style={{
                     color: item.is_active ? "#d33" : "#2f8f4e",
                     fontWeight: "700",
                   }}
                 >
                   {item.is_active ? "Desactivar" : "Reactivar"}
-                </Text>
+                </AppText>
               </TouchableOpacity>
             </View>
           </View>

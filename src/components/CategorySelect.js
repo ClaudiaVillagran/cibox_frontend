@@ -8,6 +8,7 @@ import {
 } from "react-native";
 import { colors, radius, spacing } from "../constants/theme";
 import { getCategories } from "../services/categoryService";
+import AppText from "./AppText";
 
 export default function CategorySelect({ value, onChange }) {
   const [categories, setCategories] = useState([]);
@@ -71,9 +72,9 @@ export default function CategorySelect({ value, onChange }) {
           marginBottom: spacing.md,
         }}
       >
-        <Text style={{ color: colors.muted }}>
+        <AppText style={{ color: colors.muted }}>
           No se pudieron cargar las categorías.
-        </Text>
+        </AppText>
       </View>
     );
   }
@@ -101,14 +102,14 @@ export default function CategorySelect({ value, onChange }) {
               marginRight: 10,
             }}
           >
-            <Text
+            <AppText
               style={{
                 color: isSelected ? colors.background : colors.text,
                 fontWeight: "700",
               }}
             >
               {category.name}
-            </Text>
+            </AppText>
           </TouchableOpacity>
         );
       })}

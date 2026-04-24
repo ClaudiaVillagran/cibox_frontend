@@ -16,6 +16,7 @@ import {
 } from "../services/notificationService";
 import useAuthStore from "../store/authStore";
 import { showAppAlert } from "../utils/appAlerts";
+import AppText from "../components/AppText";
 
 export default function NotificationsScreen({ navigation }) {
   const { token } = useAuthStore();
@@ -134,7 +135,7 @@ export default function NotificationsScreen({ navigation }) {
             marginBottom: 8,
           }}
         >
-          <Text
+          <AppText
             style={{
               fontSize: 16,
               fontWeight: "700",
@@ -144,7 +145,7 @@ export default function NotificationsScreen({ navigation }) {
             }}
           >
             {title}
-          </Text>
+          </AppText>
 
           {!isRead ? (
             <View
@@ -155,7 +156,7 @@ export default function NotificationsScreen({ navigation }) {
                 paddingVertical: 4,
               }}
             >
-              <Text
+              <AppText
                 style={{
                   color: colors.primaryText,
                   fontSize: 12,
@@ -163,12 +164,12 @@ export default function NotificationsScreen({ navigation }) {
                 }}
               >
                 Nueva
-              </Text>
+              </AppText>
             </View>
           ) : null}
         </View>
 
-        <Text
+        <AppText
           style={{
             color: colors.muted,
             marginBottom: 8,
@@ -176,9 +177,9 @@ export default function NotificationsScreen({ navigation }) {
           }}
         >
           {message}
-        </Text>
+        </AppText>
 
-        <Text style={{ color: colors.muted, fontSize: 12 }}>{createdAt}</Text>
+        <AppText style={{ color: colors.muted, fontSize: 12 }}>{createdAt}</AppText>
       </Pressable>
     );
   };
@@ -205,7 +206,7 @@ export default function NotificationsScreen({ navigation }) {
               ...shadows.card,
             }}
           >
-            <Text
+            <AppText
               style={{
                 fontSize: 26,
                 fontWeight: "800",
@@ -215,9 +216,9 @@ export default function NotificationsScreen({ navigation }) {
               }}
             >
               Inicia sesión para ver tus notificaciones
-            </Text>
+            </AppText>
 
-            <Text
+            <AppText
               style={{
                 color: colors.muted,
                 textAlign: "center",
@@ -227,7 +228,7 @@ export default function NotificationsScreen({ navigation }) {
             >
               Aquí verás novedades importantes sobre tus compras, tu cuenta y el
               estado de tus pedidos.
-            </Text>
+            </AppText>
 
             <AppButton
               title="Iniciar sesión"
@@ -253,9 +254,9 @@ export default function NotificationsScreen({ navigation }) {
       <ScreenContainer maxWidth={720}>
         <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
           <ActivityIndicator size="large" color={colors.primary} />
-          <Text style={{ marginTop: spacing.sm, color: colors.muted }}>
+          <AppText style={{ marginTop: spacing.sm, color: colors.muted }}>
             Cargando notificaciones...
-          </Text>
+          </AppText>
         </View>
       </ScreenContainer>
     );
@@ -270,7 +271,7 @@ export default function NotificationsScreen({ navigation }) {
         contentContainerStyle={{ paddingBottom: spacing.xl }}
         ListHeaderComponent={
           <View style={{ marginBottom: spacing.md }}>
-            <Text
+            <AppText
               style={{
                 fontSize: 28,
                 fontWeight: "800",
@@ -279,11 +280,11 @@ export default function NotificationsScreen({ navigation }) {
               }}
             >
               Notificaciones
-            </Text>
+            </AppText>
 
-            <Text style={{ color: colors.muted, marginBottom: spacing.md }}>
+            <AppText style={{ color: colors.muted, marginBottom: spacing.md }}>
               No leídas: {unreadCount}
-            </Text>
+            </AppText>
 
             <View
               style={{
@@ -305,7 +306,7 @@ export default function NotificationsScreen({ navigation }) {
                   marginRight: 10,
                 }}
               >
-                <Text
+                <AppText
                   style={{
                     color:
                       activeFilter === "all"
@@ -315,7 +316,7 @@ export default function NotificationsScreen({ navigation }) {
                   }}
                 >
                   Todas
-                </Text>
+                </AppText>
               </Pressable>
 
               <Pressable
@@ -330,7 +331,7 @@ export default function NotificationsScreen({ navigation }) {
                   borderRadius: radius.md,
                 }}
               >
-                <Text
+                <AppText
                   style={{
                     color:
                       activeFilter === "unread"
@@ -340,7 +341,7 @@ export default function NotificationsScreen({ navigation }) {
                   }}
                 >
                   No leídas
-                </Text>
+                </AppText>
               </Pressable>
             </View>
 
@@ -358,7 +359,7 @@ export default function NotificationsScreen({ navigation }) {
               alignItems: "center",
             }}
           >
-            <Text
+            <AppText
               style={{
                 fontSize: 22,
                 fontWeight: "800",
@@ -367,8 +368,8 @@ export default function NotificationsScreen({ navigation }) {
               }}
             >
               No hay notificaciones
-            </Text>
-            <Text
+            </AppText>
+            <AppText
               style={{
                 color: colors.muted,
                 textAlign: "center",
@@ -376,7 +377,7 @@ export default function NotificationsScreen({ navigation }) {
               }}
             >
               Cuando ocurran eventos importantes, aparecerán aquí.
-            </Text>
+            </AppText>
           </View>
         }
       />

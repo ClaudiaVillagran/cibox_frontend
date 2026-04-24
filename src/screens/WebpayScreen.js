@@ -1,16 +1,12 @@
 import { useEffect, useRef } from "react";
-import {
-  ActivityIndicator,
-  Platform,
-  Text,
-  View,
-} from "react-native";
+import { ActivityIndicator, Platform, Text, View } from "react-native";
 import { WebView } from "react-native-webview";
 import ScreenContainer from "../components/ScreenContainer";
 import { colors, spacing } from "../constants/theme";
+import AppText from "../components/AppText";
 
-const SUCCESS_URL = "http://192.168.1.3:3000/success";
-const FAILED_URL = "http://192.168.1.3:3000/failed";
+const SUCCESS_URL = "https://jarring-mashing-buckshot.ngrok-free.dev/success";
+const FAILED_URL = "https://jarring-mashing-buckshot.ngrok-free.dev /failed";
 
 export default function WebpayScreen({ route, navigation }) {
   const { orderId, paymentToken, paymentUrl, guestEmail } = route.params || {};
@@ -78,16 +74,29 @@ export default function WebpayScreen({ route, navigation }) {
 
     console.log("WEBPAY URL:", url);
 
-    if (url.startsWith(SUCCESS_URL)) {
-      goToSuccess(orderId);
-      return;
-    }
+    try {
+      const parsed = new URL(url);
+      const finalOrderId = parsed.searchParams.get("orderId") || orderId;
 
-    if (url.startsWith(FAILED_URL)) {
-      goToOrderDetail(orderId);
+      if (url.startsWith(SUCCESS_URL)) {
+        goToSuccess(finalOrderId);
+        return;
+      }
+
+      if (url.startsWith(FAILED_URL)) {
+        goToOrderDetail(finalOrderId);
+      }
+    } catch (error) {
+      if (url.startsWith(SUCCESS_URL)) {
+        goToSuccess(orderId);
+        return;
+      }
+
+      if (url.startsWith(FAILED_URL)) {
+        goToOrderDetail(orderId);
+      }
     }
   };
-
   const handleMessage = (event) => {
     try {
       const raw = event?.nativeEvent?.data;
@@ -122,9 +131,9 @@ export default function WebpayScreen({ route, navigation }) {
           }}
         >
           <ActivityIndicator size="large" />
-          <Text style={{ marginTop: 12, color: colors.muted }}>
+          <AppText style={{ marginTop: 12, color: colors.muted }}>
             Redirigiendo a Webpay...
-          </Text>
+          </AppText>
         </View>
       </ScreenContainer>
     );
@@ -134,7 +143,7 @@ export default function WebpayScreen({ route, navigation }) {
     <ScreenContainer maxWidth={900}>
       <View style={{ flex: 1 }}>
         <View style={{ paddingVertical: spacing.md }}>
-          <Text
+          <AppText
             style={{
               fontSize: 26,
               fontWeight: "800",
@@ -143,11 +152,11 @@ export default function WebpayScreen({ route, navigation }) {
             }}
           >
             Pago con Webpay
-          </Text>
+          </AppText>
 
-          <Text style={{ color: colors.muted }}>
+          <AppText style={{ color: colors.muted }}>
             Estamos redirigiéndote al pago.
-          </Text>
+          </AppText>
         </View>
 
         <View
@@ -176,9 +185,9 @@ export default function WebpayScreen({ route, navigation }) {
                 }}
               >
                 <ActivityIndicator size="large" />
-                <Text style={{ marginTop: 12, color: colors.muted }}>
+                <AppText style={{ marginTop: 12, color: colors.muted }}>
                   Cargando Webpay...
-                </Text>
+                </AppText>
               </View>
             )}
           />
