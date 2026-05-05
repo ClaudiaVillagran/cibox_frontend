@@ -3,7 +3,7 @@ import useAuthStore from "../store/authStore";
 import { getGuestId } from "../utils/guestId";
 
 const client = axios.create({
-  baseURL: "https://jarring-mashing-buckshot.ngrok-free.dev/api",
+  baseURL: "https://cibox-backend-furro.ondigitalocean.app/api",
 });
 
 client.interceptors.request.use(
