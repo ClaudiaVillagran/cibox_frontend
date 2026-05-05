@@ -26,7 +26,6 @@ client.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-export default client;
 client.interceptors.response.use(
   (response) => response,
   async (error) => {
@@ -35,11 +34,9 @@ client.interceptors.response.use(
 
     const shouldLogout =
       status === 401 &&
-      (
-        url.includes("/auth/me") ||
+      (url.includes("/auth/me") ||
         url.includes("/auth/profile") ||
-        url.includes("/auth/refresh")
-      );
+        url.includes("/auth/refresh"));
 
     if (shouldLogout) {
       await useAuthStore.getState().logout();
