@@ -3,14 +3,13 @@ import {
   Image,
   Pressable,
   ScrollView,
-  Text,
   TextInput,
   View,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { colors } from "../constants/theme";
-import { getCategories } from "../services/categoryService";
+import { getCategories, getCategoriesTree } from "../services/categoryService";
 import { getProducts } from "../services/productService";
 import useCartStore from "../store/cartStore";
 import useAuthStore from "../store/authStore";
@@ -23,6 +22,7 @@ export default function WebHeader() {
 
   const [categories, setCategories] = useState([]);
   const [categoriesOpen, setCategoriesOpen] = useState(false);
+  const [hoveredCategory, setHoveredCategory] = useState(null);
 
   const [search, setSearch] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
@@ -39,9 +39,7 @@ export default function WebHeader() {
   useEffect(() => {
     const loadData = async () => {
       try {
-        const data = await getCategories();
-        const items =
-          data?.categories || data?.data?.categories || data?.data || data || [];
+        const items = await getCategoriesTree();
         setCategories(Array.isArray(items) ? items : []);
       } catch (error) {
         console.log(
@@ -81,14 +79,13 @@ export default function WebHeader() {
           getCategories(),
         ]);
 
-        const productItems = Array.isArray(productsData?.data)
-          ? productsData.data
+        const productItems = Array.isArray(productsData?.items)
+          ? productsData.items
           : [];
 
         const rawCategories =
+          categoriesData?.items ||
           categoriesData?.categories ||
-          categoriesData?.data?.categories ||
-          categoriesData?.data ||
           categoriesData ||
           [];
 
@@ -139,6 +136,7 @@ export default function WebHeader() {
   const handleSelectCategory = (category) => {
     setCategoriesOpen(false);
     setSearchOpen(false);
+    setHoveredCategory(null);
 
     navigation.navigate("Products", {
       search: "",
@@ -173,7 +171,8 @@ export default function WebHeader() {
   const handleCloseCategories = () => {
     closeCategoriesTimeoutRef.current = setTimeout(() => {
       setCategoriesOpen(false);
-    }, 120);
+      setHoveredCategory(null);
+    }, 160);
   };
 
   const handleOpenSearch = () => {
@@ -282,26 +281,89 @@ export default function WebHeader() {
                   zIndex: 220,
                 }}
               >
-                {visibleCategories.map((category) => (
-                  <Pressable
-                    key={category?._id || category?.name}
-                    onPress={() => handleSelectCategory(category)}
-                    style={{
-                      paddingHorizontal: 16,
-                      paddingVertical: 12,
-                    }}
-                  >
-                    <AppText
+                {visibleCategories.length > 0 ? (
+                  visibleCategories.map((category) => (
+                    <Pressable
+                      key={category?._id || category?.name}
+                      onMouseEnter={() => setHoveredCategory(category)}
+                      onPress={() => handleSelectCategory(category)}
                       style={{
-                        fontSize: 14,
-                        color: colors.text,
-                        fontWeight: "600",
+                        paddingHorizontal: 16,
+                        paddingVertical: 12,
+                        flexDirection: "row",
+                        justifyContent: "space-between",
+                        alignItems: "center",
                       }}
                     >
-                      {category?.name}
+                      <AppText
+                        style={{
+                          fontSize: 14,
+                          color: colors.text,
+                          fontWeight: "600",
+                        }}
+                      >
+                        {category?.name}
+                      </AppText>
+
+                      {category?.children?.length > 0 ? (
+                        <Ionicons
+                          name="chevron-forward"
+                          size={16}
+                          color={colors.muted}
+                        />
+                      ) : null}
+                    </Pressable>
+                  ))
+                ) : (
+                  <View style={{ paddingHorizontal: 16, paddingVertical: 12 }}>
+                    <AppText style={{ color: colors.muted }}>
+                      No hay categorías
                     </AppText>
-                  </Pressable>
-                ))}
+                  </View>
+                )}
+
+                {hoveredCategory?.children?.length > 0 ? (
+                  <View
+                    style={{
+                      position: "absolute",
+                      top: 0,
+                      left: 270,
+                      width: 260,
+                      backgroundColor: "#fff",
+                      borderRadius: 18,
+                      borderWidth: 1,
+                      borderColor: colors.border,
+                      paddingVertical: 10,
+                      shadowColor: "#000",
+                      shadowOpacity: 0.08,
+                      shadowRadius: 14,
+                      shadowOffset: { width: 0, height: 6 },
+                      elevation: 8,
+                      zIndex: 240,
+                    }}
+                  >
+                    {hoveredCategory.children.map((child) => (
+                      <Pressable
+                        key={child?._id || child?.name}
+                        onPress={() => handleSelectCategory(child)}
+                        style={{
+                          paddingHorizontal: 16,
+                          paddingVertical: 12,
+                        }}
+                      >
+                        <AppText
+                          style={{
+                            fontSize: 14,
+                            color: colors.text,
+                            fontWeight: "600",
+                          }}
+                        >
+                          {child?.name}
+                        </AppText>
+                      </Pressable>
+                    ))}
+                  </View>
+                ) : null}
               </View>
             ) : null}
           </View>

@@ -28,6 +28,7 @@ import {
 import { showAppAlert } from "../utils/appAlerts";
 import { CHILE_REGIONS } from "../constants/chileLocations";
 import AppText from "../components/AppText";
+import { getCheckoutCouponPreview } from "../services/couponService";
 
 const normalizeEmail = (email = "") => String(email).trim().toLowerCase();
 
@@ -282,7 +283,7 @@ export default function CheckoutScreen({ navigation }) {
   const [shippingQuote, setShippingQuote] = useState(null);
   const [shippingLoading, setShippingLoading] = useState(false);
   const [shippingError, setShippingError] = useState("");
-
+  const [autoDiscount, setAutoDiscount] = useState(null);
   const [errors, setErrors] = useState({});
 
   const { loadCartSummary } = useCartStore();
@@ -521,7 +522,8 @@ export default function CheckoutScreen({ navigation }) {
   const items = Array.isArray(cart?.items) ? cart.items : [];
   const productsTotal = Number(cart?.total || 0);
   const shippingAmount = Number(shippingQuote?.amount || 0);
-  const finalTotal = productsTotal + shippingAmount;
+  const discountAmount = Number(autoDiscount?.discount_amount || 0);
+  const finalTotal = productsTotal + shippingAmount - discountAmount;
 
   const validateForm = () => {
     const nextErrors = {};
@@ -541,6 +543,30 @@ export default function CheckoutScreen({ navigation }) {
     setErrors(nextErrors);
     return Object.keys(nextErrors).length === 0;
   };
+    const fetchAutoDiscount = async () => {
+    console.log("fetchAutoDiscount");
+    try {
+      if (!productsTotal) {
+        setAutoDiscount(null);
+        return;
+      }
+
+      const data = await getCheckoutCouponPreview({
+        subtotal: productsTotal,
+      });
+
+      setAutoDiscount(data?.applies ? data : null);
+    } catch (error) {
+      console.log(
+        "AUTO DISCOUNT PREVIEW ERROR:",
+        error?.response?.data || error.message,
+      );
+      setAutoDiscount(null);
+    }
+  };
+  useEffect(() => {
+    fetchAutoDiscount();
+  }, [productsTotal]);
 
   const handleCheckout = async () => {
     if (!validateForm()) {
@@ -597,14 +623,18 @@ export default function CheckoutScreen({ navigation }) {
 
       await applyShippingToOrderService({
         orderId: order._id,
-        shippingAmount: shippingQuote.amount,
-        serviceName: shippingQuote.name,
-        serviceCode: shippingQuote.id,
+        region: region.trim(),
+        city: city.trim(),
+        guestToken: orderResponse?.guest_token,
       });
+
+      const guestToken =
+        orderResponse?.guest_token || orderResponse?.data?.guest_token || null;
 
       const payment = await createWebpayTransaction({
         orderId: order._id,
         platform: Platform.OS === "web" ? "web" : Platform.OS,
+        guestToken,
       });
 
       await saveCheckoutAddress({
@@ -1103,6 +1133,13 @@ export default function CheckoutScreen({ navigation }) {
               Envío:{" "}
               {shippingQuote ? formatPrice(shippingAmount) : "Por calcular"}
             </AppText>
+
+            {discountAmount > 0 ? (
+              <AppText style={{ color: "#4E9B27", fontWeight: "800" }}>
+                {autoDiscount?.label || "Descuento primera compra"}: -
+                {formatPrice(discountAmount)}
+              </AppText>
+            ) : null}
 
             <AppText
               style={{

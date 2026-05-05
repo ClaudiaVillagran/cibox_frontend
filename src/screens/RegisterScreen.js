@@ -10,24 +10,62 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { registerRequest } from "../services/authService";
-import { showAppAlert } from "../utils/appAlerts";
 import { colors, spacing, shadows } from "../constants/theme";
+import { getApiErrorField, getApiErrorMessage } from "../utils/apiError";
 import AppText from "../components/AppText";
 
 export default function RegisterScreen({ navigation }) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+
+  const [errors, setErrors] = useState({});
+  const [successMessage, setSuccessMessage] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleRegister = async () => {
-    if (!name.trim() || !email.trim() || !password.trim()) {
-      showAppAlert("Faltan datos", "Completa nombre, correo y contraseña");
-      return;
+  const setField = (field, value) => {
+    if (field === "name") setName(value);
+    if (field === "email") setEmail(value);
+    if (field === "password") setPassword(value);
+
+    setSuccessMessage("");
+    setErrors((prev) => ({
+      ...prev,
+      [field]: "",
+      general: "",
+    }));
+  };
+
+  const validateForm = () => {
+    const nextErrors = {};
+
+    if (!name.trim()) {
+      nextErrors.name = "Ingresa tu nombre";
     }
+
+    if (!email.trim()) {
+      nextErrors.email = "Ingresa tu correo";
+    } else if (!/^\S+@\S+\.\S+$/.test(email.trim())) {
+      nextErrors.email = "Ingresa un correo válido";
+    }
+
+    if (!password.trim()) {
+      nextErrors.password = "Ingresa una contraseña";
+    } else if (password.length < 8) {
+      nextErrors.password = "La contraseña debe tener al menos 8 caracteres";
+    }
+
+    setErrors(nextErrors);
+    return Object.keys(nextErrors).length === 0;
+  };
+
+  const handleRegister = async () => {
+    if (!validateForm()) return;
 
     try {
       setLoading(true);
+      setErrors({});
+      setSuccessMessage("");
 
       await registerRequest({
         name: name.trim(),
@@ -35,22 +73,60 @@ export default function RegisterScreen({ navigation }) {
         password,
       });
 
-      showAppAlert(
-        "Revisa tu correo",
-        "Te enviamos un enlace para verificar tu cuenta antes de iniciar sesión."
+      setSuccessMessage(
+        "Cuenta creada. Revisa tu correo para verificar tu cuenta antes de iniciar sesión."
       );
 
-      navigation.goBack();
+      setTimeout(() => {
+        navigation.goBack();
+      }, 1200);
     } catch (error) {
       console.log("REGISTER ERROR:", error?.response?.data || error.message);
-      showAppAlert(
-        "Error",
-        error?.response?.data?.message || "No se pudo crear la cuenta"
-      );
+
+      const message = getApiErrorMessage(error, "No se pudo crear la cuenta");
+      const field = getApiErrorField(error);
+
+      if (field && ["name", "email", "password"].includes(field)) {
+        setErrors((prev) => ({
+          ...prev,
+          [field]: message,
+        }));
+      } else {
+        setErrors((prev) => ({
+          ...prev,
+          general: message,
+        }));
+      }
     } finally {
       setLoading(false);
     }
   };
+
+  const inputWrapperStyle = (hasError) => ({
+    flexDirection: "row",
+    alignItems: "center",
+    borderWidth: 1.5,
+    borderColor: hasError ? colors.danger : "#cfdcc6",
+    borderRadius: 999,
+    paddingHorizontal: 16,
+    height: 54,
+    backgroundColor: colors.surface,
+  });
+
+  const errorText = (message) =>
+    message ? (
+      <AppText
+        style={{
+          color: colors.danger,
+          fontSize: 12,
+          marginTop: 6,
+          marginLeft: 14,
+          fontWeight: "600",
+        }}
+      >
+        {message}
+      </AppText>
+    ) : null;
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
@@ -121,23 +197,38 @@ export default function RegisterScreen({ navigation }) {
                 </AppText>
               </View>
 
-              <View style={{ marginBottom: spacing.md }}>
-                <View
+              {errors.general ? (
+                <AppText
                   style={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                    borderWidth: 1.5,
-                    borderColor: "#cfdcc6",
-                    borderRadius: 999,
-                    paddingHorizontal: 16,
-                    height: 54,
-                    backgroundColor: colors.surface,
+                    color: colors.danger,
+                    textAlign: "center",
+                    marginBottom: spacing.md,
+                    fontWeight: "700",
                   }}
                 >
+                  {errors.general}
+                </AppText>
+              ) : null}
+
+              {successMessage ? (
+                <AppText
+                  style={{
+                    color: colors.success,
+                    textAlign: "center",
+                    marginBottom: spacing.md,
+                    fontWeight: "700",
+                  }}
+                >
+                  {successMessage}
+                </AppText>
+              ) : null}
+
+              <View style={{ marginBottom: spacing.md }}>
+                <View style={inputWrapperStyle(!!errors.name)}>
                   <Ionicons
                     name="person-outline"
                     size={18}
-                    color={colors.muted}
+                    color={errors.name ? colors.danger : colors.muted}
                     style={{ marginRight: 10 }}
                   />
 
@@ -145,7 +236,7 @@ export default function RegisterScreen({ navigation }) {
                     placeholder="Nombre"
                     placeholderTextColor="#9a9a9a"
                     value={name}
-                    onChangeText={setName}
+                    onChangeText={(value) => setField("name", value)}
                     style={{
                       flex: 1,
                       color: colors.text,
@@ -153,25 +244,15 @@ export default function RegisterScreen({ navigation }) {
                     }}
                   />
                 </View>
+                {errorText(errors.name)}
               </View>
 
               <View style={{ marginBottom: spacing.md }}>
-                <View
-                  style={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                    borderWidth: 1.5,
-                    borderColor: "#cfdcc6",
-                    borderRadius: 999,
-                    paddingHorizontal: 16,
-                    height: 54,
-                    backgroundColor: colors.surface,
-                  }}
-                >
+                <View style={inputWrapperStyle(!!errors.email)}>
                   <Ionicons
                     name="mail-outline"
                     size={18}
-                    color={colors.muted}
+                    color={errors.email ? colors.danger : colors.muted}
                     style={{ marginRight: 10 }}
                   />
 
@@ -179,7 +260,7 @@ export default function RegisterScreen({ navigation }) {
                     placeholder="Correo electrónico"
                     placeholderTextColor="#9a9a9a"
                     value={email}
-                    onChangeText={setEmail}
+                    onChangeText={(value) => setField("email", value)}
                     autoCapitalize="none"
                     keyboardType="email-address"
                     style={{
@@ -189,25 +270,15 @@ export default function RegisterScreen({ navigation }) {
                     }}
                   />
                 </View>
+                {errorText(errors.email)}
               </View>
 
               <View style={{ marginBottom: spacing.lg }}>
-                <View
-                  style={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                    borderWidth: 1.5,
-                    borderColor: "#cfdcc6",
-                    borderRadius: 999,
-                    paddingHorizontal: 16,
-                    height: 54,
-                    backgroundColor: colors.surface,
-                  }}
-                >
+                <View style={inputWrapperStyle(!!errors.password)}>
                   <Ionicons
                     name="lock-closed-outline"
                     size={18}
-                    color={colors.muted}
+                    color={errors.password ? colors.danger : colors.muted}
                     style={{ marginRight: 10 }}
                   />
 
@@ -216,7 +287,7 @@ export default function RegisterScreen({ navigation }) {
                     placeholderTextColor="#9a9a9a"
                     secureTextEntry
                     value={password}
-                    onChangeText={setPassword}
+                    onChangeText={(value) => setField("password", value)}
                     style={{
                       flex: 1,
                       color: colors.text,
@@ -224,6 +295,7 @@ export default function RegisterScreen({ navigation }) {
                     }}
                   />
                 </View>
+                {errorText(errors.password)}
               </View>
 
               <Pressable

@@ -6,7 +6,6 @@ import {
   Image,
   Platform,
   Pressable,
-  Text,
   View,
   useWindowDimensions,
 } from "react-native";
@@ -15,9 +14,7 @@ import ProductCard from "../components/ProductCard";
 import ScreenContainer from "../components/ScreenContainer";
 import { colors, spacing } from "../constants/theme";
 import SearchInput from "../components/SearchInput";
-import FilterBar from "../components/FilterBar";
 import {
-  getCategories,
   getFeaturedCategories,
 } from "../services/categoryService";
 import ProductRowSection from "../components/ProductRowSection";
@@ -32,21 +29,21 @@ import { showAppAlert } from "../utils/appAlerts";
 import useAuthStore from "../store/authStore";
 import AppText from "../components/AppText";
 
+const cleanValue = (value) => {
+  const v = String(value ?? "").trim();
+  return v ? v : undefined;
+};
+
 export default function HomeScreen({ navigation }) {
   const { token } = useAuthStore();
   const isWeb = Platform.OS === "web";
+
   const [featuredCategories, setFeaturedCategories] = useState([]);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
-
-  const [categories, setCategories] = useState([]);
-  const [selectedCategory, setSelectedCategory] = useState("");
-  const [sort, setSort] = useState("");
-  const [minPrice, setMinPrice] = useState("");
-  const [maxPrice, setMaxPrice] = useState("");
 
   const { width } = useWindowDimensions();
   const isWide = width >= 900;
@@ -59,48 +56,37 @@ export default function HomeScreen({ navigation }) {
   const [page, setPage] = useState(1);
   const [hasNextPage, setHasNextPage] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
-
   const [addingProductId, setAddingProductId] = useState(null);
 
   const { cartCount, loadCartSummary } = useCartStore();
 
-  const showSections =
-    !debouncedSearch && !selectedCategory && !minPrice && !maxPrice && !sort;
-
-  const fetchCategories = async () => {
-    try {
-      const data = await getCategories();
-      const items =
-        data?.categories || data?.data?.categories || data?.data || data || [];
-      setCategories(Array.isArray(items) ? items : []);
-    } catch (error) {
-      console.log("ERROR CATEGORIES:", error?.response?.data || error.message);
-    }
-  };
+  const showSections = !debouncedSearch;
 
   const fetchHomeSections = async () => {
     try {
       setSectionsLoading(true);
 
       const featuredPromise = getFeaturedProducts({ limit: 8 });
-
       const recommendedPromise = token
         ? getRecommendedProducts({ limit: 8 })
-        : Promise.resolve({ recommended_products: [] });
+        : Promise.resolve({ items: [] });
 
       const [featuredData, recommendedData] = await Promise.all([
         featuredPromise,
         recommendedPromise,
       ]);
 
-      setFeaturedProducts(Array.isArray(featuredData) ? featuredData : []);
+      const featuredItems = featuredData?.items || [];
+      const recommendedItems = recommendedData?.items || [];
 
-      const recommended = recommendedData?.recommended_products || [];
-      setRecommendedProducts(Array.isArray(recommended) ? recommended : []);
+      setFeaturedProducts(Array.isArray(featuredItems) ? featuredItems : []);
+      setRecommendedProducts(
+        Array.isArray(recommendedItems) ? recommendedItems : []
+      );
     } catch (error) {
       console.log(
         "ERROR HOME SECTIONS:",
-        error?.response?.data || error.message,
+        error?.response?.data || error.message
       );
       setFeaturedProducts([]);
       setRecommendedProducts([]);
@@ -108,66 +94,50 @@ export default function HomeScreen({ navigation }) {
       setSectionsLoading(false);
     }
   };
+
   const fetchFeaturedCategories = async () => {
     try {
       const data = await getFeaturedCategories();
-      console.log(data);
-      setFeaturedCategories(Array.isArray(data) ? data : []);
+      const items = data?.items || data?.categories || data || [];
+      setFeaturedCategories(Array.isArray(items) ? items : []);
     } catch (error) {
-      console.log("ERROR FEATURED CATEGORIES:", error);
+      console.log(
+        "ERROR FEATURED CATEGORIES:",
+        error?.response?.data || error.message
+      );
     }
   };
-  useEffect(() => {
-    fetchFeaturedCategories();
-  }, []);
+
   const fetchProducts = async ({ nextPage = 1, append = false } = {}) => {
     try {
-      if (append) {
-        setLoadingMore(true);
-      } else {
-        setLoading(true);
-      }
+      append ? setLoadingMore(true) : setLoading(true);
 
       const params = {
-        search: debouncedSearch || undefined,
-        category: selectedCategory || undefined,
-        minPrice: minPrice || undefined,
-        maxPrice: maxPrice || undefined,
-        sort: sort || undefined,
+        search: cleanValue(debouncedSearch),
         page: nextPage,
         limit: 10,
       };
 
       const response = await getProducts(params);
 
-      const items = Array.isArray(response?.data) ? response.data : [];
+      const items = Array.isArray(response?.items) ? response.items : [];
       const pagination = response?.pagination || {};
 
       setProducts((prev) => (append ? [...prev, ...items] : items));
-      setPage(pagination.page || nextPage);
-      setHasNextPage(!!pagination.hasNextPage);
+      setPage(Number(pagination.page) || nextPage);
+      setHasNextPage(!!pagination.has_next);
     } catch (error) {
       console.log("ERROR PRODUCTS:", error?.response?.data || error.message);
+      if (!append) setProducts([]);
     } finally {
       setLoading(false);
       setLoadingMore(false);
     }
   };
 
-  const handleClearFilters = () => {
-    setSelectedCategory("");
-    setSort("");
-    setMinPrice("");
-    setMaxPrice("");
-  };
-
   const handleLoadMore = () => {
     if (loading || loadingMore || !hasNextPage) return;
-
-    fetchProducts({
-      nextPage: page + 1,
-      append: true,
-    });
+    fetchProducts({ nextPage: page + 1, append: true });
   };
 
   const handleAddFromCard = async (product) => {
@@ -186,11 +156,11 @@ export default function HomeScreen({ navigation }) {
     } catch (error) {
       console.log(
         "ADD FROM CARD ERROR:",
-        error?.response?.data || error.message,
+        error?.response?.data || error.message
       );
       Alert.alert(
         "Error",
-        error?.response?.data?.message || "No se pudo agregar al carrito",
+        error?.response?.data?.message || "No se pudo agregar al carrito"
       );
     } finally {
       setAddingProductId(null);
@@ -280,6 +250,7 @@ export default function HomeScreen({ navigation }) {
 
   useEffect(() => {
     loadCartSummary();
+    fetchFeaturedCategories();
   }, []);
 
   useEffect(() => {
@@ -295,16 +266,12 @@ export default function HomeScreen({ navigation }) {
   }, [search]);
 
   useEffect(() => {
-    fetchCategories();
-  }, []);
-
-  useEffect(() => {
     setPage(1);
     setProducts([]);
     fetchProducts({ nextPage: 1, append: false });
-  }, [debouncedSearch, selectedCategory, sort, minPrice, maxPrice]);
+  }, [debouncedSearch]);
 
-  if (loading) {
+  if (loading && !products.length && !showSections) {
     return (
       <ScreenContainer maxWidth={900}>
         <View style={{ flex: 1, justifyContent: "center" }}>
@@ -395,6 +362,7 @@ export default function HomeScreen({ navigation }) {
                 >
                   Ahorra más en tu despensa con CIBOX
                 </AppText>
+
                 <AppText
                   style={{
                     marginTop: 4,
@@ -413,91 +381,10 @@ export default function HomeScreen({ navigation }) {
                     onChange={setSearch}
                     placeholder="Buscar productos..."
                   />
-
                   <View style={{ height: 12 }} />
-
-                  <FilterBar
-                    categories={categories}
-                    selectedCategory={selectedCategory}
-                    onSelectCategory={setSelectedCategory}
-                    sort={sort}
-                    onChangeSort={setSort}
-                    minPrice={minPrice}
-                    maxPrice={maxPrice}
-                    onChangeMinPrice={setMinPrice}
-                    onChangeMaxPrice={setMaxPrice}
-                    onClear={handleClearFilters}
-                  />
                 </>
               ) : null}
             </View>
-
-            {!!selectedCategory && (
-              <View
-                style={{
-                  marginBottom: spacing.lg,
-                  backgroundColor: colors.surface,
-                  borderRadius: 22,
-                  padding: spacing.md,
-                  borderWidth: 1,
-                  borderColor: "#ececec",
-                }}
-              >
-                <View
-                  style={{
-                    flexDirection: "row",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    marginBottom: 14,
-                    gap: 12,
-                  }}
-                >
-                  <View style={{ flex: 1 }}>
-                    <AppText
-                      style={{
-                        fontSize: 24,
-                        fontWeight: "800",
-                        color: colors.text,
-                      }}
-                    >
-                      Productos de la categoría
-                    </AppText>
-
-                    <AppText
-                      style={{
-                        marginTop: 4,
-                        color: colors.muted,
-                        fontSize: 14,
-                      }}
-                    >
-                      Explora los productos disponibles en esta categoría.
-                    </AppText>
-                  </View>
-
-                  <Pressable
-                    onPress={handleClearFilters}
-                    style={{
-                      paddingHorizontal: 14,
-                      paddingVertical: 10,
-                      borderRadius: 12,
-                      backgroundColor: "#f3f6ee",
-                      borderWidth: 1,
-                      borderColor: "#dbe7cf",
-                    }}
-                  >
-                    <AppText
-                      style={{
-                        fontSize: 13,
-                        fontWeight: "800",
-                        color: colors.text,
-                      }}
-                    >
-                      Limpiar filtro
-                    </AppText>
-                  </Pressable>
-                </View>
-              </View>
-            )}
 
             {showSections && (
               <View style={{ marginBottom: spacing.md }}>
@@ -556,6 +443,50 @@ export default function HomeScreen({ navigation }) {
                         addingProductId={addingProductId}
                       />
                     </View>
+
+                    {recommendedProducts.length > 0 ? (
+                      <View style={{ marginBottom: spacing.lg }}>
+                        <View
+                          style={{
+                            flexDirection: "row",
+                            alignItems: "center",
+                            marginBottom: 10,
+                            paddingHorizontal: 2,
+                          }}
+                        >
+                          <View
+                            style={{
+                              width: 8,
+                              height: 8,
+                              borderRadius: 4,
+                              backgroundColor: colors.primary,
+                              marginRight: 8,
+                            }}
+                          />
+                          <AppText
+                            style={{
+                              fontSize: 24,
+                              fontWeight: "800",
+                              color: colors.text,
+                            }}
+                          >
+                            Recomendados para ti
+                          </AppText>
+                        </View>
+
+                        <ProductRowSection
+                          title=""
+                          products={recommendedProducts}
+                          onPressProduct={(item) =>
+                            navigation.navigate("ProductDetail", {
+                              productId: item._id,
+                            })
+                          }
+                          onAddToCart={handleAddFromCard}
+                          addingProductId={addingProductId}
+                        />
+                      </View>
+                    ) : null}
 
                     {featuredCategories.length > 0 && (
                       <View style={{ marginBottom: spacing.lg }}>
@@ -751,7 +682,7 @@ export default function HomeScreen({ navigation }) {
               </AppText>
 
               <AppText style={{ color: colors.muted, textAlign: "center" }}>
-                Prueba cambiando la búsqueda o limpiando los filtros.
+                Prueba cambiando la búsqueda.
               </AppText>
             </View>
           ) : null

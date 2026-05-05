@@ -5,8 +5,8 @@ import ScreenContainer from "../components/ScreenContainer";
 import { colors, spacing } from "../constants/theme";
 import AppText from "../components/AppText";
 
-const SUCCESS_URL = "https://jarring-mashing-buckshot.ngrok-free.dev/success";
-const FAILED_URL = "https://jarring-mashing-buckshot.ngrok-free.dev /failed";
+const SUCCESS_PATH = "/orders/success";
+const FAILED_PATH = "/orders/failed";
 
 export default function WebpayScreen({ route, navigation }) {
   const { orderId, paymentToken, paymentUrl, guestEmail } = route.params || {};
@@ -77,22 +77,24 @@ export default function WebpayScreen({ route, navigation }) {
     try {
       const parsed = new URL(url);
       const finalOrderId = parsed.searchParams.get("orderId") || orderId;
+      const path = parsed.pathname;
 
-      if (url.startsWith(SUCCESS_URL)) {
+      if (url.startsWith("myapp://orders/success") || path === SUCCESS_PATH) {
         goToSuccess(finalOrderId);
         return;
       }
 
-      if (url.startsWith(FAILED_URL)) {
+      if (url.startsWith("myapp://orders/failed") || path === FAILED_PATH) {
         goToOrderDetail(finalOrderId);
+        return;
       }
     } catch (error) {
-      if (url.startsWith(SUCCESS_URL)) {
+      if (url.startsWith("myapp://orders/success")) {
         goToSuccess(orderId);
         return;
       }
 
-      if (url.startsWith(FAILED_URL)) {
+      if (url.startsWith("myapp://orders/failed")) {
         goToOrderDetail(orderId);
       }
     }

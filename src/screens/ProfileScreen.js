@@ -309,12 +309,12 @@ export default function ProfileScreen({ navigation }) {
             style={{ marginTop: 10 }}
           />
 
-          <AppButton
+          {/* <AppButton
             title="Ver despensa"
             onPress={() => navigation.navigate("PantryTab")}
             variant="secondary"
             style={{ marginTop: 10 }}
-          />
+          /> */}
         </View>
 
         <View style={cardStyle}>

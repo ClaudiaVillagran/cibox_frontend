@@ -1,40 +1,51 @@
 import { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   FlatList,
   Pressable,
   SafeAreaView,
-  Text,
   View,
 } from "react-native";
 import { getFavorites, removeFavorite } from "../services/favoriteService";
 import { showAppAlert } from "../utils/appAlerts";
+import useAuthStore from "../store/authStore";
 import AppText from "../components/AppText";
 
 export default function FavoritesScreen({ navigation }) {
+  const { token } = useAuthStore();
+
   const [favorites, setFavorites] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const fetchFavorites = useCallback(async () => {
+    if (!token) {
+      setFavorites([]);
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
       const data = await getFavorites();
-      const items =
-        data?.favorites || data?.data?.favorites || data?.data || data || [];
+      const items = data?.items || [];
       setFavorites(Array.isArray(items) ? items : []);
     } catch (error) {
       console.log(
         "GET FAVORITES ERROR:",
         error?.response?.data || error.message,
       );
-      showAppAlert("Error", "No se pudieron cargar los favoritos");
+      setFavorites([]);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [token]);
 
   const handleRemove = async (productId) => {
+    if (!token) {
+      navigation.navigate("Auth");
+      return;
+    }
+
     try {
       await removeFavorite(productId);
       await fetchFavorites();
@@ -50,6 +61,50 @@ export default function FavoritesScreen({ navigation }) {
   useEffect(() => {
     fetchFavorites();
   }, [fetchFavorites]);
+
+  if (!token) {
+    return (
+      <SafeAreaView style={{ flex: 1 }}>
+        <View
+          style={{
+            flex: 1,
+            width: "100%",
+            maxWidth: 720,
+            alignSelf: "center",
+            justifyContent: "center",
+            alignItems: "center",
+            padding: 24,
+          }}
+        >
+          <AppText
+            style={{ fontSize: 22, fontWeight: "bold", marginBottom: 10 }}
+          >
+            Inicia sesión
+          </AppText>
+
+          <AppText
+            style={{ color: "#666", textAlign: "center", marginBottom: 18 }}
+          >
+            Debes iniciar sesión para ver tus favoritos.
+          </AppText>
+
+          <Pressable
+            onPress={() => navigation.navigate("Auth")}
+            style={{
+              backgroundColor: "#4E9B27",
+              paddingHorizontal: 18,
+              paddingVertical: 12,
+              borderRadius: 12,
+            }}
+          >
+            <AppText style={{ color: "#fff", fontWeight: "800" }}>
+              Iniciar sesión
+            </AppText>
+          </Pressable>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   if (loading) {
     return (
@@ -73,9 +128,12 @@ export default function FavoritesScreen({ navigation }) {
             padding: 24,
           }}
         >
-          <AppText style={{ fontSize: 22, fontWeight: "bold", marginBottom: 10 }}>
+          <AppText
+            style={{ fontSize: 22, fontWeight: "bold", marginBottom: 10 }}
+          >
             No tienes favoritos
           </AppText>
+
           <AppText style={{ color: "#666", textAlign: "center" }}>
             Guarda productos para revisarlos más tarde.
           </AppText>
@@ -96,11 +154,9 @@ export default function FavoritesScreen({ navigation }) {
           alignSelf: "center",
         }}
         renderItem={({ item }) => {
-          const product = item?.product_id;
-
-          const productId = product?._id;
+          const product = item?.product_id || item?.product || item;
+          const productId = product?._id || item?.product_id;
           const productName = product?.name || "Producto";
-
           const price = product?.pricing?.tiers?.[0]?.price ?? "—";
 
           return (

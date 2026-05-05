@@ -6,18 +6,23 @@ export const createOrderFromCart = async (payload) => {
   return response.data;
 };
 
-export const createWebpayTransaction = async ({ orderId, platform }) => {
+export const createWebpayTransaction = async ({
+  orderId,
+  platform,
+  guestToken,
+}) => {
   const response = await client.post("/payments/webpay/create", {
     orderId,
     platform,
+    guestToken,
   });
 
-  const data = response?.data || {};
+  const payload = response?.data?.data || response?.data || {};
 
   return {
-    orderId: data.orderId || orderId,
-    paymentToken: data.paymentToken || data.token,
-    paymentUrl: data.paymentUrl || data.url,
+    orderId: payload.orderId || orderId,
+    paymentToken: payload.paymentToken || payload.token || payload.token_ws,
+    paymentUrl: payload.paymentUrl || payload.url,
   };
 };
 
@@ -30,7 +35,7 @@ export const commitWebpayTransaction = async ({ orderId, token }) => {
 };
 
 export const getMyOrders = async () => {
-  const response = await client.get("/orders/my-orders");
+  const response = await client.get("/orders/me");
   return response.data;
 };
 

@@ -1,22 +1,27 @@
-import client from '../api/client';
+import client from "../api/client";
 
-export const getNotifications = async ({ unreadOnly = false, limit = 20 } = {}) => {
-  const response = await client.get('/notifications', {
+const unwrap = (response) => response.data?.data ?? response.data;
+
+export const getNotifications = async ({
+  unreadOnly = false,
+  limit = 20,
+} = {}) => {
+  const response = await client.get("/notifications", {
     params: {
-      unreadOnly,
+      unread_only: unreadOnly ? "true" : "false",
       limit,
     },
   });
 
-  return response.data;
+  return unwrap(response);
 };
 
 export const markNotificationAsRead = async (notificationId) => {
   const response = await client.patch(`/notifications/${notificationId}/read`);
-  return response.data;
+  return unwrap(response);
 };
 
 export const markAllNotificationsAsRead = async () => {
-  const response = await client.patch('/notifications/read-all');
-  return response.data;
+  const response = await client.patch("/notifications/read-all");
+  return unwrap(response);
 };

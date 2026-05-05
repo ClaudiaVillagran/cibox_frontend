@@ -42,13 +42,14 @@ export default function NotificationsScreen({ navigation }) {
         unreadOnly: activeFilter === "unread",
         limit: 50,
       });
+      console.log(data);
 
-      setNotifications(Array.isArray(data?.notifications) ? data.notifications : []);
+      setNotifications(Array.isArray(data?.items) ? data.items : []);
       setUnreadCount(data?.unread_count ?? 0);
     } catch (error) {
       console.log(
         "GET NOTIFICATIONS ERROR:",
-        error?.response?.data || error.message
+        error?.response?.data || error.message,
       );
       showAppAlert("Error", "No se pudieron cargar las notificaciones");
     } finally {
@@ -70,7 +71,7 @@ export default function NotificationsScreen({ navigation }) {
     } catch (error) {
       console.log(
         "MARK NOTIFICATION ERROR:",
-        error?.response?.data || error.message
+        error?.response?.data || error.message,
       );
       showAppAlert("Error", "No se pudo marcar la notificación");
     }
@@ -89,7 +90,7 @@ export default function NotificationsScreen({ navigation }) {
     } catch (error) {
       console.log(
         "MARK ALL NOTIFICATIONS ERROR:",
-        error?.response?.data || error.message
+        error?.response?.data || error.message,
       );
       showAppAlert("Error", "No se pudieron marcar todas");
     } finally {
@@ -113,7 +114,7 @@ export default function NotificationsScreen({ navigation }) {
 
   const renderNotification = ({ item }) => {
     const title = item?.title || item?.type || "Notificación";
-    const message = item?.message || "Sin detalle";
+    const message = item?.body || item?.message || "Sin detalle";
     const isRead = item?.is_read;
     const createdAt = item?.created_at
       ? new Date(item.created_at).toLocaleString()
@@ -179,7 +180,9 @@ export default function NotificationsScreen({ navigation }) {
           {message}
         </AppText>
 
-        <AppText style={{ color: colors.muted, fontSize: 12 }}>{createdAt}</AppText>
+        <AppText style={{ color: colors.muted, fontSize: 12 }}>
+          {createdAt}
+        </AppText>
       </Pressable>
     );
   };
@@ -252,7 +255,9 @@ export default function NotificationsScreen({ navigation }) {
   if (loading) {
     return (
       <ScreenContainer maxWidth={720}>
-        <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <View
+          style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+        >
           <ActivityIndicator size="large" color={colors.primary} />
           <AppText style={{ marginTop: spacing.sm, color: colors.muted }}>
             Cargando notificaciones...

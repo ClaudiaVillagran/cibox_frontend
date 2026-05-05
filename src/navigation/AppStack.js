@@ -58,26 +58,25 @@ export default function AppStack() {
             component={withWebLayout(HomeScreen)}
             options={{ headerShown: false }}
           />
-          <Stack.Screen
-            name="Products"
-            component={withWebLayout(ProductsScreen)}
-            options={{ headerShown: false }}
-          />
+
           <Stack.Screen
             name="PantryTab"
             component={withWebLayout(PantryScreen)}
             options={{ headerShown: false }}
           />
+
           <Stack.Screen
             name="FavoritesTab"
             component={withWebLayout(FavoritesScreen)}
             options={{ headerShown: false }}
           />
+
           <Stack.Screen
             name="OrdersTab"
             component={withWebLayout(OrdersScreen)}
             options={{ headerShown: false }}
           />
+
           <Stack.Screen
             name="ProfileTab"
             component={withWebLayout(ProfileScreen)}
@@ -92,43 +91,11 @@ export default function AppStack() {
         />
       )}
 
-      {!token && (
-        <>
-          <Stack.Screen
-            name="Auth"
-            component={AuthStack}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name="VerifyEmail"
-            component={
-              isWeb ? withWebLayout(VerifyEmailScreen) : VerifyEmailScreen
-            }
-            options={
-              isWeb ? { headerShown: false } : { title: "Verificar correo" }
-            }
-          />
-          <Stack.Screen
-            name="ForgotPassword"
-            component={
-              isWeb ? withWebLayout(ForgotPasswordScreen) : ForgotPasswordScreen
-            }
-            options={
-              isWeb ? { headerShown: false } : { title: "Recuperar contraseña" }
-            }
-          />
-
-          <Stack.Screen
-            name="ResetPassword"
-            component={
-              isWeb ? withWebLayout(ResetPasswordScreen) : ResetPasswordScreen
-            }
-            options={
-              isWeb ? { headerShown: false } : { title: "Nueva contraseña" }
-            }
-          />
-        </>
-      )}
+      <Stack.Screen
+        name="Products"
+        component={isWeb ? withWebLayout(ProductsScreen) : ProductsScreen}
+        options={isWeb ? { headerShown: false } : { title: "Productos" }}
+      />
 
       <Stack.Screen
         name="ProductDetail"
@@ -201,6 +168,46 @@ export default function AppStack() {
         component={isWeb ? withWebLayout(WebpayScreen) : WebpayScreen}
         options={isWeb ? { headerShown: false } : { title: "Pago con Webpay" }}
       />
+
+      {!token && (
+        <>
+          <Stack.Screen
+            name="Auth"
+            component={AuthStack}
+            options={{ headerShown: false }}
+          />
+
+          <Stack.Screen
+            name="VerifyEmail"
+            component={
+              isWeb ? withWebLayout(VerifyEmailScreen) : VerifyEmailScreen
+            }
+            options={
+              isWeb ? { headerShown: false } : { title: "Verificar correo" }
+            }
+          />
+
+          <Stack.Screen
+            name="ForgotPassword"
+            component={
+              isWeb ? withWebLayout(ForgotPasswordScreen) : ForgotPasswordScreen
+            }
+            options={
+              isWeb ? { headerShown: false } : { title: "Recuperar contraseña" }
+            }
+          />
+
+          <Stack.Screen
+            name="ResetPassword"
+            component={
+              isWeb ? withWebLayout(ResetPasswordScreen) : ResetPasswordScreen
+            }
+            options={
+              isWeb ? { headerShown: false } : { title: "Nueva contraseña" }
+            }
+          />
+        </>
+      )}
     </Stack.Navigator>
   );
 }

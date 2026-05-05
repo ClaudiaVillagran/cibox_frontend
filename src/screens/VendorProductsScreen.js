@@ -34,6 +34,10 @@ export default function VendorProductsScreen() {
   const [selectedProductForStock, setSelectedProductForStock] = useState(null);
   const [stockSaving, setStockSaving] = useState(false);
 
+  const [page, setPage] = useState(1);
+  const [pagination, setPagination] = useState(null);
+  const [loadingMore, setLoadingMore] = useState(false);
+
   const cardStyle = {
     borderWidth: 1,
     borderColor: colors.border,
@@ -86,13 +90,31 @@ export default function VendorProductsScreen() {
     fontSize: 12,
     fontWeight: "800",
   };
+  const loadMoreProducts = () => {
+    if (loadingMore) return;
+    if (!pagination) return;
+    if (page >= pagination.total_pages) return;
 
-  const loadProducts = async (showLoader = true) => {
+    loadProducts(false, page + 1);
+  };
+
+  const loadProducts = async (showLoader = true, pageToLoad = 1) => {
     try {
-      if (showLoader) setLoading(true);
+      if (showLoader && pageToLoad === 1) setLoading(true);
+      if (pageToLoad > 1) setLoadingMore(true);
 
-      const data = await getMyProducts();
-      setProducts(Array.isArray(data) ? data : []);
+      const data = await getMyProducts({
+        page: pageToLoad,
+        limit: 20,
+      });
+
+      const items = data?.items || [];
+      const paginationData = data?.pagination || null;
+
+      setPagination(paginationData);
+      setPage(pageToLoad);
+
+      setProducts((prev) => (pageToLoad === 1 ? items : [...prev, ...items]));
     } catch (error) {
       console.log(
         "GET MY PRODUCTS ERROR:",
@@ -102,6 +124,7 @@ export default function VendorProductsScreen() {
     } finally {
       setLoading(false);
       setRefreshing(false);
+      setLoadingMore(false);
     }
   };
   useEffect(() => {
@@ -273,6 +296,15 @@ export default function VendorProductsScreen() {
         keyExtractor={(item) => item._id}
         refreshing={refreshing}
         onRefresh={handleRefresh}
+        onEndReached={loadMoreProducts}
+        onEndReachedThreshold={0.4}
+        ListFooterComponent={
+          loadingMore ? (
+            <View style={{ paddingVertical: spacing.md }}>
+              <ActivityIndicator />
+            </View>
+          ) : null
+        }
         contentContainerStyle={{ paddingBottom: spacing.xl }}
         ListHeaderComponent={
           <View style={{ marginBottom: spacing.md }}>
@@ -522,7 +554,6 @@ export default function VendorProductsScreen() {
                   <AppText style={badgeTextStyle}>Pack</AppText>
                 </View>
               ) : null}
-
             </View>
 
             <AppText style={{ color: colors.muted, marginBottom: 4 }}>

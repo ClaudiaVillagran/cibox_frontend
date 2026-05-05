@@ -12,10 +12,10 @@ const useCartStore = create((set) => ({
 
       const cart = await getCart();
       const items = Array.isArray(cart?.items) ? cart.items : [];
-
+      
       const count = items.reduce(
         (acc, item) => acc + Number(item.quantity || 0),
-        0
+        0,
       );
 
       set({
@@ -25,7 +25,7 @@ const useCartStore = create((set) => ({
     } catch (error) {
       console.log(
         "LOAD CART SUMMARY ERROR:",
-        error?.response?.data || error.message
+        error?.response?.data || error.message,
       );
 
       set({

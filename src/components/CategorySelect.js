@@ -23,6 +23,10 @@ export default function CategorySelect({ value, onChange }) {
 
       if (Array.isArray(data)) {
         list = data;
+      } else if (Array.isArray(data?.items)) {
+        list = data.items;
+      } else if (Array.isArray(data?.categories)) {
+        list = data.categories;
       } else if (Array.isArray(data?.data)) {
         list = data.data;
       }
@@ -31,7 +35,7 @@ export default function CategorySelect({ value, onChange }) {
     } catch (error) {
       console.log(
         "GET CATEGORIES ERROR:",
-        error?.response?.data || error.message
+        error?.response?.data || error.message,
       );
       setCategories([]);
     } finally {

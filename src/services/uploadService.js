@@ -1,4 +1,5 @@
 import { Platform } from "react-native";
+import client from "../api/client";
 
 export const uploadImageAsync = async (asset, index = 0) => {
   const formData = new FormData();
@@ -8,44 +9,58 @@ export const uploadImageAsync = async (asset, index = 0) => {
       throw new Error("No se encontró el archivo web de la imagen");
     }
 
-    formData.append("file", asset.file);
+    formData.append("image", asset.file);
   } else {
-    formData.append("file", {
+    formData.append("image", {
       uri: asset.uri,
       name: asset.fileName || `product_${Date.now()}_${index}.jpg`,
       type: asset.mimeType || "image/jpeg",
     });
   }
 
-  formData.append("upload_preset", "cibox_products_unsigned");
-
-  const response = await fetch(
-    `https://api.cloudinary.com/v1_1/dwhycvdsj/image/upload`,
-    {
-      method: "POST",
-      body: formData,
+  const response = await client.post("/uploads/image", formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
     },
-  );
+  });
+  console.log("UPLOAD SINGLE RESPONSE:", response.data); // 👈 AQUÍ
 
-  const data = await response.json();
-
-  if (!response.ok) {
-    throw new Error(data?.error?.message || "No se pudo subir la imagen");
-  }
+  const data = response.data?.data || response.data;
 
   return {
-    url: data.secure_url,
-    publicId: data.public_id,
+    url: data.url,
+    publicId: data.publicId || data.key,
   };
 };
 
 export const uploadMultipleImagesAsync = async (assets = []) => {
-  const uploads = [];
+  const formData = new FormData();
 
-  for (let i = 0; i < assets.length; i += 1) {
-    const uploaded = await uploadImageAsync(assets[i], i);
-    uploads.push(uploaded);
-  }
+  assets.forEach((asset, index) => {
+    if (Platform.OS === "web") {
+      if (asset?.file) {
+        formData.append("images", asset.file);
+      }
+    } else {
+      formData.append("images", {
+        uri: asset.uri,
+        name: asset.fileName || `product_${Date.now()}_${index}.jpg`,
+        type: asset.mimeType || "image/jpeg",
+      });
+    }
+  });
 
-  return uploads;
+  const response = await client.post("/uploads/images", formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+  console.log("UPLOAD RESPONSE:", response.data); // 👈 AQUÍ
+
+  const data = response.data?.data || [];
+
+  return data.map((item) => ({
+    url: item.url,
+    publicId: item.publicId || item.key,
+  }));
 };

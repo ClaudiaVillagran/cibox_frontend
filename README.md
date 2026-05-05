@@ -84,4 +84,5 @@ en el archivo que se crea eas.json debe tener esta estructura
 
 revisar donde apuntan las URL de tu backend
 
-
+//crear la apk
+eas build -p android --profile preview

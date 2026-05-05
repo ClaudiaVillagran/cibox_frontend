@@ -5,7 +5,6 @@ import {
   FlatList,
   Platform,
   Pressable,
-  Text,
   View,
   useWindowDimensions,
 } from "react-native";
@@ -22,6 +21,11 @@ import useCartStore from "../store/cartStore";
 import { showAppAlert } from "../utils/appAlerts";
 import AppText from "../components/AppText";
 
+const cleanValue = (value) => {
+  const v = String(value ?? "").trim();
+  return v ? v : undefined;
+};
+
 export default function ProductsScreen({ navigation, route }) {
   const { width } = useWindowDimensions();
   const isWide = width >= 900;
@@ -33,12 +37,12 @@ export default function ProductsScreen({ navigation, route }) {
 
   const [search, setSearch] = useState(route?.params?.search || "");
   const [debouncedSearch, setDebouncedSearch] = useState(
-    route?.params?.search || ""
+    route?.params?.search || "",
   );
 
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(
-    route?.params?.category || ""
+    route?.params?.category || "",
   );
   const [sort, setSort] = useState("");
   const [minPrice, setMinPrice] = useState("");
@@ -47,7 +51,6 @@ export default function ProductsScreen({ navigation, route }) {
   const [page, setPage] = useState(1);
   const [hasNextPage, setHasNextPage] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
-
   const [addingProductId, setAddingProductId] = useState(null);
 
   const { cartCount, loadCartSummary } = useCartStore();
@@ -55,8 +58,7 @@ export default function ProductsScreen({ navigation, route }) {
   const fetchCategories = async () => {
     try {
       const data = await getCategories();
-      const items =
-        data?.categories || data?.data?.categories || data?.data || data || [];
+      const items = data?.items || data?.categories || data || [];
       setCategories(Array.isArray(items) ? items : []);
     } catch (error) {
       console.log("ERROR CATEGORIES:", error?.response?.data || error.message);
@@ -65,35 +67,28 @@ export default function ProductsScreen({ navigation, route }) {
 
   const fetchProducts = async ({ nextPage = 1, append = false } = {}) => {
     try {
-      if (append) {
-        setLoadingMore(true);
-      } else {
-        setLoading(true);
-      }
+      append ? setLoadingMore(true) : setLoading(true);
 
       const params = {
-        search: debouncedSearch || undefined,
-        category: selectedCategory || undefined,
-        minPrice: minPrice || undefined,
-        maxPrice: maxPrice || undefined,
-        sort: sort || undefined,
+        search: cleanValue(debouncedSearch),
+        category: cleanValue(selectedCategory),
+        min_price: cleanValue(minPrice),
+        max_price: cleanValue(maxPrice),
+        sort: cleanValue(sort),
         page: nextPage,
         limit: 12,
       };
 
       const response = await getProducts(params);
-
-      const items = Array.isArray(response?.data) ? response.data : [];
+      const items = Array.isArray(response?.items) ? response.items : [];
       const pagination = response?.pagination || {};
 
       setProducts((prev) => (append ? [...prev, ...items] : items));
-      setPage(pagination.page || nextPage);
-      setHasNextPage(!!pagination.hasNextPage);
+      setPage(Number(pagination.page) || nextPage);
+      setHasNextPage(!!pagination.has_next);
     } catch (error) {
       console.log("ERROR PRODUCTS:", error?.response?.data || error.message);
-      if (!append) {
-        setProducts([]);
-      }
+      if (!append) setProducts([]);
     } finally {
       setLoading(false);
       setLoadingMore(false);
@@ -111,11 +106,7 @@ export default function ProductsScreen({ navigation, route }) {
 
   const handleLoadMore = () => {
     if (loading || loadingMore || !hasNextPage) return;
-
-    fetchProducts({
-      nextPage: page + 1,
-      append: true,
-    });
+    fetchProducts({ nextPage: page + 1, append: true });
   };
 
   const handleAddFromCard = async (product) => {
@@ -123,19 +114,17 @@ export default function ProductsScreen({ navigation, route }) {
 
     try {
       setAddingProductId(product._id);
-
-      await addItemToCart({
-        productId: product._id,
-        quantity: 1,
-      });
-
+      await addItemToCart({ productId: product._id, quantity: 1 });
       await loadCartSummary();
       showAppAlert("Éxito", "Producto agregado al carrito");
     } catch (error) {
-      console.log("ADD FROM CARD ERROR:", error?.response?.data || error.message);
+      console.log(
+        "ADD FROM CARD ERROR:",
+        error?.response?.data || error.message,
+      );
       Alert.alert(
         "Error",
-        error?.response?.data?.message || "No se pudo agregar al carrito"
+        error?.response?.data?.message || "No se pudo agregar al carrito",
       );
     } finally {
       setAddingProductId(null);
@@ -144,7 +133,6 @@ export default function ProductsScreen({ navigation, route }) {
 
   const renderFooter = () => {
     if (!loadingMore) return <View style={{ height: spacing.lg }} />;
-
     return (
       <View style={{ paddingVertical: spacing.md }}>
         <ActivityIndicator size="small" color={colors.primary} />
@@ -229,14 +217,20 @@ export default function ProductsScreen({ navigation, route }) {
   }, [search]);
 
   useEffect(() => {
-    setPage(1);
-    fetchProducts({ nextPage: 1, append: false });
-  }, [debouncedSearch, selectedCategory, sort, minPrice, maxPrice]);
+    const timeout = setTimeout(() => {
+      setPage(1);
+      fetchProducts({ nextPage: 1, append: false });
+    }, 500);
 
+    return () => clearTimeout(timeout);
+  }, [debouncedSearch, selectedCategory, sort, minPrice, maxPrice]);
+  
   if (loading && !products.length) {
     return (
       <ScreenContainer maxWidth={1100}>
-        <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <View
+          style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+        >
           <ActivityIndicator size="large" color={colors.primary} />
           <AppText style={{ marginTop: spacing.sm, color: colors.muted }}>
             Cargando productos...
@@ -272,7 +266,9 @@ export default function ProductsScreen({ navigation, route }) {
         onEndReachedThreshold={0.4}
         ListFooterComponent={renderFooter}
         ListHeaderComponent={
-          <View style={{ marginBottom: spacing.md, paddingHorizontal: spacing.md }}>
+          <View
+            style={{ marginBottom: spacing.md, paddingHorizontal: spacing.md }}
+          >
             <View
               style={{
                 backgroundColor: colors.surface,
@@ -288,20 +284,16 @@ export default function ProductsScreen({ navigation, route }) {
                   fontWeight: "900",
                   color: colors.text,
                   marginBottom: 4,
-                  letterSpacing: -0.5,
                 }}
               >
                 Todos los productos
               </AppText>
 
               <AppText
-                style={{
-                  color: colors.muted,
-                  fontSize: 14,
-                  marginBottom: 14,
-                }}
+                style={{ color: colors.muted, fontSize: 14, marginBottom: 14 }}
               >
-                Explora el catálogo completo de CIBOX y encuentra lo que necesitas.
+                Explora el catálogo completo de CIBOX y encuentra lo que
+                necesitas.
               </AppText>
 
               {!isWeb ? (
@@ -358,10 +350,7 @@ export default function ProductsScreen({ navigation, route }) {
         }
         renderItem={({ item }) => (
           <View
-            style={{
-              flex: 1,
-              marginBottom: numColumns === 1 ? spacing.md : 0,
-            }}
+            style={{ flex: 1, marginBottom: numColumns === 1 ? spacing.md : 0 }}
           >
             <ProductCard
               product={item}

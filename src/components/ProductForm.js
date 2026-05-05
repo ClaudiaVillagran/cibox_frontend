@@ -183,7 +183,10 @@ export default function ProductForm({
         return merged.slice(0, 6);
       });
     } catch (error) {
-      showAppAlert("Error", error.message || "No se pudieron seleccionar imágenes");
+      showAppAlert(
+        "Error",
+        error.message || "No se pudieron seleccionar imágenes",
+      );
     }
   };
 
@@ -289,7 +292,8 @@ export default function ProductForm({
         images: finalImages,
         thumbnail: finalImages[0] || "",
       };
-
+      console.log("FINAL IMAGES:", finalImages);
+      console.log("PRODUCT PAYLOAD:", JSON.stringify(payload, null, 2));
       await onSubmit(payload);
     } catch (error) {
       showAppAlert(
@@ -582,7 +586,9 @@ export default function ProductForm({
           minHeight: 120,
         }}
       >
-        <AppText style={{ color: colors.text, fontWeight: "700", marginBottom: 4 }}>
+        <AppText
+          style={{ color: colors.text, fontWeight: "700", marginBottom: 4 }}
+        >
           Agregar imágenes
         </AppText>
         <AppText style={{ color: colors.muted }}>
@@ -675,7 +681,9 @@ export default function ProductForm({
                     alignItems: "center",
                   }}
                 >
-                  <AppText style={{ color: "#d33", fontWeight: "700", fontSize: 12 }}>
+                  <AppText
+                    style={{ color: "#d33", fontWeight: "700", fontSize: 12 }}
+                  >
                     Quitar
                   </AppText>
                 </TouchableOpacity>
@@ -770,7 +778,9 @@ export default function ProductForm({
                     alignItems: "center",
                   }}
                 >
-                  <AppText style={{ color: "#d33", fontWeight: "700", fontSize: 12 }}>
+                  <AppText
+                    style={{ color: "#d33", fontWeight: "700", fontSize: 12 }}
+                  >
                     Quitar
                   </AppText>
                 </TouchableOpacity>

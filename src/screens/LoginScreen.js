@@ -14,8 +14,8 @@ import {
   resendVerificationRequest,
 } from "../services/authService";
 import useAuthStore from "../store/authStore";
-import { showAppAlert } from "../utils/appAlerts";
 import { colors, spacing, shadows } from "../constants/theme";
+import { getApiErrorField, getApiErrorMessage } from "../utils/apiError";
 import AppText from "../components/AppText";
 
 export default function LoginScreen({ navigation }) {
@@ -23,25 +23,60 @@ export default function LoginScreen({ navigation }) {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+
+  const [errors, setErrors] = useState({});
+  const [successMessage, setSuccessMessage] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleLogin = async () => {
-    if (!email.trim() || !password.trim()) {
-      showAppAlert("Faltan datos", "Ingresa tu correo y contraseña");
-      return;
+  const setField = (field, value) => {
+    if (field === "email") setEmail(value);
+    if (field === "password") setPassword(value);
+
+    setSuccessMessage("");
+    setErrors((prev) => ({
+      ...prev,
+      [field]: "",
+      general: "",
+    }));
+  };
+
+  const validateForm = () => {
+    const nextErrors = {};
+
+    if (!email.trim()) {
+      nextErrors.email = "Ingresa tu correo";
+    } else if (!/^\S+@\S+\.\S+$/.test(email.trim())) {
+      nextErrors.email = "Ingresa un correo válido";
     }
+
+    if (!password.trim()) {
+      nextErrors.password = "Ingresa tu contraseña";
+    }
+
+    setErrors(nextErrors);
+    return Object.keys(nextErrors).length === 0;
+  };
+
+  const handleLogin = async () => {
+    if (!validateForm()) return;
 
     try {
       setLoading(true);
+      setErrors({});
+      setSuccessMessage("");
 
       const data = await loginRequest({
         email: email.trim().toLowerCase(),
         password,
       });
 
-      const user = data.user || data.data?.user;
-      const token = data.token || data.data?.token;
-
+      const user = data?.user || data?.data?.user;
+      console.log(data);
+      const token =
+        data?.token ||
+        data?.accessToken ||
+        data?.data?.token ||
+        data?.data?.accessToken;
       if (!user || !token) {
         throw new Error("No se recibió la sesión correctamente");
       }
@@ -59,17 +94,28 @@ export default function LoginScreen({ navigation }) {
     } catch (error) {
       console.log("LOGIN ERROR:", error?.response?.data || error.message);
 
-      const message = error?.response?.data?.message || "Login fallido";
+      const message = getApiErrorMessage(error, "Login fallido");
+      const field = getApiErrorField(error);
 
-      if (message.includes("verificar tu correo")) {
-        showAppAlert(
-          "Correo no verificado",
-          "Debes verificar tu correo antes de iniciar sesión.",
-        );
+      if (message.toLowerCase().includes("verificar")) {
+        setErrors((prev) => ({
+          ...prev,
+          general: "Debes verificar tu correo antes de iniciar sesión.",
+        }));
         return;
       }
 
-      showAppAlert("Error", message);
+      if (field && ["email", "password"].includes(field)) {
+        setErrors((prev) => ({
+          ...prev,
+          [field]: message,
+        }));
+      } else {
+        setErrors((prev) => ({
+          ...prev,
+          general: message,
+        }));
+      }
     } finally {
       setLoading(false);
     }
@@ -77,33 +123,87 @@ export default function LoginScreen({ navigation }) {
 
   const handleResendVerification = async () => {
     if (!email.trim()) {
-      showAppAlert(
-        "Falta correo",
-        "Ingresa tu correo para reenviar verificación",
-      );
+      setErrors((prev) => ({
+        ...prev,
+        email: "Ingresa tu correo para reenviar verificación",
+        general: "",
+      }));
+      return;
+    }
+
+    if (!/^\S+@\S+\.\S+$/.test(email.trim())) {
+      setErrors((prev) => ({
+        ...prev,
+        email: "Ingresa un correo válido",
+        general: "",
+      }));
       return;
     }
 
     try {
       setLoading(true);
+      setErrors({});
+      setSuccessMessage("");
 
       await resendVerificationRequest({
         email: email.trim().toLowerCase(),
       });
 
-      showAppAlert(
-        "Correo reenviado",
-        "Te enviamos nuevamente el correo de verificación.",
-      );
+      setSuccessMessage("Te enviamos nuevamente el correo de verificación.");
     } catch (error) {
-      showAppAlert(
-        "Error",
-        error?.response?.data?.message || "No se pudo reenviar el correo",
+      console.log(
+        "RESEND VERIFICATION ERROR:",
+        error?.response?.data || error.message,
       );
+
+      const message = getApiErrorMessage(
+        error,
+        "No se pudo reenviar el correo",
+      );
+
+      const field = getApiErrorField(error);
+
+      if (field && ["email", "password"].includes(field)) {
+        setErrors((prev) => ({
+          ...prev,
+          [field]: message,
+        }));
+      } else {
+        setErrors((prev) => ({
+          ...prev,
+          general: message,
+        }));
+      }
     } finally {
       setLoading(false);
     }
   };
+
+  const inputWrapperStyle = (hasError) => ({
+    flexDirection: "row",
+    alignItems: "center",
+    borderWidth: 1.5,
+    borderColor: hasError ? colors.danger : "#cfdcc6",
+    borderRadius: 999,
+    paddingHorizontal: 16,
+    height: 54,
+    backgroundColor: colors.surface,
+  });
+
+  const errorText = (message) =>
+    message ? (
+      <AppText
+        style={{
+          color: colors.danger,
+          fontSize: 12,
+          marginTop: 6,
+          marginLeft: 14,
+          fontWeight: "600",
+        }}
+      >
+        {message}
+      </AppText>
+    ) : null;
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
@@ -174,23 +274,38 @@ export default function LoginScreen({ navigation }) {
                 </AppText>
               </View>
 
-              <View style={{ marginBottom: spacing.md }}>
-                <View
+              {errors.general ? (
+                <AppText
                   style={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                    borderWidth: 1.5,
-                    borderColor: "#cfdcc6",
-                    borderRadius: 999,
-                    paddingHorizontal: 16,
-                    height: 54,
-                    backgroundColor: colors.surface,
+                    color: colors.danger,
+                    textAlign: "center",
+                    marginBottom: spacing.md,
+                    fontWeight: "700",
                   }}
                 >
+                  {errors.general}
+                </AppText>
+              ) : null}
+
+              {successMessage ? (
+                <AppText
+                  style={{
+                    color: colors.success,
+                    textAlign: "center",
+                    marginBottom: spacing.md,
+                    fontWeight: "700",
+                  }}
+                >
+                  {successMessage}
+                </AppText>
+              ) : null}
+
+              <View style={{ marginBottom: spacing.md }}>
+                <View style={inputWrapperStyle(!!errors.email)}>
                   <Ionicons
                     name="person-outline"
                     size={18}
-                    color={colors.muted}
+                    color={errors.email ? colors.danger : colors.muted}
                     style={{ marginRight: 10 }}
                   />
 
@@ -198,7 +313,7 @@ export default function LoginScreen({ navigation }) {
                     placeholder="Correo electrónico"
                     placeholderTextColor="#9a9a9a"
                     value={email}
-                    onChangeText={setEmail}
+                    onChangeText={(value) => setField("email", value)}
                     autoCapitalize="none"
                     keyboardType="email-address"
                     style={{
@@ -208,25 +323,15 @@ export default function LoginScreen({ navigation }) {
                     }}
                   />
                 </View>
+                {errorText(errors.email)}
               </View>
 
               <View style={{ marginBottom: spacing.lg }}>
-                <View
-                  style={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                    borderWidth: 1.5,
-                    borderColor: "#cfdcc6",
-                    borderRadius: 999,
-                    paddingHorizontal: 16,
-                    height: 54,
-                    backgroundColor: colors.surface,
-                  }}
-                >
+                <View style={inputWrapperStyle(!!errors.password)}>
                   <Ionicons
                     name="lock-closed-outline"
                     size={18}
-                    color={colors.muted}
+                    color={errors.password ? colors.danger : colors.muted}
                     style={{ marginRight: 10 }}
                   />
 
@@ -235,7 +340,7 @@ export default function LoginScreen({ navigation }) {
                     placeholderTextColor="#9a9a9a"
                     secureTextEntry
                     value={password}
-                    onChangeText={setPassword}
+                    onChangeText={(value) => setField("password", value)}
                     style={{
                       flex: 1,
                       color: colors.text,
@@ -243,6 +348,7 @@ export default function LoginScreen({ navigation }) {
                     }}
                   />
                 </View>
+                {errorText(errors.password)}
               </View>
 
               <Pressable

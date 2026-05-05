@@ -84,7 +84,7 @@ export default function ProductDetailScreen({ route, navigation }) {
   const requireAuth = () => {
     showAppAlert(
       "Inicia sesión",
-      "Debes iniciar sesión para usar esta función"
+      "Debes iniciar sesión para usar esta función",
     );
     navigation.navigate("Auth");
   };
@@ -97,7 +97,7 @@ export default function ProductDetailScreen({ route, navigation }) {
     } catch (error) {
       console.log(
         "PRODUCT DETAIL ERROR:",
-        error?.response?.data || error.message
+        error?.response?.data || error.message,
       );
     } finally {
       setLoading(false);
@@ -113,7 +113,7 @@ export default function ProductDetailScreen({ route, navigation }) {
     } catch (error) {
       console.log(
         "RELATED PRODUCTS ERROR:",
-        error?.response?.data || error.message
+        error?.response?.data || error.message,
       );
       setRelatedProducts([]);
     } finally {
@@ -161,7 +161,7 @@ export default function ProductDetailScreen({ route, navigation }) {
     } catch (error) {
       console.log(
         "GET MY REVIEW ERROR:",
-        error?.response?.data || error.message
+        error?.response?.data || error.message,
       );
       setMyReview(null);
       setReviewRating("5");
@@ -170,6 +170,11 @@ export default function ProductDetailScreen({ route, navigation }) {
   };
 
   const fetchFavoriteStatus = async () => {
+    if (!token) {
+      setIsFavorite(false);
+      return;
+    }
+
     try {
       const data = await checkFavorite(productId);
       const favoriteValue =
@@ -178,7 +183,7 @@ export default function ProductDetailScreen({ route, navigation }) {
     } catch (error) {
       console.log(
         "CHECK FAVORITE ERROR:",
-        error?.response?.data || error.message
+        error?.response?.data || error.message,
       );
       setIsFavorite(false);
     }
@@ -201,7 +206,7 @@ export default function ProductDetailScreen({ route, navigation }) {
       console.log("ADD TO CART ERROR:", error?.response?.data || error.message);
       Alert.alert(
         "Error",
-        error?.response?.data?.message || "No se pudo agregar al carrito"
+        error?.response?.data?.message || "No se pudo agregar al carrito",
       );
     } finally {
       setAdding(false);
@@ -229,11 +234,11 @@ export default function ProductDetailScreen({ route, navigation }) {
     } catch (error) {
       console.log(
         "ADD TO PANTRY ERROR:",
-        error?.response?.data || error.message
+        error?.response?.data || error.message,
       );
       Alert.alert(
         "Error",
-        error?.response?.data?.message || "No se pudo agregar a la despensa"
+        error?.response?.data?.message || "No se pudo agregar a la despensa",
       );
     } finally {
       setAddingToPantry(false);
@@ -241,6 +246,11 @@ export default function ProductDetailScreen({ route, navigation }) {
   };
 
   const handleToggleFavorite = async () => {
+    if (!token) {
+      requireAuth();
+      return;
+    }
+
     try {
       setFavoriteLoading(true);
 
@@ -254,7 +264,7 @@ export default function ProductDetailScreen({ route, navigation }) {
     } catch (error) {
       console.log(
         "TOGGLE FAVORITE ERROR:",
-        error?.response?.data || error.message
+        error?.response?.data || error.message,
       );
       showAppAlert("Error", "No se pudo actualizar favorito");
     } finally {
@@ -299,11 +309,11 @@ export default function ProductDetailScreen({ route, navigation }) {
     } catch (error) {
       console.log(
         "SUBMIT REVIEW ERROR:",
-        error?.response?.data || error.message
+        error?.response?.data || error.message,
       );
       Alert.alert(
         "Error",
-        error?.response?.data?.message || "No se pudo guardar la reseña"
+        error?.response?.data?.message || "No se pudo guardar la reseña",
       );
     } finally {
       setReviewSubmitting(false);
@@ -327,11 +337,11 @@ export default function ProductDetailScreen({ route, navigation }) {
     } catch (error) {
       console.log(
         "DELETE REVIEW ERROR:",
-        error?.response?.data || error.message
+        error?.response?.data || error.message,
       );
       Alert.alert(
         "Error",
-        error?.response?.data?.message || "No se pudo eliminar la reseña"
+        error?.response?.data?.message || "No se pudo eliminar la reseña",
       );
     } finally {
       setReviewSubmitting(false);
@@ -359,7 +369,7 @@ export default function ProductDetailScreen({ route, navigation }) {
 
   useEffect(() => {
     fetchFavoriteStatus();
-  }, [productId]);
+  }, [productId, token]);
 
   useEffect(() => {
     fetchMyReview();
@@ -899,7 +909,7 @@ export default function ProductDetailScreen({ route, navigation }) {
         disabled={adding}
       />
 
-      <AppButton
+      {/* <AppButton
         title={
           addingToPantry ? "Agregando a despensa..." : "Agregar a despensa"
         }
@@ -907,7 +917,7 @@ export default function ProductDetailScreen({ route, navigation }) {
         disabled={addingToPantry}
         variant="secondary"
         style={{ marginTop: 12 }}
-      />
+      /> */}
 
       <AppButton
         title={
@@ -1110,7 +1120,9 @@ export default function ProductDetailScreen({ route, navigation }) {
             </AppText>
 
             {reviewsLoading ? (
-              <AppText style={{ color: colors.muted }}>Cargando reseñas...</AppText>
+              <AppText style={{ color: colors.muted }}>
+                Cargando reseñas...
+              </AppText>
             ) : !reviews.length ? (
               <AppText style={{ color: colors.muted }}>
                 Este producto aún no tiene reseñas.
@@ -1207,7 +1219,9 @@ export default function ProductDetailScreen({ route, navigation }) {
                           marginBottom: 10,
                           borderRadius: radius.md,
                           borderWidth: 1,
-                          borderColor: isActive ? colors.primary : colors.border,
+                          borderColor: isActive
+                            ? colors.primary
+                            : colors.border,
                           backgroundColor: "#fff",
                           overflow: "hidden",
                           alignItems: "center",
@@ -1384,7 +1398,9 @@ export default function ProductDetailScreen({ route, navigation }) {
               </AppText>
 
               {reviewsLoading ? (
-                <AppText style={{ color: colors.muted }}>Cargando reseñas...</AppText>
+                <AppText style={{ color: colors.muted }}>
+                  Cargando reseñas...
+                </AppText>
               ) : !reviews.length ? (
                 <AppText style={{ color: colors.muted }}>
                   Este producto aún no tiene reseñas.
@@ -1426,9 +1442,7 @@ export default function ProductDetailScreen({ route, navigation }) {
             </View>
           </View>
 
-          <View style={{ width: 390 }}>
-            {renderPurchaseCard()}
-          </View>
+          <View style={{ width: 390 }}>{renderPurchaseCard()}</View>
         </View>
 
         <View style={{ marginTop: spacing.md }}>

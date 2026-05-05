@@ -15,6 +15,7 @@ export const registerRequest = async (payload) => {
 };
 
 export const forgotPasswordRequest = async ({ email }) => {
+   console.log("ENVIANDO EMAIL:", email);
   const response = await client.post("/auth/forgot-password", { email });
   return response.data;
 };
@@ -33,6 +34,8 @@ export const resendVerificationRequest = async ({ email }) => {
 };
 
 export const verifyEmailRequest = async (token) => {
-  const response = await client.get(`/auth/verify-email?token=${token}`);
+  const response = await client.get("/auth/verify-email", {
+    params: { token },
+  });
   return response.data;
 };

@@ -4,7 +4,13 @@ import AppStack from "./AppStack";
 import { colors } from "../constants/theme";
 
 const linking = {
-  prefixes: ["myapp://", "http://192.168.1.3:8081", "http://localhost:8081"],
+  prefixes: [
+    "myapp://",
+    "https://cibox-frontend.ondigitalocean.app",
+    "https://app.cibox.cl",
+    "http://192.168.1.3:8081",
+    "http://localhost:8081",
+  ],
   config: {
     screens: {
       Inicio: "",
@@ -31,7 +37,9 @@ export default function RootNavigation() {
     <NavigationContainer
       linking={linking}
       fallback={
-        <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <View
+          style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+        >
           <ActivityIndicator size="large" color={colors.primary} />
         </View>
       }

@@ -17,15 +17,15 @@ export const quoteShipping = async ({ orderId }) => {
 
 export const applyShippingToOrder = async ({
   orderId,
-  shippingAmount,
-  serviceName,
-  serviceCode,
+  region,
+  city,
+  guestToken,
 }) => {
   const response = await client.post("/shipping/apply", {
     orderId,
-    shippingAmount,
-    serviceName,
-    serviceCode,
+    region,
+    city,
+    guestToken,
   });
 
   return response.data;
