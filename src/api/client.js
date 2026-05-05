@@ -26,9 +26,7 @@ client.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-<<<<<<< HEAD
 export default client;
-=======
 client.interceptors.response.use(
   (response) => response,
   async (error) => {
@@ -52,4 +50,3 @@ client.interceptors.response.use(
 );
 
 export default client;
->>>>>>> 4642533 (baseurl)
