@@ -10,11 +10,7 @@ export const getGuestId = async () => {
 
   const res = await axios.get(
     "https://backend-app-cibox-tmvlv.ondigitalocean.app/",
-    {
-      headers: {
-        "ngrok-skip-browser-warning": "true",
-      },
-    },
+
   );
 
   guestId = res.data?.data?.guest_id;
