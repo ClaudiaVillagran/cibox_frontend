@@ -9,7 +9,7 @@ export const getGuestId = async () => {
   if (guestId) return guestId;
 
   const res = await axios.get(
-    "https://cibox-backend-furro.ondigitalocean.app/api/guest/id",
+    "https://backend-app-cibox-tmvlv.ondigitalocean.app/",
     {
       headers: {
         "ngrok-skip-browser-warning": "true",
