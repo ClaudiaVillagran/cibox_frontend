@@ -9,7 +9,7 @@ export const getGuestId = async () => {
   if (guestId) return guestId;
 
   const res = await axios.get(
-    "https://backend-app-cibox-tmvlv.ondigitalocean.app/",
+    "https://backend-app-cibox-tmvlv.ondigitalocean.app/api/guest/id",
 
   );
 
