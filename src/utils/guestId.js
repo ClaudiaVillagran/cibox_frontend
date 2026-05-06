@@ -1,14 +1,29 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import axios from "axios";
 
 const GUEST_ID_KEY = "guest_id";
 
 export const getGuestId = async () => {
   let guestId = await AsyncStorage.getItem(GUEST_ID_KEY);
 
+  if (guestId) return guestId;
+
+  const res = await axios.get(
+    "https://cibox-backend-furro.ondigitalocean.app/api/guest/id",
+    {
+      headers: {
+        "ngrok-skip-browser-warning": "true",
+      },
+    },
+  );
+
+  guestId = res.data?.data?.guest_id;
+
   if (!guestId) {
-    guestId = `guest_${Date.now()}_${Math.random().toString(36).slice(2)}`;
-    await AsyncStorage.setItem(GUEST_ID_KEY, guestId);
+    throw new Error("No se pudo obtener guest_id");
   }
+
+  await AsyncStorage.setItem(GUEST_ID_KEY, guestId);
 
   return guestId;
 };
