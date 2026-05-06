@@ -1,28 +1,48 @@
+import { Platform } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 
 const GUEST_ID_KEY = "guest_id";
 
+const storage = {
+  getItem: async (key) => {
+    if (Platform.OS === "web") return window.localStorage.getItem(key);
+    return AsyncStorage.getItem(key);
+  },
+  setItem: async (key, value) => {
+    if (Platform.OS === "web") return window.localStorage.setItem(key, value);
+    return AsyncStorage.setItem(key, value);
+  },
+  removeItem: async (key) => {
+    if (Platform.OS === "web") return window.localStorage.removeItem(key);
+    return AsyncStorage.removeItem(key);
+  },
+};
+
 export const getGuestId = async () => {
-  let guestId = await AsyncStorage.getItem(GUEST_ID_KEY);
+  try {
+    const existing = await storage.getItem(GUEST_ID_KEY);
+    if (existing) return existing;
 
-  if (guestId) return guestId;
+    const res = await axios.get(
+      `${process.env.EXPO_PUBLIC_API_URL}/guest/id`
+    );
 
-  const res = await axios.get(
-    `${process.env.EXPO_PUBLIC_API_URL}/guest/id`
-  );
+    const guestId = res.data?.data?.guest_id;
+    if (!guestId) return null; // falla silencioso, no crash
 
-  guestId = res.data?.data?.guest_id;
-
-  if (!guestId) {
-    throw new Error("No se pudo obtener guest_id");
+    await storage.setItem(GUEST_ID_KEY, guestId);
+    return guestId;
+  } catch (error) {
+    console.log("GET GUEST ID ERROR:", error?.message);
+    return null; // nunca crashear por esto
   }
-
-  await AsyncStorage.setItem(GUEST_ID_KEY, guestId);
-
-  return guestId;
 };
 
 export const clearGuestId = async () => {
-  await AsyncStorage.removeItem(GUEST_ID_KEY);
+  try {
+    await storage.removeItem(GUEST_ID_KEY);
+  } catch {
+    // ignorar
+  }
 };

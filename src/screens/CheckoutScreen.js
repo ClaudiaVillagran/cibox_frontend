@@ -621,12 +621,12 @@ export default function CheckoutScreen({ navigation }) {
         throw new Error("No se pudo obtener la orden creada");
       }
 
-      await applyShippingToOrderService({
-        orderId: order._id,
-        region: region.trim(),
-        city: city.trim(),
-        guestToken: orderResponse?.guest_token,
-      });
+      // await applyShippingToOrderService({
+      //   orderId: order._id,
+      //   region: region.trim(),
+      //   city: city.trim(),
+      //   guestToken: orderResponse?.guest_token,
+      // });
 
       const guestToken =
         orderResponse?.guest_token || orderResponse?.data?.guest_token || null;

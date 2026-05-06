@@ -1,26 +1,24 @@
 import { useMemo } from "react";
-import { Platform, Text, View } from "react-native";
+import { Platform, View } from "react-native";
 import ScreenContainer from "../components/ScreenContainer";
 import AppButton from "../components/AppButton";
 import { colors, spacing } from "../constants/theme";
 import AppText from "../components/AppText";
+import useAuthStore from "../store/authStore";
 
 export default function OrderSuccessScreen({ route, navigation }) {
   const params = route.params || {};
+  const { token } = useAuthStore();
+  const isGuest = !token;
 
-  const webQuery = useMemo(() => {
-    if (Platform.OS !== "web") return {};
-
-    const search = new URLSearchParams(window.location.search);
-
-    return {
-      orderId: search.get("orderId") || "",
-      guestEmail: search.get("guestEmail") || "",
-    };
-  }, []);
-
-  const orderId = params.orderId || webQuery.orderId;
-  const guestEmail = params.guestEmail || webQuery.guestEmail;
+  const orderId = useMemo(() => {
+    if (params.orderId) return params.orderId;
+    if (Platform.OS === "web") {
+      const search = new URLSearchParams(window.location.search);
+      return search.get("orderId") || null;
+    }
+    return null;
+  }, [params.orderId]);
 
   return (
     <ScreenContainer maxWidth={720}>
@@ -49,53 +47,27 @@ export default function OrderSuccessScreen({ route, navigation }) {
         <AppText
           style={{
             color: colors.muted,
-            marginBottom: 20,
+            marginBottom: 28,
             textAlign: "center",
             maxWidth: 400,
           }}
         >
-          Tu pedido fue creado correctamente. Revisa tu correo para ver el
-          resumen de la compra y futuras actualizaciones del pedido.
+          {isGuest
+            ? "Tu pedido fue recibido. Te enviamos un correo con el resumen de tu compra y te avisaremos cuando sea despachado."
+            : "Tu pedido fue creado correctamente. Revisa tu correo para ver el resumen y futuras actualizaciones."}
         </AppText>
 
-        {orderId ? (
-          <AppText
-            style={{
-              color: colors.text,
-              fontWeight: "700",
-              marginBottom: 8,
-            }}
-          >
-            Orden: {orderId}
-          </AppText>
+        {!isGuest && orderId ? (
+          <AppButton
+            title="Ver mi orden"
+            onPress={() => navigation.replace("OrderDetail", { orderId })}
+            style={{ marginBottom: 12 }}
+          />
         ) : null}
-
-        {guestEmail ? (
-          <AppText
-            style={{
-              color: colors.muted,
-              marginBottom: 20,
-              textAlign: "center",
-            }}
-          >
-            Correo asociado: {guestEmail}
-          </AppText>
-        ) : (
-          <View style={{ marginBottom: 20 }} />
-        )}
-
-        <AppButton
-          title="Ver mi orden"
-          onPress={() =>
-            navigation.replace("OrderDetail", { orderId, guestEmail })
-          }
-          style={{ marginBottom: 12 }}
-          disabled={!orderId}
-        />
 
         <AppButton
           title="Volver al inicio"
-          variant="secondary"
+          variant={isGuest ? "primary" : "secondary"}
           onPress={() =>
             navigation.reset({
               index: 0,

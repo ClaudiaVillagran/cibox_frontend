@@ -70,18 +70,19 @@ export default function LoginScreen({ navigation }) {
         password,
       });
 
-      const user = data?.user || data?.data?.user;
-      console.log(data);
+      const user = data?.data?.user || data?.user;
       const token =
-        data?.token ||
-        data?.accessToken ||
+        data?.data?.accessToken ||
         data?.data?.token ||
-        data?.data?.accessToken;
+        data?.accessToken ||
+        data?.token;
+      const refreshToken = data?.data?.refreshToken || data?.refreshToken;
+
       if (!user || !token) {
         throw new Error("No se recibió la sesión correctamente");
       }
 
-      await setAuth({ user, token });
+      await setAuth({ user, token, refreshToken });
 
       if (Platform.OS === "web" && typeof window !== "undefined") {
         window.history.replaceState({}, "", "/");

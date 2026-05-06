@@ -2,10 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { ActivityIndicator, FlatList, Text, View } from "react-native";
 import ScreenContainer from "../components/ScreenContainer";
 import { colors, radius, spacing } from "../constants/theme";
-import {
-  getGuestOrderById,
-  getOrderById,
-} from "../services/orderService";
+import { getGuestOrderById, getOrderById } from "../services/orderService";
 import useAuthStore from "../store/authStore";
 import { showAppAlert } from "../utils/appAlerts";
 import AppText from "../components/AppText";
@@ -28,45 +25,33 @@ export default function OrderDetailScreen({ route, navigation }) {
   };
 
   const fetchOrder = useCallback(async () => {
+    if (!orderId) {
+      showAppAlert("Error", "No se recibió el ID de la orden");
+      setLoading(false);
+      return;
+    }
+
+    if (!token) {
+      // Guest no tiene acceso a detalle de orden
+      setLoading(false);
+      return;
+    }
+
     try {
-      if (!orderId) {
-        showAppAlert("Error", "No se recibió el ID de la orden");
-        setLoading(false);
-        return;
-      }
-
       setLoading(true);
-
-      let data;
-
-      if (token) {
-        data = await getOrderById(orderId);
-      } else if (guestEmail) {
-        data = await getGuestOrderById({
-          orderId,
-          email: guestEmail,
-        });
-      } else {
-        showAppAlert(
-          "Acceso restringido",
-          "Inicia sesión o usa el correo asociado a la compra"
-        );
-        setLoading(false);
-        return;
-      }
-
+      const data = await getOrderById(orderId);
       const item = data?.order || data?.data?.order || data?.data || data;
       setOrder(item);
     } catch (error) {
       console.log(
         "GET ORDER DETAIL ERROR:",
-        error?.response?.data || error.message
+        error?.response?.data || error.message,
       );
       showAppAlert("Error", "No se pudo cargar la orden");
     } finally {
       setLoading(false);
     }
-  }, [orderId, token, guestEmail]);
+  }, [orderId, token]);
 
   useEffect(() => {
     fetchOrder();
@@ -181,7 +166,27 @@ export default function OrderDetailScreen({ route, navigation }) {
         <View
           style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
         >
-          <AppText>No se encontró la orden</AppText>
+          {!token ? (
+            <>
+              <AppText
+                style={{
+                  color: colors.text,
+                  fontWeight: "700",
+                  marginBottom: 8,
+                }}
+              >
+                Inicia sesión para ver el detalle de tu orden
+              </AppText>
+              <AppButton
+                title="Iniciar sesión"
+                onPress={() => navigation.navigate("Auth")}
+              />
+            </>
+          ) : (
+            <AppText style={{ color: colors.text }}>
+              No se encontró la orden
+            </AppText>
+          )}
         </View>
       </ScreenContainer>
     );
