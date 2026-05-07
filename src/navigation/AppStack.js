@@ -25,6 +25,7 @@ import WebpayScreen from "../screens/WebpayScreen";
 import VerifyEmailScreen from "../screens/VerifyEmailScreen";
 import ResetPasswordScreen from "../screens/ResetPasswordScreen";
 import ForgotPasswordScreen from "../screens/ForgotPasswordScreen";
+import OrderFailedScreen from "../screens/OrderFailedScreen";
 
 const Stack = createNativeStackNavigator();
 
@@ -139,6 +140,13 @@ export default function AppStack() {
           isWeb ? withWebLayout(OrderSuccessScreen) : OrderSuccessScreen
         }
         options={isWeb ? { headerShown: false } : { title: "Compra exitosa" }}
+      />
+      <Stack.Screen
+        name="OrderFailed"
+        component={
+          isWeb ? withWebLayout(OrderFailedScreen) : OrderFailedScreen
+        }
+        options={isWeb ? { headerShown: false } : { title: "Compra fallida" }}
       />
 
       <Stack.Screen

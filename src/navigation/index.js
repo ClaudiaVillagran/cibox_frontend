@@ -6,7 +6,7 @@ import { colors } from "../constants/theme";
 const linking = {
   prefixes: [
     "myapp://",
-    "https://cibox-frontend.ondigitalocean.app",
+    "https://cibox-frontend-j7257.ondigitalocean.app",
     "https://app.cibox.cl",
     "http://192.168.1.3:8081",
     "http://localhost:8081",
@@ -18,8 +18,10 @@ const linking = {
       ProductDetail: "products/:productId",
       Cart: "cart",
       Checkout: "checkout",
-      OrderDetail: "orders/:orderId",
+      // Rutas específicas ANTES que la dinámica
       OrderSuccess: "orders/success",
+      OrderFailed: "orders/failed",
+      OrderDetail: "orders/:orderId",
       VerifyEmail: "auth/verify-email",
       ResetPassword: "auth/reset-password",
       Notifications: "notifications",
@@ -37,9 +39,7 @@ export default function RootNavigation() {
     <NavigationContainer
       linking={linking}
       fallback={
-        <View
-          style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
-        >
+        <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
           <ActivityIndicator size="large" color={colors.primary} />
         </View>
       }
