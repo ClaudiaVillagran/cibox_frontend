@@ -29,6 +29,7 @@ import { showAppAlert } from "../utils/appAlerts";
 import { CHILE_REGIONS } from "../constants/chileLocations";
 import AppText from "../components/AppText";
 import { getCheckoutCouponPreview } from "../services/couponService";
+import useAuthStore from "../store/authStore";
 
 const normalizeEmail = (email = "") => String(email).trim().toLowerCase();
 
@@ -285,6 +286,7 @@ export default function CheckoutScreen({ navigation }) {
   const [shippingError, setShippingError] = useState("");
   const [autoDiscount, setAutoDiscount] = useState(null);
   const [errors, setErrors] = useState({});
+  const { token } = useAuthStore();
 
   const { loadCartSummary } = useCartStore();
 
@@ -543,7 +545,7 @@ export default function CheckoutScreen({ navigation }) {
     setErrors(nextErrors);
     return Object.keys(nextErrors).length === 0;
   };
-    const fetchAutoDiscount = async () => {
+  const fetchAutoDiscount = async () => {
     console.log("fetchAutoDiscount");
     try {
       if (!productsTotal) {
@@ -565,8 +567,9 @@ export default function CheckoutScreen({ navigation }) {
     }
   };
   useEffect(() => {
+    if (!token) return; // ← agregar esta línea
     fetchAutoDiscount();
-  }, [productsTotal]);
+  }, [productsTotal, token]);
 
   const handleCheckout = async () => {
     if (!validateForm()) {
