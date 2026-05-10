@@ -1,5 +1,5 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { Platform } from "react-native";
+import { Platform, useWindowDimensions } from "react-native";
 
 import MainTabs from "./MainTabs";
 import AuthStack from "./AuthStack";
@@ -41,7 +41,9 @@ function withWebLayout(Component) {
 
 export default function AppStack() {
   const { token } = useAuthStore();
-  const isWeb = Platform.OS === "web";
+  const { width } = useWindowDimensions();
+  // const isWeb = Platform.OS === "web";
+  const isWebDesktop = Platform.OS === "web" && width >= 800;
 
   return (
     <Stack.Navigator
@@ -52,7 +54,7 @@ export default function AppStack() {
         },
       }}
     >
-      {isWeb ? (
+      {isWebDesktop  ? (
         <>
           <Stack.Screen
             name="Inicio"
@@ -94,87 +96,85 @@ export default function AppStack() {
 
       <Stack.Screen
         name="Products"
-        component={isWeb ? withWebLayout(ProductsScreen) : ProductsScreen}
-        options={isWeb ? { headerShown: false } : { title: "Productos" }}
+        component={isWebDesktop ? withWebLayout(ProductsScreen) : ProductsScreen}
+        options={isWebDesktop ? { headerShown: false } : { title: "Productos" }}
       />
 
       <Stack.Screen
         name="ProductDetail"
         component={
-          isWeb ? withWebLayout(ProductDetailScreen) : ProductDetailScreen
+          isWebDesktop ? withWebLayout(ProductDetailScreen) : ProductDetailScreen
         }
         options={
-          isWeb ? { headerShown: false } : { title: "Detalle del producto" }
+          isWebDesktop ? { headerShown: false } : { title: "Detalle del producto" }
         }
       />
 
       <Stack.Screen
         name="Cart"
-        component={isWeb ? withWebLayout(CartScreen) : CartScreen}
-        options={isWeb ? { headerShown: false } : { title: "Mi carrito" }}
+        component={isWebDesktop ? withWebLayout(CartScreen) : CartScreen}
+        options={isWebDesktop ? { headerShown: false } : { title: "Mi carrito" }}
       />
 
       <Stack.Screen
         name="Checkout"
-        component={isWeb ? withWebLayout(CheckoutScreen) : CheckoutScreen}
-        options={isWeb ? { headerShown: false } : { title: "Checkout" }}
+        component={isWebDesktop ? withWebLayout(CheckoutScreen) : CheckoutScreen}
+        options={isWebDesktop ? { headerShown: false } : { title: "Checkout" }}
       />
 
       <Stack.Screen
         name="OrderDetail"
-        component={isWeb ? withWebLayout(OrderDetailScreen) : OrderDetailScreen}
-        options={isWeb ? { headerShown: false } : { title: "Detalle de orden" }}
+        component={isWebDesktop ? withWebLayout(OrderDetailScreen) : OrderDetailScreen}
+        options={isWebDesktop ? { headerShown: false } : { title: "Detalle de orden" }}
       />
 
       <Stack.Screen
         name="Notifications"
         component={
-          isWeb ? withWebLayout(NotificationsScreen) : NotificationsScreen
+          isWebDesktop ? withWebLayout(NotificationsScreen) : NotificationsScreen
         }
-        options={isWeb ? { headerShown: false } : { title: "Notificaciones" }}
+        options={isWebDesktop ? { headerShown: false } : { title: "Notificaciones" }}
       />
 
       <Stack.Screen
         name="OrderSuccess"
         component={
-          isWeb ? withWebLayout(OrderSuccessScreen) : OrderSuccessScreen
+          isWebDesktop ? withWebLayout(OrderSuccessScreen) : OrderSuccessScreen
         }
-        options={isWeb ? { headerShown: false } : { title: "Compra exitosa" }}
+        options={isWebDesktop ? { headerShown: false } : { title: "Compra exitosa" }}
       />
       <Stack.Screen
         name="OrderFailed"
-        component={
-          isWeb ? withWebLayout(OrderFailedScreen) : OrderFailedScreen
-        }
-        options={isWeb ? { headerShown: false } : { title: "Compra fallida" }}
+        component={isWebDesktop ? withWebLayout(OrderFailedScreen) : OrderFailedScreen}
+        options={isWebDesktop ? { headerShown: false } : { title: "Compra fallida" }}
       />
 
       <Stack.Screen
         name="VendorProducts"
         component={
-          isWeb ? withWebLayout(VendorProductsScreen) : VendorProductsScreen
+          isWebDesktop ? withWebLayout(VendorProductsScreen) : VendorProductsScreen
         }
-        options={isWeb ? { headerShown: false } : { title: "Mis productos" }}
+        options={isWebDesktop ? { headerShown: false } : { title: "Mis productos" }}
       />
 
       <Stack.Screen
         name="CreateProduct"
         component={
-          isWeb ? withWebLayout(CreateProductScreen) : CreateProductScreen
+          isWebDesktop ? withWebLayout(CreateProductScreen) : CreateProductScreen
         }
-        options={isWeb ? { headerShown: false } : { title: "Crear producto" }}
+        options={isWebDesktop ? { headerShown: false } : { title: "Crear producto" }}
       />
 
       <Stack.Screen
         name="EditProduct"
-        component={isWeb ? withWebLayout(EditProductScreen) : EditProductScreen}
-        options={isWeb ? { headerShown: false } : { title: "Editar producto" }}
+        component={isWebDesktop ? withWebLayout(EditProductScreen) : EditProductScreen}
+        options={isWebDesktop ? { headerShown: false } : { title: "Editar producto" }}
       />
 
       <Stack.Screen
         name="Webpay"
-        component={isWeb ? withWebLayout(WebpayScreen) : WebpayScreen}
-        options={isWeb ? { headerShown: false } : { title: "Pago con Webpay" }}
+        component={isWebDesktop ? withWebLayout(WebpayScreen) : WebpayScreen}
+        options={isWebDesktop ? { headerShown: false } : { title: "Pago con Webpay" }}
       />
 
       {!token && (
@@ -188,30 +188,30 @@ export default function AppStack() {
           <Stack.Screen
             name="VerifyEmail"
             component={
-              isWeb ? withWebLayout(VerifyEmailScreen) : VerifyEmailScreen
+              isWebDesktop ? withWebLayout(VerifyEmailScreen) : VerifyEmailScreen
             }
             options={
-              isWeb ? { headerShown: false } : { title: "Verificar correo" }
+              isWebDesktop ? { headerShown: false } : { title: "Verificar correo" }
             }
           />
 
           <Stack.Screen
             name="ForgotPassword"
             component={
-              isWeb ? withWebLayout(ForgotPasswordScreen) : ForgotPasswordScreen
+              isWebDesktop ? withWebLayout(ForgotPasswordScreen) : ForgotPasswordScreen
             }
             options={
-              isWeb ? { headerShown: false } : { title: "Recuperar contraseña" }
+              isWebDesktop ? { headerShown: false } : { title: "Recuperar contraseña" }
             }
           />
 
           <Stack.Screen
             name="ResetPassword"
             component={
-              isWeb ? withWebLayout(ResetPasswordScreen) : ResetPasswordScreen
+              isWebDesktop ? withWebLayout(ResetPasswordScreen) : ResetPasswordScreen
             }
             options={
-              isWeb ? { headerShown: false } : { title: "Nueva contraseña" }
+              isWebDesktop ? { headerShown: false } : { title: "Nueva contraseña" }
             }
           />
         </>
