@@ -16,7 +16,6 @@ import { previewShipping as previewShippingService } from "../services/shippingS
 import { getCheckoutAddress, saveCheckoutAddress } from "../utils/checkoutStorage";
 import { showAppAlert } from "../utils/appAlerts";
 import { CHILE_REGIONS } from "../constants/chileLocations";
-import useAuthStore from "../store/authStore";
 
 const normalizeEmail = (e) => String(e).trim().toLowerCase();
 const isValidEmail = (e) => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(normalizeEmail(e));
@@ -33,11 +32,9 @@ const formatRut = (r) => {
   if (c.length < 2) return c;
   const body = c.slice(0, -1);
   const dv = c.slice(-1);
-  let out = "";
-  let count = 0;
+  let out = ""; let count = 0;
   for (let i = body.length - 1; i >= 0; i--) {
-    out = body[i] + out;
-    count++;
+    out = body[i] + out; count++;
     if (count === 3 && i !== 0) { out = "." + out; count = 0; }
   }
   return `${out}-${dv}`;
@@ -45,21 +42,93 @@ const formatRut = (r) => {
 const isValidRut = (r) => {
   const c = cleanRut(r);
   if (!/^\d{7,8}[0-9K]$/.test(c)) return false;
-  const body = c.slice(0, -1);
-  const dv = c.slice(-1);
+  const body = c.slice(0, -1); const dv = c.slice(-1);
   let sum = 0, multiplier = 2;
   for (let i = body.length - 1; i >= 0; i--) {
     sum += Number(body[i]) * multiplier;
     multiplier = multiplier === 7 ? 2 : multiplier + 1;
   }
   const result = 11 - (sum % 11);
-  const expected = result === 11 ? "0" : result === 10 ? "K" : String(result);
-  return expected === dv;
+  return (result === 11 ? "0" : result === 10 ? "K" : String(result)) === dv;
 };
+
+// Reutilizar el mismo SelectField del CheckoutScreen
+function SelectField({ label, value, placeholder, options = [], onSelect, error, disabled = false, zIndex = 1 }) {
+  const [open, setOpen] = useState(false);
+  const selectedLabel = options.find((item) => item.value === value)?.label || "";
+
+  return (
+    <View style={{ marginBottom: error ? 6 : 14, zIndex }}>
+      <AppText style={{ color: colors.text, fontWeight: "700", marginBottom: 6, fontSize: 14 }}>
+        {label}
+      </AppText>
+      <View style={{ position: "relative", zIndex }}>
+        <Pressable
+          onPress={() => { if (disabled) return; setOpen((prev) => !prev); }}
+          style={{
+            minHeight: 52, borderWidth: 1,
+            borderColor: error ? "#b91c1c" : "#DDE7D7",
+            borderRadius: 14, backgroundColor: disabled ? "#F3F4F6" : "#FAFBF8",
+            paddingHorizontal: 14, paddingVertical: 14,
+            flexDirection: "row", alignItems: "center", justifyContent: "space-between",
+          }}
+        >
+          <AppText style={{ color: selectedLabel ? colors.text : "#999", fontSize: 15 }}>
+            {selectedLabel || placeholder}
+          </AppText>
+          <AppText style={{ color: "#6B7280", fontSize: 14, marginLeft: 12 }}>
+            {open ? "▲" : "▼"}
+          </AppText>
+        </Pressable>
+
+        {open ? (
+          <>
+            <Pressable
+              onPress={() => setOpen(false)}
+              style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, zIndex }}
+            />
+            <View style={{
+              position: "absolute", top: 58, left: 0, right: 0,
+              backgroundColor: "#FFFFFF", borderWidth: 1, borderColor: "#DDE7D7",
+              borderRadius: 14, shadowColor: "#000", shadowOpacity: 0.08,
+              shadowRadius: 10, shadowOffset: { width: 0, height: 4 },
+              elevation: 4, maxHeight: 220, overflow: "hidden", zIndex: zIndex + 100,
+            }}>
+              <ScrollView nestedScrollEnabled>
+                {options.length ? options.map((item, index) => (
+                  <Pressable
+                    key={`${item.value}-${index}`}
+                    onPress={() => { onSelect(item.value); setOpen(false); }}
+                    style={{
+                      paddingHorizontal: 14, paddingVertical: 12,
+                      borderBottomWidth: index === options.length - 1 ? 0 : 1,
+                      borderBottomColor: "#EEF3EA",
+                      backgroundColor: item.value === value ? "#F4F9EF" : "#FFFFFF",
+                    }}
+                  >
+                    <AppText style={{ color: colors.text, fontSize: 14, fontWeight: item.value === value ? "700" : "400" }}>
+                      {item.label}
+                    </AppText>
+                  </Pressable>
+                )) : (
+                  <View style={{ paddingHorizontal: 14, paddingVertical: 12 }}>
+                    <AppText style={{ color: "#6B7280" }}>No hay opciones disponibles</AppText>
+                  </View>
+                )}
+              </ScrollView>
+            </View>
+          </>
+        ) : null}
+      </View>
+      {!!error && (
+        <AppText style={{ color: "#b91c1c", fontSize: 12, marginTop: 6 }}>{error}</AppText>
+      )}
+    </View>
+  );
+}
 
 export default function CustomBoxCheckoutScreen({ route, navigation }) {
   const { box } = route.params || {};
-  const { token } = useAuthStore();
 
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
@@ -75,6 +144,7 @@ export default function CustomBoxCheckoutScreen({ route, navigation }) {
   const [submitting, setSubmitting] = useState(false);
   const [shippingQuote, setShippingQuote] = useState(null);
   const [shippingLoading, setShippingLoading] = useState(false);
+  const [shippingError, setShippingError] = useState("");
   const [loadingAddress, setLoadingAddress] = useState(true);
 
   const regionOptions = useMemo(() => {
@@ -93,11 +163,11 @@ export default function CustomBoxCheckoutScreen({ route, navigation }) {
   }, [region, regionOptions]);
 
   const formatPrice = (v) => `$${Number(v || 0).toLocaleString("es-CL")}`;
-
   const subtotal = box?.subtotal || box?.total || 0;
   const shippingAmount = Number(shippingQuote?.amount || 0);
   const finalTotal = subtotal + shippingAmount;
 
+  // Cargar dirección guardada
   useEffect(() => {
     const load = async () => {
       try {
@@ -122,46 +192,71 @@ export default function CustomBoxCheckoutScreen({ route, navigation }) {
     load();
   }, []);
 
+  // Calcular shipping — igual que CheckoutScreen
+  const normalizeQuoteOptions = (quote) => {
+    const rawOptions =
+      quote?.services || quote?.rates || quote?.options ||
+      quote?.quotes || quote?.data?.services ||
+      quote?.data?.rates || quote?.data?.options || [];
+    if (!Array.isArray(rawOptions)) return [];
+    return rawOptions.map((item, index) => ({
+      id: item?.id || item?.service_code || item?.code || `${index}`,
+      name: item?.service_name || item?.serviceName || item?.name || item?.label || "Blue Express manual",
+      amount: Number(item?.amount ?? item?.price ?? item?.total ?? item?.value ?? item?.rate ?? 0) || 0,
+    }));
+  };
+
   useEffect(() => {
-    const t = setTimeout(async () => {
-      if (!region || !city || !address) { setShippingQuote(null); return; }
+    const timer = setTimeout(async () => {
+      const hasAddress = region.trim() && city.trim() && address.trim();
+      if (!hasAddress) { setShippingQuote(null); setShippingError(""); return; }
+
       try {
         setShippingLoading(true);
+        setShippingError("");
         const response = await previewShippingService({
-          shipping: { region, city, address, addressLine2, reference },
+          shipping: {
+            region: region.trim(),
+            city: city.trim(),
+            address: address.trim(),
+            addressLine2: addressLine2.trim(),
+            reference: reference.trim(),
+          },
         });
         const quote = response?.quote || response?.data?.quote || response?.data || response;
-        const options = (quote?.services || quote?.rates || quote?.options || []).map((item, i) => ({
-          id: item?.id || `${i}`,
-          name: item?.service_name || item?.name || "Blue Express",
-          amount: Number(item?.amount ?? item?.price ?? 0) || 0,
-        }));
-        setShippingQuote(options[0] || null);
-      } catch (e) {
+        const options = normalizeQuoteOptions(quote);
+        if (!options.length) {
+          setShippingQuote(null);
+          setShippingError("No hay tarifas disponibles para esta dirección");
+          return;
+        }
+        setShippingQuote(options[0]);
+      } catch (error) {
         setShippingQuote(null);
+        setShippingError(error?.response?.data?.message || "No se pudo calcular el envío");
       } finally {
         setShippingLoading(false);
       }
     }, 500);
-    return () => clearTimeout(t);
+    return () => clearTimeout(timer);
   }, [region, city, address, addressLine2, reference]);
 
   const validate = () => {
     const next = {};
-    if (!fullName.trim()) next.fullName = "Ingresa tu nombre";
-    if (!isValidEmail(email)) next.email = "Correo inválido";
-    if (!isValidPhoneCL(phone)) next.phone = "Teléfono inválido";
-    if (!isValidRut(rut)) next.rut = "RUT inválido";
-    if (!region) next.region = "Selecciona una región";
-    if (!city) next.city = "Selecciona una comuna";
-    if (address.trim().length < 5) next.address = "Dirección inválida";
+    if (!fullName.trim()) next.fullName = "Ingresa tu nombre completo";
+    if (!isValidEmail(email)) next.email = "Ingresa un correo válido";
+    if (!isValidPhoneCL(phone)) next.phone = "Ingresa un teléfono chileno válido";
+    if (!isValidRut(rut)) next.rut = "Ingresa un RUT válido";
+    if (!region.trim()) next.region = "Selecciona una región";
+    if (!city.trim()) next.city = "Selecciona una comuna";
+    if (address.trim().length < 5) next.address = "Ingresa una dirección válida";
     setErrors(next);
     return Object.keys(next).length === 0;
   };
 
   const handleCheckout = async () => {
-    if (!validate()) { showAppAlert("Revisa tus datos", "Hay campos inválidos"); return; }
-    if (!shippingQuote?.amount) { showAppAlert("Envío", "Calcula el envío antes de continuar"); return; }
+    if (!validate()) { showAppAlert("Revisa tus datos", "Hay campos inválidos en el checkout"); return; }
+    if (!shippingQuote?.amount) { showAppAlert("Envío no disponible", "Primero necesitamos calcular el costo de envío"); return; }
 
     try {
       setSubmitting(true);
@@ -188,13 +283,16 @@ export default function CustomBoxCheckoutScreen({ route, navigation }) {
           method: "webpay",
           platform: Platform.OS === "web" ? "web" : Platform.OS,
         },
-        couponCode: couponCode.trim().toUpperCase() || undefined,
       };
+
+      if (couponCode.trim()) {
+        payload.couponCode = couponCode.trim().toUpperCase();
+      }
 
       const orderResponse = await createOrderFromCustomBox(payload);
       const order = orderResponse?.order || orderResponse?.data?.order || orderResponse?.data || orderResponse;
 
-      if (!order?._id) throw new Error("No se pudo obtener la orden");
+      if (!order?._id) throw new Error("No se pudo obtener la orden creada");
 
       const guestToken = orderResponse?.guest_token || orderResponse?.data?.guest_token || null;
 
@@ -209,7 +307,8 @@ export default function CustomBoxCheckoutScreen({ route, navigation }) {
         email: normalizeEmail(email),
         phone: normalizePhoneCL(phone),
         rut: formatRut(rut),
-        region, city,
+        region: region.trim(),
+        city: city.trim(),
         address: address.trim(),
         addressLine2: addressLine2.trim(),
         reference: reference.trim(),
@@ -217,7 +316,7 @@ export default function CustomBoxCheckoutScreen({ route, navigation }) {
       });
 
       if (!payment?.paymentToken || !payment?.paymentUrl) {
-        showAppAlert("Error", "No se pudo iniciar el pago");
+        showAppAlert("Error", "No se pudo iniciar el pago con Webpay");
         return;
       }
 
@@ -228,22 +327,27 @@ export default function CustomBoxCheckoutScreen({ route, navigation }) {
       });
     } catch (error) {
       console.log("CUSTOM BOX CHECKOUT ERROR:", error?.response?.data || error.message);
-      showAppAlert("Error", error?.response?.data?.message || error.message || "No se pudo procesar el pedido");
+      const backendErrors = error?.response?.data?.errors || {};
+      if (Object.keys(backendErrors).length) setErrors((prev) => ({ ...prev, ...backendErrors }));
+      showAppAlert("Error", error?.response?.data?.message || error.message || "No se pudo iniciar el checkout");
     } finally {
       setSubmitting(false);
     }
   };
 
+  const cardStyle = {
+    borderWidth: 1, borderColor: "#DDE7D7", borderRadius: 20,
+    backgroundColor: "#FFFFFF", padding: 14, marginBottom: 14,
+    shadowColor: "#000", shadowOpacity: 0.05, shadowRadius: 8,
+    shadowOffset: { width: 0, height: 3 }, elevation: 2,
+  };
   const inputStyle = {
     borderWidth: 1, borderColor: "#DDE7D7", borderRadius: 14,
     backgroundColor: "#FAFBF8", paddingHorizontal: 14, paddingVertical: 13,
     color: colors.text, fontSize: 15, minHeight: 52,
   };
   const labelStyle = { color: colors.text, fontWeight: "700", marginBottom: 6, fontSize: 14 };
-  const cardStyle = {
-    borderWidth: 1, borderColor: "#DDE7D7", borderRadius: 20,
-    backgroundColor: "#FFFFFF", padding: 14, marginBottom: 14,
-  };
+  const errorTextStyle = { color: "#b91c1c", fontSize: 12, marginTop: 6, marginBottom: 10 };
 
   if (loadingAddress) {
     return (
@@ -257,104 +361,121 @@ export default function CustomBoxCheckoutScreen({ route, navigation }) {
 
   return (
     <ScreenContainer maxWidth={720}>
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: spacing.xl }}>
-        <AppText style={{ fontSize: 26, fontWeight: "900", color: colors.text, marginBottom: 6 }}>
-          Confirmar pedido
+      <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled" contentContainerStyle={{ paddingBottom: spacing.xl }}>
+
+        <AppText style={{ fontSize: 28, fontWeight: "800", color: colors.text, marginBottom: 6 }}>
+          Checkout
         </AppText>
-        <AppText style={{ color: colors.muted, marginBottom: spacing.md }}>
-          Completa tus datos para enviar tu caja personalizada.
+        <AppText style={{ color: colors.muted, marginBottom: spacing.md, fontSize: 15 }}>
+          Completa tus datos y revisa tu caja antes de confirmar.
         </AppText>
 
-        {/* Resumen de la caja */}
+        {/* Resumen caja */}
         <View style={cardStyle}>
-          <AppText style={{ fontSize: 18, fontWeight: "800", color: colors.text, marginBottom: 12 }}>
+          <AppText style={{ fontSize: 20, fontWeight: "800", color: colors.text, marginBottom: 14 }}>
             Tu caja personalizada
           </AppText>
           {(box?.items || []).map((item, index) => (
-            <View key={String(item.product_id) + index} style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 6 }}>
-              <AppText style={{ flex: 1, color: colors.text, fontSize: 14 }} numberOfLines={1}>
-                {item.quantity}x {item.name}
+            <View key={String(item.product_id) + index} style={{
+              paddingBottom: 10, marginBottom: 10,
+              borderBottomWidth: index === (box.items.length - 1) ? 0 : 1,
+              borderBottomColor: "#EEF3EA",
+            }}>
+              <AppText style={{ fontWeight: "800", color: colors.text, marginBottom: 4, fontSize: 15 }}>
+                {item.name}
               </AppText>
-              <AppText style={{ color: colors.muted, fontSize: 14 }}>
-                {formatPrice(item.subtotal)}
+              <AppText style={{ color: colors.muted, marginBottom: 4 }}>Cantidad: {item.quantity}</AppText>
+              <AppText style={{ fontWeight: "800", color: colors.text }}>
+                Subtotal: {formatPrice(item.subtotal)}
               </AppText>
             </View>
           ))}
-          <View style={{ borderTopWidth: 1, borderTopColor: "#EEF3EA", marginTop: 10, paddingTop: 10 }}>
-            <AppText style={{ fontWeight: "800", color: colors.text }}>
-              Subtotal: {formatPrice(subtotal)}
+          <View style={{ marginTop: 6, paddingTop: 12, borderTopWidth: 1, borderTopColor: "#EEF3EA" }}>
+            <AppText style={{ fontSize: 18, fontWeight: "800", color: colors.text }}>
+              Total productos: {formatPrice(subtotal)}
             </AppText>
           </View>
         </View>
 
         {/* Contacto */}
         <View style={cardStyle}>
-          <AppText style={{ fontSize: 18, fontWeight: "800", color: colors.text, marginBottom: 14 }}>Contacto</AppText>
+          <AppText style={{ fontSize: 20, fontWeight: "800", color: colors.text, marginBottom: 14 }}>Contacto</AppText>
 
           <AppText style={labelStyle}>Nombre completo</AppText>
-          <TextInput value={fullName} onChangeText={setFullName} placeholder="Ej: Claudia Pérez" style={{ ...inputStyle, marginBottom: errors.fullName ? 4 : 14 }} placeholderTextColor="#999" />
-          {errors.fullName ? <AppText style={{ color: "#b91c1c", fontSize: 12, marginBottom: 10 }}>{errors.fullName}</AppText> : null}
+          <TextInput value={fullName} onChangeText={(v) => { setFullName(v); if (errors.fullName) setErrors((p) => ({ ...p, fullName: "" })); }}
+            placeholder="Ej: Claudia Pérez" style={{ ...inputStyle, marginBottom: errors.fullName ? 0 : 14 }} placeholderTextColor="#999" />
+          {!!errors.fullName && <AppText style={errorTextStyle}>{errors.fullName}</AppText>}
 
           <AppText style={labelStyle}>RUT</AppText>
-          <TextInput value={rut} onChangeText={(v) => setRut(formatRut(v))} placeholder="Ej: 12.345.678-5" autoCapitalize="characters" style={{ ...inputStyle, marginBottom: errors.rut ? 4 : 14 }} placeholderTextColor="#999" />
-          {errors.rut ? <AppText style={{ color: "#b91c1c", fontSize: 12, marginBottom: 10 }}>{errors.rut}</AppText> : null}
+          <TextInput value={rut} onChangeText={(v) => { setRut(formatRut(v)); if (errors.rut) setErrors((p) => ({ ...p, rut: "" })); }}
+            placeholder="Ej: 12.345.678-5" autoCapitalize="characters" style={{ ...inputStyle, marginBottom: errors.rut ? 0 : 14 }} placeholderTextColor="#999" />
+          {!!errors.rut && <AppText style={errorTextStyle}>{errors.rut}</AppText>}
 
           <AppText style={labelStyle}>Correo electrónico</AppText>
-          <TextInput value={email} onChangeText={setEmail} placeholder="Ej: correo@ejemplo.com" keyboardType="email-address" autoCapitalize="none" style={{ ...inputStyle, marginBottom: errors.email ? 4 : 14 }} placeholderTextColor="#999" />
-          {errors.email ? <AppText style={{ color: "#b91c1c", fontSize: 12, marginBottom: 10 }}>{errors.email}</AppText> : null}
+          <TextInput value={email} onChangeText={(v) => { setEmail(v); if (errors.email) setErrors((p) => ({ ...p, email: "" })); }}
+            placeholder="Ej: correo@ejemplo.com" keyboardType="email-address" autoCapitalize="none"
+            style={{ ...inputStyle, marginBottom: errors.email ? 0 : 14 }} placeholderTextColor="#999" />
+          {!!errors.email && <AppText style={errorTextStyle}>{errors.email}</AppText>}
 
           <AppText style={labelStyle}>Teléfono</AppText>
-          <TextInput value={phone} onChangeText={setPhone} placeholder="+56 9 1234 5678" keyboardType="phone-pad" style={inputStyle} placeholderTextColor="#999" />
-          {errors.phone ? <AppText style={{ color: "#b91c1c", fontSize: 12, marginTop: 4 }}>{errors.phone}</AppText> : null}
+          <TextInput value={phone} onChangeText={(v) => { setPhone(v); if (errors.phone) setErrors((p) => ({ ...p, phone: "" })); }}
+            placeholder="Ej: +56 9 1234 5678" keyboardType="phone-pad" style={inputStyle} placeholderTextColor="#999" />
+          {!!errors.phone && <AppText style={errorTextStyle}>{errors.phone}</AppText>}
         </View>
 
         {/* Envío */}
         <View style={cardStyle}>
-          <AppText style={{ fontSize: 18, fontWeight: "800", color: colors.text, marginBottom: 14 }}>Envío</AppText>
+          <AppText style={{ fontSize: 20, fontWeight: "800", color: colors.text, marginBottom: 14 }}>Envío</AppText>
+          <AppText style={{ color: colors.muted, marginBottom: 14, fontSize: 14, lineHeight: 20 }}>
+            Usamos tu última dirección guardada si existe. Puedes editarla antes de confirmar.
+          </AppText>
 
-          <AppText style={labelStyle}>Región</AppText>
-          <View style={{ borderWidth: 1, borderColor: "#DDE7D7", borderRadius: 14, backgroundColor: "#FAFBF8", marginBottom: 14 }}>
-            {regionOptions.map((r) => (
-              <Pressable key={r.value} onPress={() => { setRegion(r.value); setCity(""); }}
-                style={{ paddingHorizontal: 14, paddingVertical: 12, backgroundColor: region === r.value ? "#F4F9EF" : "transparent" }}>
-                <AppText style={{ color: colors.text, fontWeight: region === r.value ? "800" : "400" }}>{r.label}</AppText>
-              </Pressable>
-            ))}
-          </View>
+          <SelectField
+            label="Región"
+            value={region}
+            placeholder="Selecciona una región"
+            options={regionOptions.map((item) => ({ label: item.label, value: item.value }))}
+            onSelect={(v) => { setRegion(v); setCity(""); if (errors.region) setErrors((p) => ({ ...p, region: "" })); }}
+            error={errors.region}
+            zIndex={3000}
+          />
 
-          {region ? (
-            <>
-              <AppText style={labelStyle}>Comuna</AppText>
-              <View style={{ borderWidth: 1, borderColor: "#DDE7D7", borderRadius: 14, backgroundColor: "#FAFBF8", marginBottom: 14 }}>
-                {cityOptions.map((c) => (
-                  <Pressable key={c.value} onPress={() => setCity(c.value)}
-                    style={{ paddingHorizontal: 14, paddingVertical: 12, backgroundColor: city === c.value ? "#F4F9EF" : "transparent" }}>
-                    <AppText style={{ color: colors.text, fontWeight: city === c.value ? "800" : "400" }}>{c.label}</AppText>
-                  </Pressable>
-                ))}
-              </View>
-            </>
-          ) : null}
+          <SelectField
+            label="Comuna / Ciudad"
+            value={city}
+            placeholder={region ? "Selecciona una comuna" : "Primero elige una región"}
+            options={cityOptions}
+            onSelect={(v) => { setCity(v); if (errors.city) setErrors((p) => ({ ...p, city: "" })); }}
+            error={errors.city}
+            disabled={!region}
+            zIndex={2000}
+          />
 
           <AppText style={labelStyle}>Dirección</AppText>
-          <TextInput value={address} onChangeText={setAddress} placeholder="Ej: Av. Providencia 1234" style={{ ...inputStyle, marginBottom: 14 }} placeholderTextColor="#999" />
+          <TextInput value={address} onChangeText={(v) => { setAddress(v); if (errors.address) setErrors((p) => ({ ...p, address: "" })); }}
+            placeholder="Ej: Av. Providencia 1234" style={{ ...inputStyle, marginBottom: errors.address ? 0 : 14 }} placeholderTextColor="#999" />
+          {!!errors.address && <AppText style={errorTextStyle}>{errors.address}</AppText>}
 
-          <AppText style={labelStyle}>Depto / Casa (opcional)</AppText>
-          <TextInput value={addressLine2} onChangeText={setAddressLine2} placeholder="Opcional" style={{ ...inputStyle, marginBottom: 14 }} placeholderTextColor="#999" />
+          <AppText style={labelStyle}>Depto / Casa / Oficina</AppText>
+          <TextInput value={addressLine2} onChangeText={setAddressLine2} placeholder="Opcional"
+            style={{ ...inputStyle, marginBottom: 14 }} placeholderTextColor="#999" />
 
-          <AppText style={labelStyle}>Referencia (opcional)</AppText>
-          <TextInput value={reference} onChangeText={setReference} placeholder="Ej: Portón negro" style={inputStyle} placeholderTextColor="#999" />
+          <AppText style={labelStyle}>Referencia</AppText>
+          <TextInput value={reference} onChangeText={setReference}
+            placeholder="Ej: Portón negro, al lado de la farmacia" style={inputStyle} placeholderTextColor="#999" />
 
-          <View style={{ marginTop: 14 }}>
+          <View style={{ marginTop: 16 }}>
             {shippingLoading ? (
               <AppText style={{ color: colors.muted }}>Calculando envío...</AppText>
             ) : shippingQuote ? (
-              <View style={{ backgroundColor: "#F4F9EF", borderRadius: 12, padding: 12, borderWidth: 1, borderColor: "#DDE7D7" }}>
-                <AppText style={{ fontWeight: "800", color: colors.text }}>{shippingQuote.name}</AppText>
-                <AppText style={{ color: colors.primary, fontWeight: "800", marginTop: 4 }}>
+              <View style={{ borderWidth: 1, borderColor: "#DDE7D7", backgroundColor: "#F4F9EF", borderRadius: 14, padding: 12 }}>
+                <AppText style={{ color: colors.text, fontWeight: "800" }}>{shippingQuote.name}</AppText>
+                <AppText style={{ color: "#4E9B27", fontWeight: "800", marginTop: 4 }}>
                   Envío: {formatPrice(shippingQuote.amount)}
                 </AppText>
               </View>
+            ) : shippingError ? (
+              <AppText style={{ color: "#b91c1c" }}>{shippingError}</AppText>
             ) : (
               <AppText style={{ color: colors.muted }}>Ingresa tu dirección para calcular el envío.</AppText>
             )}
@@ -363,23 +484,34 @@ export default function CustomBoxCheckoutScreen({ route, navigation }) {
 
         {/* Cupón */}
         <View style={cardStyle}>
-          <AppText style={{ fontSize: 18, fontWeight: "800", color: colors.text, marginBottom: 14 }}>Cupón</AppText>
-          <TextInput value={couponCode} onChangeText={setCouponCode} placeholder="Código de cupón (opcional)" autoCapitalize="characters" style={inputStyle} placeholderTextColor="#999" />
+          <AppText style={{ fontSize: 20, fontWeight: "800", color: colors.text, marginBottom: 14 }}>Cupón y notas</AppText>
+          <AppText style={labelStyle}>Código de cupón</AppText>
+          <TextInput value={couponCode} onChangeText={setCouponCode} placeholder="Opcional"
+            autoCapitalize="characters" style={inputStyle} placeholderTextColor="#999" />
         </View>
 
-        {/* Total */}
-        <View style={{ ...cardStyle, backgroundColor: "#F7FAF4" }}>
-          <AppText style={{ color: colors.muted, marginBottom: 6 }}>Subtotal: {formatPrice(subtotal)}</AppText>
-          <AppText style={{ color: colors.muted, marginBottom: 6 }}>
-            Envío: {shippingQuote ? formatPrice(shippingAmount) : "Por calcular"}
+        {/* Resumen final */}
+        <View style={cardStyle}>
+          <AppText style={{ fontSize: 20, fontWeight: "800", color: colors.text, marginBottom: 14 }}>
+            Resumen del pedido
           </AppText>
-          <AppText style={{ fontSize: 22, fontWeight: "800", color: colors.text }}>
-            Total: {formatPrice(finalTotal)}
-          </AppText>
+          <View style={{ gap: 6 }}>
+            <AppText style={{ color: colors.muted }}>Total productos: {formatPrice(subtotal)}</AppText>
+            <AppText style={{ color: colors.muted }}>
+              Envío: {shippingQuote ? formatPrice(shippingAmount) : "Por calcular"}
+            </AppText>
+            <AppText style={{ fontSize: 24, fontWeight: "800", color: colors.text, marginTop: 4 }}>
+              Total final: {formatPrice(finalTotal)}
+            </AppText>
+          </View>
         </View>
+
+        <AppText style={{ color: colors.muted, fontSize: 13, lineHeight: 18, marginTop: 12, marginBottom: 10 }}>
+          Al confirmar tu compra, te enviaremos un correo con el resumen del pedido y te notificaremos por email cuando el estado cambie.
+        </AppText>
 
         <AppButton
-          title={submitting ? "Procesando..." : "Confirmar y pagar"}
+          title={submitting ? "Procesando..." : "Confirmar compra"}
           onPress={handleCheckout}
           disabled={submitting || shippingLoading}
         />
