@@ -14,9 +14,7 @@ import ProductCard from "../components/ProductCard";
 import ScreenContainer from "../components/ScreenContainer";
 import { colors, spacing } from "../constants/theme";
 import SearchInput from "../components/SearchInput";
-import {
-  getFeaturedCategories,
-} from "../services/categoryService";
+import { getFeaturedCategories } from "../services/categoryService";
 import ProductRowSection from "../components/ProductRowSection";
 import {
   getFeaturedProducts,
@@ -36,7 +34,9 @@ const cleanValue = (value) => {
 
 export default function HomeScreen({ navigation }) {
   const { token } = useAuthStore();
+
   const isWeb = Platform.OS === "web";
+  const isWebDesktop = Platform.OS === "web" && width >= 800;
 
   const [featuredCategories, setFeaturedCategories] = useState([]);
   const [products, setProducts] = useState([]);
@@ -81,12 +81,12 @@ export default function HomeScreen({ navigation }) {
 
       setFeaturedProducts(Array.isArray(featuredItems) ? featuredItems : []);
       setRecommendedProducts(
-        Array.isArray(recommendedItems) ? recommendedItems : []
+        Array.isArray(recommendedItems) ? recommendedItems : [],
       );
     } catch (error) {
       console.log(
         "ERROR HOME SECTIONS:",
-        error?.response?.data || error.message
+        error?.response?.data || error.message,
       );
       setFeaturedProducts([]);
       setRecommendedProducts([]);
@@ -103,7 +103,7 @@ export default function HomeScreen({ navigation }) {
     } catch (error) {
       console.log(
         "ERROR FEATURED CATEGORIES:",
-        error?.response?.data || error.message
+        error?.response?.data || error.message,
       );
     }
   };
@@ -156,11 +156,11 @@ export default function HomeScreen({ navigation }) {
     } catch (error) {
       console.log(
         "ADD FROM CARD ERROR:",
-        error?.response?.data || error.message
+        error?.response?.data || error.message,
       );
       Alert.alert(
         "Error",
-        error?.response?.data?.message || "No se pudo agregar al carrito"
+        error?.response?.data?.message || "No se pudo agregar al carrito",
       );
     } finally {
       setAddingProductId(null);
@@ -178,7 +178,7 @@ export default function HomeScreen({ navigation }) {
   };
 
   useLayoutEffect(() => {
-    if (isWeb) return;
+    if (isWebDesktop) return;
 
     navigation.setOptions({
       headerRight: () => (
@@ -246,7 +246,7 @@ export default function HomeScreen({ navigation }) {
         </View>
       ),
     });
-  }, [navigation, cartCount, isWeb]);
+  }, [navigation, cartCount, isWebDesktop]);
 
   useEffect(() => {
     loadCartSummary();
@@ -374,7 +374,7 @@ export default function HomeScreen({ navigation }) {
                 </AppText>
               </View>
 
-              {!isWeb ? (
+              {!isWebDesktop  ? (
                 <>
                   <SearchInput
                     value={search}

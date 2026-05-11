@@ -30,7 +30,8 @@ export default function ProductsScreen({ navigation, route }) {
   const { width } = useWindowDimensions();
   const isWide = width >= 900;
   const numColumns = isWide ? 2 : 1;
-  const isWeb = Platform.OS === "web";
+  // const isWeb = Platform.OS === "web";
+  const isWebDesktop = Platform.OS === "web" && width >= 800;
 
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -141,7 +142,7 @@ export default function ProductsScreen({ navigation, route }) {
   };
 
   useLayoutEffect(() => {
-    if (isWeb) return;
+    if (isWebDesktop) return;
 
     navigation.setOptions({
       headerRight: () => (
@@ -188,7 +189,7 @@ export default function ProductsScreen({ navigation, route }) {
         </Pressable>
       ),
     });
-  }, [navigation, cartCount, isWeb]);
+  }, [navigation, cartCount, isWebDesktop]);
 
   useEffect(() => {
     loadCartSummary();
@@ -296,7 +297,7 @@ export default function ProductsScreen({ navigation, route }) {
                 necesitas.
               </AppText>
 
-              {!isWeb ? (
+              {!isWebDesktop ? (
                 <>
                   <SearchInput
                     value={search}

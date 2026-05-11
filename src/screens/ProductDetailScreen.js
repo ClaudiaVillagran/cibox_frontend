@@ -8,6 +8,7 @@ import {
   ScrollView,
   Text,
   TextInput,
+  useWindowDimensions,
   View,
 } from "react-native";
 import ScreenContainer from "../components/ScreenContainer";
@@ -37,7 +38,10 @@ import AppText from "../components/AppText";
 export default function ProductDetailScreen({ route, navigation }) {
   const { productId } = route.params;
   const { token } = useAuthStore();
-  const isWeb = Platform.OS === "web";
+  const { width } = useWindowDimensions();
+  // const isWeb = Platform.OS === "web";
+  const isWebDesktop = Platform.OS === "web" && width >= 800;
+
 
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -547,7 +551,7 @@ export default function ProductDetailScreen({ route, navigation }) {
     <View
       style={{
         ...cardStyle,
-        ...(isWeb
+        ...(isWebDesktop 
           ? {
               position: "sticky",
               top: 24,
@@ -558,7 +562,7 @@ export default function ProductDetailScreen({ route, navigation }) {
     >
       <AppText
         style={{
-          fontSize: isWeb ? 30 : 28,
+          fontSize: isWebDesktop  ? 30 : 28,
           fontWeight: "800",
           color: colors.text,
           marginBottom: 8,
@@ -935,7 +939,7 @@ export default function ProductDetailScreen({ route, navigation }) {
     </View>
   );
 
-  if (!isWeb) {
+  if (!isWebDesktop ) {
     return (
       <ScreenContainer maxWidth={720}>
         <ScrollView contentContainerStyle={{ paddingBottom: spacing.xl }}>
