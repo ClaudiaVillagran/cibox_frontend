@@ -3,8 +3,8 @@ import useAuthStore from "../store/authStore";
 import { getGuestId } from "../utils/guestId";
 
 const client = axios.create({
-  // baseURL: process.env.EXPO_PUBLIC_API_URL,
-  baseURL: "https://backend-app-cibox-tmvlv.ondigitalocean.app/api"
+  baseURL: process.env.EXPO_PUBLIC_API_URL,
+  // baseURL: "https://backend-app-cibox-tmvlv.ondigitalocean.app/api"
 });
 
 client.interceptors.request.use(
