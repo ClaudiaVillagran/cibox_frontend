@@ -51,3 +51,9 @@ export const getGuestOrderById = async ({ orderId, email }) => {
   });
   return response.data;
 };
+
+
+export const createOrderFromCustomBox = async (payload) => {
+  const response = await client.post("/orders/from-custom-box", payload);
+  return response.data;
+};

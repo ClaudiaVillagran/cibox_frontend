@@ -25,7 +25,8 @@ export const getGuestId = async () => {
     if (existing) return existing;
 
     const res = await axios.get(
-      `${process.env.EXPO_PUBLIC_API_URL}/guest/id`
+      // `${process.env.EXPO_PUBLIC_API_URL}/guest/id`
+      "https://backend-app-cibox-tmvlv.ondigitalocean.app/api"
     );
 
     const guestId = res.data?.data?.guest_id;

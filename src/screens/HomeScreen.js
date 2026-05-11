@@ -557,6 +557,51 @@ export default function HomeScreen({ navigation }) {
                         />
                       </View>
                     )}
+                    <Pressable
+                      onPress={() => navigation.navigate("CustomBox")}
+                      style={{
+                        backgroundColor: colors.surface,
+                        borderRadius: 20,
+                        borderWidth: 1.5,
+                        borderColor: colors.primary,
+                        padding: spacing.md,
+                        marginBottom: spacing.lg,
+                        flexDirection: "row",
+                        alignItems: "center",
+                        gap: 14,
+                      }}
+                    >
+                      <View
+                        style={{
+                          width: 56,
+                          height: 56,
+                          borderRadius: 28,
+                          backgroundColor: `${colors.primary}20`,
+                          justifyContent: "center",
+                          alignItems: "center",
+                        }}
+                      >
+                        <AppText style={{ fontSize: 28 }}>📦</AppText>
+                      </View>
+                      <View style={{ flex: 1 }}>
+                        <AppText
+                          style={{
+                            fontSize: 17,
+                            fontWeight: "900",
+                            color: colors.text,
+                            marginBottom: 4,
+                          }}
+                        >
+                          Caja personalizada
+                        </AppText>
+                        <AppText style={{ color: colors.muted, fontSize: 13 }}>
+                          Elige exactamente lo que quieres en tu caja.
+                        </AppText>
+                      </View>
+                      <AppText style={{ fontSize: 20, color: colors.primary }}>
+                        →
+                      </AppText>
+                    </Pressable>
 
                     <View
                       style={{

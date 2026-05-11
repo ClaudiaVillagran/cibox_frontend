@@ -15,6 +15,8 @@ const linking = {
     screens: {
       Inicio: "",
       Products: "products",
+      CustomBox: "custom-box",
+      CustomBoxCheckout: "custom-box/checkout",
       ProductDetail: "products/:productId",
       Cart: "cart",
       Checkout: "checkout",
@@ -39,7 +41,9 @@ export default function RootNavigation() {
     <NavigationContainer
       linking={linking}
       fallback={
-        <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <View
+          style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+        >
           <ActivityIndicator size="large" color={colors.primary} />
         </View>
       }
