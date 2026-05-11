@@ -35,6 +35,7 @@ const cleanValue = (value) => {
 export default function HomeScreen({ navigation }) {
   const { token } = useAuthStore();
 
+  const { width } = useWindowDimensions();
   const isWeb = Platform.OS === "web";
   const isWebDesktop = Platform.OS === "web" && width >= 800;
 
@@ -45,7 +46,6 @@ export default function HomeScreen({ navigation }) {
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
 
-  const { width } = useWindowDimensions();
   const isWide = width >= 900;
   const numColumns = isWide ? 2 : 1;
 
@@ -374,7 +374,7 @@ export default function HomeScreen({ navigation }) {
                 </AppText>
               </View>
 
-              {!isWebDesktop  ? (
+              {!isWebDesktop ? (
                 <>
                   <SearchInput
                     value={search}
