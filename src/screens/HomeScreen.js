@@ -557,7 +557,7 @@ export default function HomeScreen({ navigation }) {
                         />
                       </View>
                     )}
-                    <Pressable
+                    {/* <Pressable
                       onPress={() => navigation.navigate("CustomBox")}
                       style={{
                         backgroundColor: colors.surface,
@@ -601,7 +601,7 @@ export default function HomeScreen({ navigation }) {
                       <AppText style={{ fontSize: 20, color: colors.primary }}>
                         →
                       </AppText>
-                    </Pressable>
+                    </Pressable> */}
 
                     <View
                       style={{
