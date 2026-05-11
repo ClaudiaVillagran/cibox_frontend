@@ -22,6 +22,7 @@ export default function RegisterScreen({ navigation }) {
   const [errors, setErrors] = useState({});
   const [successMessage, setSuccessMessage] = useState("");
   const [loading, setLoading] = useState(false);
+  const [registered, setRegistered] = useState(false);
 
   const setField = (field, value) => {
     if (field === "name") setName(value);
@@ -65,7 +66,6 @@ export default function RegisterScreen({ navigation }) {
     try {
       setLoading(true);
       setErrors({});
-      setSuccessMessage("");
 
       await registerRequest({
         name: name.trim(),
@@ -73,29 +73,15 @@ export default function RegisterScreen({ navigation }) {
         password,
       });
 
-      setSuccessMessage(
-        "Cuenta creada. Revisa tu correo para verificar tu cuenta antes de iniciar sesión."
-      );
-
-      setTimeout(() => {
-        navigation.goBack();
-      }, 1200);
+      setRegistered(true); // ← mostrar pantalla de éxito
     } catch (error) {
-      console.log("REGISTER ERROR:", error?.response?.data || error.message);
-
       const message = getApiErrorMessage(error, "No se pudo crear la cuenta");
       const field = getApiErrorField(error);
 
       if (field && ["name", "email", "password"].includes(field)) {
-        setErrors((prev) => ({
-          ...prev,
-          [field]: message,
-        }));
+        setErrors((prev) => ({ ...prev, [field]: message }));
       } else {
-        setErrors((prev) => ({
-          ...prev,
-          general: message,
-        }));
+        setErrors((prev) => ({ ...prev, general: message }));
       }
     } finally {
       setLoading(false);
@@ -128,6 +114,89 @@ export default function RegisterScreen({ navigation }) {
       </AppText>
     ) : null;
 
+  if (registered) {
+    return (
+      <SafeAreaView style={{ flex: 1 }}>
+        <View
+          style={{
+            flex: 1,
+            justifyContent: "center",
+            alignItems: "center",
+            paddingHorizontal: spacing.lg,
+          }}
+        >
+          <View
+            style={{
+              backgroundColor: colors.surface,
+              borderRadius: 28,
+              paddingHorizontal: spacing.lg,
+              paddingVertical: spacing.xl,
+              width: "100%",
+              alignItems: "center",
+              borderWidth: 1,
+              borderColor: "#dfe8d8",
+              ...shadows.card,
+            }}
+          >
+            <AppText style={{ fontSize: 48, marginBottom: 16 }}>📬</AppText>
+
+            <AppText
+              style={{
+                fontSize: 26,
+                fontWeight: "900",
+                color: colors.text,
+                textAlign: "center",
+                marginBottom: 12,
+              }}
+            >
+              ¡Cuenta creada!
+            </AppText>
+
+            <AppText
+              style={{
+                color: colors.muted,
+                textAlign: "center",
+                lineHeight: 22,
+                fontSize: 15,
+                marginBottom: 32,
+              }}
+            >
+              Te enviamos un correo a{" "}
+              <AppText style={{ fontWeight: "800", color: colors.text }}>
+                {email.trim().toLowerCase()}
+              </AppText>
+              {"\n\n"}
+              Revisa tu bandeja de entrada y haz clic en el enlace para
+              verificar tu cuenta antes de iniciar sesión.
+            </AppText>
+
+            <Pressable
+              onPress={() => navigation.goBack()}
+              style={{
+                width: "100%",
+                height: 54,
+                borderRadius: 999,
+                backgroundColor: colors.primary,
+                justifyContent: "center",
+                alignItems: "center",
+                ...shadows.card,
+              }}
+            >
+              <AppText
+                style={{
+                  color: colors.primaryText,
+                  fontSize: 16,
+                  fontWeight: "800",
+                }}
+              >
+                Ir a iniciar sesión
+              </AppText>
+            </Pressable>
+          </View>
+        </View>
+      </SafeAreaView>
+    );
+  }
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <KeyboardAvoidingView
@@ -192,8 +261,8 @@ export default function RegisterScreen({ navigation }) {
                     paddingHorizontal: 8,
                   }}
                 >
-                  Regístrate en CIBOX para guardar tus pedidos, favoritos y datos
-                  de compra.
+                  Regístrate en CIBOX para guardar tus pedidos, favoritos y
+                  datos de compra.
                 </AppText>
               </View>
 
