@@ -30,3 +30,11 @@ export const applyShippingToOrder = async ({
 
   return response.data;
 };
+
+export const previewShippingFromItems = async ({ shipping, items }) => {
+  const response = await client.post("/shipping/preview-items", {
+    shipping,
+    items,
+  });
+  return response.data;
+};

@@ -20,6 +20,31 @@ export default function OrderSuccessScreen({ route, navigation }) {
     return null;
   }, [params.orderId]);
 
+  const goToInicio = () => {
+    try {
+      navigation.reset({
+        index: 0,
+        routes: [{ name: Platform.OS === "web" ? "Inicio" : "MainTabs" }],
+      });
+    } catch {
+      navigation.navigate(Platform.OS === "web" ? "Inicio" : "MainTabs");
+    }
+  };
+
+  const goToOrder = () => {
+    try {
+      navigation.navigate("OrderDetail", { orderId });
+    } catch {
+      navigation.reset({
+        index: 0,
+        routes: [
+          { name: Platform.OS === "web" ? "Inicio" : "MainTabs" },
+          { name: "OrderDetail", params: { orderId } },
+        ],
+      });
+    }
+  };
+
   return (
     <ScreenContainer maxWidth={720}>
       <View
@@ -60,7 +85,7 @@ export default function OrderSuccessScreen({ route, navigation }) {
         {!isGuest && orderId ? (
           <AppButton
             title="Ver mi orden"
-            onPress={() => navigation.replace("OrderDetail", { orderId })}
+            onPress={goToOrder}
             style={{ marginBottom: 12 }}
           />
         ) : null}
@@ -68,12 +93,7 @@ export default function OrderSuccessScreen({ route, navigation }) {
         <AppButton
           title="Volver al inicio"
           variant={isGuest ? "primary" : "secondary"}
-          onPress={() =>
-            navigation.reset({
-              index: 0,
-              routes: [{ name: Platform.OS === "web" ? "Inicio" : "MainTabs" }],
-            })
-          }
+          onPress={goToInicio}
         />
       </View>
     </ScreenContainer>
