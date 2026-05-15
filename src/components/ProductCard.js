@@ -1,4 +1,4 @@
-import { Image, Pressable, Text, View } from "react-native";
+import { Image, Platform, Pressable, View } from "react-native";
 import { colors, radius, shadows, spacing } from "../constants/theme";
 import AppText from "./AppText";
 
@@ -7,6 +7,7 @@ export default function ProductCard({
   onPress,
   onAddToCart,
   compact = false,
+  mini = false,
   adding = false,
 }) {
   const tiers = product?.pricing?.tiers || [];
@@ -25,13 +26,19 @@ export default function ProductCard({
     return `$${Number(value).toLocaleString("es-CL")}`;
   };
 
-  const chipStyle = (backgroundColor, textColor = "#fff") => ({
+  // Tamaños según modo
+  const imageHeight = mini ? 120 : compact ? 180 : 220;
+  const titleSize = mini ? 13 : compact ? 16 : 17;
+  const priceSize = mini ? 15 : compact ? 18 : 20;
+  const cardPadding = mini ? spacing.sm : spacing.md;
+
+  const chipStyle = (backgroundColor) => ({
     backgroundColor,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
+    paddingHorizontal: mini ? 6 : 10,
+    paddingVertical: mini ? 3 : 6,
     borderRadius: 999,
-    marginRight: 8,
-    marginBottom: 8,
+    marginRight: 6,
+    marginBottom: 6,
   });
 
   return (
@@ -42,101 +49,105 @@ export default function ProductCard({
         borderWidth: 1,
         borderColor: "#ececec",
         borderRadius: radius.xl,
-        padding: spacing.md,
+        padding: cardPadding,
         ...shadows.card,
       }}
     >
       <Pressable onPress={onPress} style={{ flex: 1 }}>
+        {/* Imagen */}
         <View
           style={{
             width: "100%",
-            height: compact ? 180 : 220,
+            height: imageHeight,
             borderRadius: radius.lg,
             backgroundColor: "#f7f7f7",
             overflow: "hidden",
             alignItems: "center",
             justifyContent: "center",
-            marginBottom: spacing.md,
+            marginBottom: mini ? 8 : spacing.md,
           }}
         >
           {imageUrl ? (
             <Image
               source={{ uri: imageUrl }}
-              style={{
-                width: "82%",
-                height: "82%",
-              }}
+              style={{ width: "82%", height: "82%" }}
               resizeMode="contain"
             />
           ) : (
-            <AppText
-              style={{
-                color: colors.muted,
-                fontSize: 13,
-                fontWeight: "600",
-              }}
-            >
+            <AppText style={{ color: colors.muted, fontSize: 13, fontWeight: "600" }}>
               Sin imagen
             </AppText>
           )}
         </View>
 
-        <View
-          style={{
-            flexDirection: "row",
-            flexWrap: "wrap",
-            alignItems: "flex-start",
-            minHeight: 34,
-            marginBottom: 8,
-          }}
-        >
-          {hasPackTier ? (
-            <View style={chipStyle(colors.primary)}>
-              <AppText style={{ color: "#fff", fontSize: 11, fontWeight: "800" }}>
-                Pack disponible
-              </AppText>
-            </View>
-          ) : null}
+        {/* Chips — ocultos en mini para ahorrar espacio */}
+        {!mini && (
+          <View
+            style={{
+              flexDirection: "row",
+              flexWrap: "wrap",
+              alignItems: "flex-start",
+              minHeight: 34,
+              marginBottom: 8,
+            }}
+          >
+            {hasPackTier ? (
+              <View style={chipStyle(colors.primary)}>
+                <AppText style={{ color: "#fff", fontSize: 11, fontWeight: "800" }}>
+                  Pack disponible
+                </AppText>
+              </View>
+            ) : null}
+            {ciboxPlusEnabled ? (
+              <View style={chipStyle("#6d28d9")}>
+                <AppText style={{ color: "#fff", fontSize: 11, fontWeight: "800" }}>
+                  Cibox+
+                </AppText>
+              </View>
+            ) : null}
+          </View>
+        )}
 
-          {ciboxPlusEnabled ? (
-            <View style={chipStyle("#6d28d9")}>
-              <AppText style={{ color: "#fff", fontSize: 11, fontWeight: "800" }}>
-                Cibox+
-              </AppText>
-            </View>
-          ) : null}
-        </View>
+        {/* Chips mini — solo íconos */}
+        {mini && (hasPackTier || ciboxPlusEnabled) && (
+          <View style={{ flexDirection: "row", marginBottom: 6, gap: 4 }}>
+            {hasPackTier && (
+              <View style={chipStyle(colors.primary)}>
+                <AppText style={{ color: "#fff", fontSize: 10, fontWeight: "800" }}>
+                  Pack
+                </AppText>
+              </View>
+            )}
+            {ciboxPlusEnabled && (
+              <View style={chipStyle("#6d28d9")}>
+                <AppText style={{ color: "#fff", fontSize: 10, fontWeight: "800" }}>
+                  Cibox+
+                </AppText>
+              </View>
+            )}
+          </View>
+        )}
 
-        <View
-          style={{
-            minHeight: 52,
-            maxHeight: 52,
-            marginBottom: 8,
-          }}
-        >
+        {/* Nombre */}
+        <View style={{ marginBottom: 6 }}>
           <AppText
             numberOfLines={2}
             style={{
-              fontSize: compact ? 16 : 17,
+              fontSize: titleSize,
               fontWeight: "800",
               color: colors.text,
-              lineHeight: 22,
+              lineHeight: mini ? 18 : 22,
             }}
           >
             {product?.name || "Producto"}
           </AppText>
         </View>
 
-        <View
-          style={{
-            minHeight: 32,
-            justifyContent: "flex-end",
-            marginBottom: 4,
-          }}
-        >
+        {/* Precio */}
+        <View style={{ marginBottom: 4 }}>
           <AppText
             style={{
-              fontSize: compact ? 18 : 20,
+              fontSize: priceSize,
               fontWeight: "900",
               color: colors.text,
             }}
@@ -145,61 +156,39 @@ export default function ProductCard({
           </AppText>
         </View>
 
-        <View
-          style={{
-            minHeight: 22,
-            justifyContent: "center",
-            marginBottom: 6,
-          }}
-        >
+        {/* Categoría */}
+        <View style={{ marginBottom: mini ? 6 : 6 }}>
           <AppText
             numberOfLines={1}
-            style={{
-              color: colors.muted,
-              fontSize: 14,
-            }}
+            style={{ color: colors.muted, fontSize: mini ? 12 : 14 }}
           >
             {product?.category?.name || "Sin categoría"}
           </AppText>
         </View>
 
-        <View
-          style={{
-            minHeight: 20,
-            justifyContent: "center",
-            marginBottom: 14,
-          }}
-        >
-          {hasReviews ? (
-            <AppText
-              numberOfLines={1}
-              style={{
-                color: colors.muted,
-                fontSize: 12,
-                fontWeight: "600",
-              }}
-            >
-              {averageRating.toFixed(1)} de valoración · {reviewsCount} reseñas
-            </AppText>
-          ) : (
-            <AppText
-              style={{
-                color: colors.muted,
-                fontSize: 12,
-              }}
-            >
-              Aún sin reseñas
-            </AppText>
-          )}
-        </View>
+        {/* Reseñas — ocultas en mini */}
+        {!mini && (
+          <View style={{ marginBottom: 14 }}>
+            {hasReviews ? (
+              <AppText style={{ color: colors.muted, fontSize: 12, fontWeight: "600" }}>
+                {averageRating.toFixed(1)} · {reviewsCount} reseñas
+              </AppText>
+            ) : (
+              <AppText style={{ color: colors.muted, fontSize: 12 }}>
+                Aún sin reseñas
+              </AppText>
+            )}
+          </View>
+        )}
       </Pressable>
 
+      {/* Botones */}
       <View
         style={{
           borderTopWidth: 1,
           borderTopColor: "#eeeeee",
-          paddingTop: 12,
-          gap: 10,
+          paddingTop: mini ? 8 : 12,
+          gap: mini ? 6 : 10,
         }}
       >
         <Pressable
@@ -207,36 +196,28 @@ export default function ProductCard({
           disabled={adding}
           style={{
             backgroundColor: colors.primary,
-            minHeight: 42,
+            height: mini ? 34 : 42,
             borderRadius: 12,
             alignItems: "center",
             justifyContent: "center",
             opacity: adding ? 0.7 : 1,
           }}
         >
-          <AppText>
+          <AppText style={{ color: "#fff", fontSize: mini ? 12 : 14, fontWeight: "700" }}>
             {adding ? "Agregando..." : "Añadir"}
           </AppText>
         </Pressable>
 
-        <Pressable
-          onPress={onPress}
-          style={{
-            minHeight: 20,
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <AppText
-            style={{
-              color: colors.primary,
-              fontSize: 13,
-              fontWeight: "800",
-            }}
+        {!mini && (
+          <Pressable
+            onPress={onPress}
+            style={{ alignItems: "center", justifyContent: "center", minHeight: 20 }}
           >
-            Ver detalle
-          </AppText>
-        </Pressable>
+            <AppText style={{ color: colors.primary, fontSize: 13, fontWeight: "800" }}>
+              Ver detalle
+            </AppText>
+          </Pressable>
+        )}
       </View>
     </View>
   );

@@ -1,6 +1,5 @@
 import { useEffect, useLayoutEffect, useState } from "react";
 import {
-  ActivityIndicator,
   Alert,
   FlatList,
   Image,
@@ -10,10 +9,11 @@ import {
   useWindowDimensions,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import ProductCard from "../components/ProductCard";
+import Carousel from "react-native-reanimated-carousel";
+import { useSharedValue } from "react-native-reanimated";
 import ScreenContainer from "../components/ScreenContainer";
 import { colors, spacing } from "../constants/theme";
-import SearchInput from "../components/SearchInput";
+import MobileSearchBar from "../components/MobileSearchBar";
 import { getFeaturedCategories } from "../services/categoryService";
 import ProductRowSection from "../components/ProductRowSection";
 import {
@@ -26,46 +26,43 @@ import useCartStore from "../store/cartStore";
 import { showAppAlert } from "../utils/appAlerts";
 import useAuthStore from "../store/authStore";
 import AppText from "../components/AppText";
+import MobileCategoryMenu from "../components/MobileCategoryMenu";
 
-const cleanValue = (value) => {
-  const v = String(value ?? "").trim();
-  return v ? v : undefined;
-};
+// ← Cambiá por los nombres reales de tus imágenes
+const BANNERS = [
+  {
+    id: "1",
+    imageDesktop: require("../../assets/banner2.png"),
+    imageMobile: require("../../assets/banner2-mobile.png"), // ← versión recortada para móvil
+  },
+  {
+    id: "2",
+    imageDesktop: require("../../assets/banner1.jpeg"),
+    imageMobile: require("../../assets/banner1.jpeg"), // misma si se ve bien
+  },
+];
 
 export default function HomeScreen({ navigation }) {
   const { token } = useAuthStore();
 
   const { width } = useWindowDimensions();
-  const isWeb = Platform.OS === "web";
   const isWebDesktop = Platform.OS === "web" && width >= 800;
-
+  const [categoryMenuOpen, setCategoryMenuOpen] = useState(false);
   const [featuredCategories, setFeaturedCategories] = useState([]);
   const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  const [search, setSearch] = useState("");
-  const [debouncedSearch, setDebouncedSearch] = useState("");
-
-  const isWide = width >= 900;
-  const numColumns = isWide ? 2 : 1;
-
   const [featuredProducts, setFeaturedProducts] = useState([]);
   const [recommendedProducts, setRecommendedProducts] = useState([]);
   const [sectionsLoading, setSectionsLoading] = useState(true);
-
-  const [page, setPage] = useState(1);
-  const [hasNextPage, setHasNextPage] = useState(false);
-  const [loadingMore, setLoadingMore] = useState(false);
   const [addingProductId, setAddingProductId] = useState(null);
+  const [activeBanner, setActiveBanner] = useState(0);
+  const [bannerWidth, setBannerWidth] = useState(0);
 
+  const progressValue = useSharedValue(0);
   const { cartCount, loadCartSummary } = useCartStore();
-
-  const showSections = !debouncedSearch;
 
   const fetchHomeSections = async () => {
     try {
       setSectionsLoading(true);
-
       const featuredPromise = getFeaturedProducts({ limit: 8 });
       const recommendedPromise = token
         ? getRecommendedProducts({ limit: 8 })
@@ -76,12 +73,11 @@ export default function HomeScreen({ navigation }) {
         recommendedPromise,
       ]);
 
-      const featuredItems = featuredData?.items || [];
-      const recommendedItems = recommendedData?.items || [];
-
-      setFeaturedProducts(Array.isArray(featuredItems) ? featuredItems : []);
+      setFeaturedProducts(
+        Array.isArray(featuredData?.items) ? featuredData.items : [],
+      );
       setRecommendedProducts(
-        Array.isArray(recommendedItems) ? recommendedItems : [],
+        Array.isArray(recommendedData?.items) ? recommendedData.items : [],
       );
     } catch (error) {
       console.log(
@@ -108,56 +104,25 @@ export default function HomeScreen({ navigation }) {
     }
   };
 
-  const fetchProducts = async ({ nextPage = 1, append = false } = {}) => {
+  const fetchProducts = async () => {
     try {
-      append ? setLoadingMore(true) : setLoading(true);
-
-      const params = {
-        search: cleanValue(debouncedSearch),
-        page: nextPage,
-        limit: 10,
-      };
-
-      const response = await getProducts(params);
-
+      const response = await getProducts({ page: 1, limit: 10 });
       const items = Array.isArray(response?.items) ? response.items : [];
-      const pagination = response?.pagination || {};
-
-      setProducts((prev) => (append ? [...prev, ...items] : items));
-      setPage(Number(pagination.page) || nextPage);
-      setHasNextPage(!!pagination.has_next);
+      setProducts(items);
     } catch (error) {
       console.log("ERROR PRODUCTS:", error?.response?.data || error.message);
-      if (!append) setProducts([]);
-    } finally {
-      setLoading(false);
-      setLoadingMore(false);
+      setProducts([]);
     }
-  };
-
-  const handleLoadMore = () => {
-    if (loading || loadingMore || !hasNextPage) return;
-    fetchProducts({ nextPage: page + 1, append: true });
   };
 
   const handleAddFromCard = async (product) => {
     if (!product?._id) return;
-
     try {
       setAddingProductId(product._id);
-
-      await addItemToCart({
-        productId: product._id,
-        quantity: 1,
-      });
-
+      await addItemToCart({ productId: product._id, quantity: 1 });
       await loadCartSummary();
       showAppAlert("Éxito", "Producto agregado al carrito");
     } catch (error) {
-      console.log(
-        "ADD FROM CARD ERROR:",
-        error?.response?.data || error.message,
-      );
       Alert.alert(
         "Error",
         error?.response?.data?.message || "No se pudo agregar al carrito",
@@ -167,22 +132,29 @@ export default function HomeScreen({ navigation }) {
     }
   };
 
-  const renderFooter = () => {
-    if (!loadingMore) return <View style={{ height: spacing.lg }} />;
-
-    return (
-      <View style={{ paddingVertical: spacing.md }}>
-        <ActivityIndicator size="small" color={colors.primary} />
-      </View>
-    );
-  };
-
   useLayoutEffect(() => {
     if (isWebDesktop) return;
 
     navigation.setOptions({
+      headerLeft: () => (
+        <Pressable
+          onPress={() => setCategoryMenuOpen(true)}
+          style={{
+            width: 38,
+            height: 38,
+            borderRadius: 19,
+            justifyContent: "center",
+            alignItems: "center",
+            marginLeft: 10,
+          }}
+        >
+          <Ionicons name="menu" size={24} color={colors.text} />
+        </Pressable>
+      ),
       headerRight: () => (
-        <View style={{ flexDirection: "row", alignItems: "center" }}>
+        <View
+          style={{ flexDirection: "row", alignItems: "center", marginRight: 4 }}
+        >
           <Pressable
             onPress={() => navigation.navigate("Notifications")}
             style={{
@@ -191,15 +163,11 @@ export default function HomeScreen({ navigation }) {
               borderRadius: 19,
               justifyContent: "center",
               alignItems: "center",
-              marginRight: 10,
-              backgroundColor: `${colors.primaryLight}33`,
+              marginRight: 8,
+              backgroundColor: colors.primary,
             }}
           >
-            <Ionicons
-              name="notifications-outline"
-              size={21}
-              color={colors.text}
-            />
+            <Ionicons name="notifications-outline" size={20} color="#fff" />
           </Pressable>
 
           <Pressable
@@ -210,11 +178,11 @@ export default function HomeScreen({ navigation }) {
               borderRadius: 19,
               justifyContent: "center",
               alignItems: "center",
-              backgroundColor: `${colors.primaryLight}33`,
+              backgroundColor: colors.primary,
               position: "relative",
             }}
           >
-            <Ionicons name="bag-outline" size={21} color={colors.text} />
+            <Ionicons name="bag-outline" size={20} color="#fff" />
 
             {cartCount > 0 ? (
               <View
@@ -225,18 +193,14 @@ export default function HomeScreen({ navigation }) {
                   minWidth: 18,
                   height: 18,
                   borderRadius: 9,
-                  backgroundColor: colors.primary,
+                  backgroundColor: colors.accent,
                   justifyContent: "center",
                   alignItems: "center",
                   paddingHorizontal: 4,
                 }}
               >
                 <AppText
-                  style={{
-                    color: "#fff",
-                    fontSize: 10,
-                    fontWeight: "800",
-                  }}
+                  style={{ color: "#333", fontSize: 10, fontWeight: "800" }}
                 >
                   {cartCount}
                 </AppText>
@@ -247,96 +211,39 @@ export default function HomeScreen({ navigation }) {
       ),
     });
   }, [navigation, cartCount, isWebDesktop]);
-
   useEffect(() => {
     loadCartSummary();
     fetchFeaturedCategories();
+    fetchProducts();
   }, []);
 
   useEffect(() => {
     fetchHomeSections();
   }, [token]);
 
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      setDebouncedSearch(search);
-    }, 400);
-
-    return () => clearTimeout(timeout);
-  }, [search]);
-
-  useEffect(() => {
-    setPage(1);
-    setProducts([]);
-    fetchProducts({ nextPage: 1, append: false });
-  }, [debouncedSearch]);
-
-  if (loading && !products.length && !showSections) {
-    return (
-      <ScreenContainer maxWidth={900}>
-        <View style={{ flex: 1, justifyContent: "center" }}>
-          <ActivityIndicator size="large" color={colors.primary} />
-        </View>
-      </ScreenContainer>
-    );
-  }
-
   return (
     <ScreenContainer maxWidth={1100} padded>
       <FlatList
-        key={numColumns}
-        data={showSections ? [] : products}
-        numColumns={numColumns}
+        data={[]}
         nestedScrollEnabled
         keyboardShouldPersistTaps="handled"
         keyExtractor={(item) => item._id}
-        renderItem={({ item }) => (
-          <View
-            style={{
-              flex: numColumns > 1 ? 1 : undefined,
-              marginBottom: spacing.md,
-            }}
-          >
-            <ProductCard
-              product={item}
-              onPress={() =>
-                navigation.navigate("ProductDetail", {
-                  productId: item._id,
-                })
-              }
-              onAddToCart={() => handleAddFromCard(item)}
-              addingToCart={addingProductId === item._id}
-            />
-          </View>
-        )}
-        columnWrapperStyle={
-          !showSections && numColumns > 1
-            ? {
-                paddingHorizontal: spacing.md,
-                gap: spacing.md,
-                marginBottom: spacing.md,
-              }
-            : undefined
-        }
+        renderItem={null}
         contentContainerStyle={{
-          paddingTop: spacing.sm,
           paddingBottom: spacing.xl,
-          paddingHorizontal: !showSections && numColumns === 1 ? spacing.md : 0,
           backgroundColor: colors.background,
         }}
-        onEndReached={!showSections ? handleLoadMore : undefined}
-        onEndReachedThreshold={0.4}
-        ListFooterComponent={
-          !showSections ? renderFooter : <View style={{ height: spacing.lg }} />
-        }
+        ListFooterComponent={<View style={{ height: spacing.lg }} />}
         ListHeaderComponent={
-          <View style={{ marginBottom: spacing.md }}>
+          <View>
+            {/* Card superior */}
             <View
               style={{
                 backgroundColor: colors.surface,
                 borderRadius: 20,
                 padding: spacing.md,
                 marginBottom: spacing.lg,
+                zIndex: 10,
                 shadowColor: "#000",
                 shadowOpacity: 0.05,
                 shadowRadius: 10,
@@ -344,6 +251,7 @@ export default function HomeScreen({ navigation }) {
                 elevation: 2,
               }}
             >
+              {/* Mensaje */}
               <View
                 style={{
                   backgroundColor: `${colors.primaryLight}30`,
@@ -362,67 +270,104 @@ export default function HomeScreen({ navigation }) {
                 >
                   Ahorra más en tu despensa con CIBOX
                 </AppText>
-
                 <AppText
-                  style={{
-                    marginTop: 4,
-                    fontSize: 13,
-                    color: colors.muted,
-                  }}
+                  style={{ marginTop: 4, fontSize: 13, color: colors.muted }}
                 >
                   Compras inteligentes para tu hogar.
                 </AppText>
               </View>
 
+              {/* Buscador — solo móvil */}
               {!isWebDesktop ? (
-                <>
-                  <SearchInput
-                    value={search}
-                    onChange={setSearch}
-                    placeholder="Buscar productos..."
-                  />
-                  <View style={{ height: 12 }} />
-                </>
+                <View style={{ marginBottom: spacing.md }}>
+                  <MobileSearchBar />
+                </View>
               ) : null}
+
+              {/* Banner Carousel — WEB y MÓVIL */}
+              <View
+                onLayout={(e) => setBannerWidth(e.nativeEvent.layout.width)}
+                style={{
+                  borderRadius: 14,
+                  overflow: "hidden",
+                  minHeight: isWebDesktop ? 180 : 150,
+                }}
+              >
+                {bannerWidth > 0 && (
+                  <Carousel
+                    width={bannerWidth}
+                    height={isWebDesktop ? 180 : 150}
+                    data={BANNERS}
+                    autoPlay
+                    autoPlayInterval={4000}
+                    loop
+                    pagingEnabled
+                    snapEnabled
+                    scrollAnimationDuration={900}
+                    onProgressChange={(_, absoluteProgress) => {
+                      progressValue.value = absoluteProgress;
+                      setActiveBanner(
+                        Math.round(absoluteProgress) % BANNERS.length,
+                      );
+                    }}
+                    renderItem={({ item }) => (
+                      <Image
+                        source={
+                          isWebDesktop ? item.imageDesktop : item.imageMobile
+                        }
+                        style={{
+                          width: bannerWidth,
+                          height: isWebDesktop ? 180 : 150,
+                          resizeMode: "cover",
+                        }}
+                      />
+                    )}
+                  />
+                )}
+              </View>
             </View>
 
-            {showSections && (
-              <View style={{ marginBottom: spacing.md }}>
-                {sectionsLoading ? (
-                  <View
-                    style={{
-                      backgroundColor: colors.surface,
-                      borderRadius: 18,
-                      padding: spacing.md,
-                    }}
-                  >
-                    <AppText style={{ color: colors.muted }}>
-                      Cargando destacados...
-                    </AppText>
-                  </View>
-                ) : (
-                  <>
-                    <View style={{ marginBottom: spacing.lg }}>
+            {/* Secciones */}
+            <View style={{ paddingHorizontal: spacing.md, zIndex: 1 }}>
+              {sectionsLoading ? (
+                <View
+                  style={{
+                    backgroundColor: colors.surface,
+                    borderRadius: 18,
+                    padding: spacing.md,
+                  }}
+                >
+                  <AppText style={{ color: colors.muted }}>
+                    Cargando destacados...
+                  </AppText>
+                </View>
+              ) : (
+                <>
+                  {/* Destacados */}
+                  <View style={{ marginBottom: spacing.lg }}>
+                    <View
+                      style={{
+                        flexDirection: "row",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        marginBottom: 12,
+                      }}
+                    >
                       <View
-                        style={{
-                          flexDirection: "row",
-                          alignItems: "center",
-                          marginBottom: 10,
-                          paddingHorizontal: 2,
-                        }}
+                        style={{ flexDirection: "row", alignItems: "center" }}
                       >
                         <View
                           style={{
-                            width: 8,
-                            height: 8,
-                            borderRadius: 4,
+                            width: 4,
+                            height: 22,
+                            borderRadius: 999,
                             backgroundColor: colors.primary,
-                            marginRight: 8,
+                            marginRight: 10,
                           }}
                         />
                         <AppText
                           style={{
-                            fontSize: 24,
+                            fontSize: 20,
                             fontWeight: "800",
                             color: colors.text,
                           }}
@@ -431,9 +376,72 @@ export default function HomeScreen({ navigation }) {
                         </AppText>
                       </View>
 
+                      <View
+                        style={{
+                          backgroundColor: colors.primary,
+                          borderRadius: 999,
+                          paddingHorizontal: 10,
+                          paddingVertical: 4,
+                        }}
+                      >
+                        <AppText
+                          style={{
+                            fontSize: 10,
+                            fontWeight: "800",
+                            color: "#fff",
+                          }}
+                        >
+                          TOP CIBOX
+                        </AppText>
+                      </View>
+                    </View>
+
+                    <ProductRowSection
+                      title=""
+                      products={featuredProducts}
+                      onPressProduct={(item) =>
+                        navigation.navigate("ProductDetail", {
+                          productId: item._id,
+                        })
+                      }
+                      onAddToCart={handleAddFromCard}
+                      addingProductId={addingProductId}
+                    />
+                  </View>
+
+                  {/* Recomendados */}
+                  {recommendedProducts.length > 0 ? (
+                    <View style={{ marginBottom: spacing.lg }}>
+                      <View
+                        style={{
+                          flexDirection: "row",
+                          alignItems: "center",
+                          marginBottom: 12,
+                        }}
+                      >
+                        <View
+                          style={{
+                            width: 4,
+                            height: 22,
+                            borderRadius: 999,
+                            backgroundColor: colors.accent,
+                            marginRight: 10,
+                          }}
+                        />
+                        <AppText
+                          style={{
+                            fontSize: 20,
+                            fontWeight: "800",
+                            color: colors.text,
+                          }}
+                        >
+                          Recomendados para ti
+                        </AppText>
+                      </View>
+
                       <ProductRowSection
                         title=""
-                        products={featuredProducts}
+                        products={recommendedProducts}
                         onPressProduct={(item) =>
                           navigation.navigate("ProductDetail", {
                             productId: item._id,
@@ -443,73 +451,52 @@ export default function HomeScreen({ navigation }) {
                         addingProductId={addingProductId}
                       />
                     </View>
+                  ) : null}
 
-                    {recommendedProducts.length > 0 ? (
-                      <View style={{ marginBottom: spacing.lg }}>
+                  {/* Categorías — círculos */}
+                  {featuredCategories.length > 0 && (
+                    <View style={{ marginBottom: spacing.lg }}>
+                      <View
+                        style={{
+                          flexDirection: "row",
+                          alignItems: "center",
+                          marginBottom: 14,
+                        }}
+                      >
                         <View
                           style={{
-                            flexDirection: "row",
-                            alignItems: "center",
-                            marginBottom: 10,
-                            paddingHorizontal: 2,
+                            width: 4,
+                            height: 22,
+                            borderRadius: 999,
+                            backgroundColor: colors.primary,
+                            marginRight: 10,
                           }}
-                        >
-                          <View
-                            style={{
-                              width: 8,
-                              height: 8,
-                              borderRadius: 4,
-                              backgroundColor: colors.primary,
-                              marginRight: 8,
-                            }}
-                          />
-                          <AppText
-                            style={{
-                              fontSize: 24,
-                              fontWeight: "800",
-                              color: colors.text,
-                            }}
-                          >
-                            Recomendados para ti
-                          </AppText>
-                        </View>
-
-                        <ProductRowSection
-                          title=""
-                          products={recommendedProducts}
-                          onPressProduct={(item) =>
-                            navigation.navigate("ProductDetail", {
-                              productId: item._id,
-                            })
-                          }
-                          onAddToCart={handleAddFromCard}
-                          addingProductId={addingProductId}
                         />
-                      </View>
-                    ) : null}
-
-                    {featuredCategories.length > 0 && (
-                      <View style={{ marginBottom: spacing.lg }}>
                         <AppText
                           style={{
-                            fontSize: 24,
+                            fontSize: 20,
                             fontWeight: "800",
                             color: colors.text,
-                            marginBottom: 12,
-                            paddingHorizontal: 2,
                           }}
                         >
-                          Categorías destacadas
+                          Categorías
                         </AppText>
+                      </View>
 
-                        <FlatList
-                          data={featuredCategories}
-                          horizontal
-                          nestedScrollEnabled
-                          keyboardShouldPersistTaps="handled"
-                          keyExtractor={(item) => item._id}
-                          contentContainerStyle={{ paddingRight: spacing.md }}
-                          renderItem={({ item }) => (
+                      <FlatList
+                        data={featuredCategories}
+                        horizontal
+                        nestedScrollEnabled
+                        showsHorizontalScrollIndicator={false}
+                        keyboardShouldPersistTaps="handled"
+                        keyExtractor={(item) => item._id}
+                        contentContainerStyle={{ paddingRight: spacing.md }}
+                        renderItem={({ item }) => {
+                          const circleSize = isWebDesktop ? 100 : 64;
+                          const fontSize = isWebDesktop ? 13 : 11;
+                          const itemWidth = isWebDesktop ? 110 : 72;
+
+                          return (
                             <Pressable
                               onPress={() =>
                                 navigation.navigate("Products", {
@@ -518,220 +505,196 @@ export default function HomeScreen({ navigation }) {
                                 })
                               }
                               style={{
-                                width: 220,
-                                marginRight: spacing.md,
+                                alignItems: "center",
+                                marginRight: isWebDesktop ? 20 : 16,
+                                width: itemWidth,
                               }}
                             >
                               <View
                                 style={{
-                                  backgroundColor: colors.surface,
-                                  borderRadius: 20,
+                                  width: circleSize,
+                                  height: circleSize,
+                                  borderRadius: circleSize / 2,
+                                  borderWidth: 2.5,
+                                  borderColor: colors.primary,
                                   overflow: "hidden",
-                                  borderWidth: 1,
-                                  borderColor: "#eee",
+                                  marginBottom: 8,
+                                  backgroundColor: `${colors.primary}10`,
                                 }}
                               >
                                 <Image
                                   source={{ uri: item.image }}
-                                  style={{
-                                    width: "100%",
-                                    height: 120,
-                                  }}
+                                  style={{ width: "100%", height: "100%" }}
                                   resizeMode="cover"
                                 />
-
-                                <View style={{ padding: 12 }}>
-                                  <AppText
-                                    style={{
-                                      fontWeight: "800",
-                                      fontSize: 15,
-                                      color: colors.text,
-                                    }}
-                                  >
-                                    {item.name}
-                                  </AppText>
-                                </View>
                               </View>
+                              <AppText
+                                numberOfLines={2}
+                                style={{
+                                  fontSize: fontSize,
+                                  fontWeight: "700",
+                                  color: colors.text,
+                                  textAlign: "center",
+                                }}
+                              >
+                                {item.name}
+                              </AppText>
                             </Pressable>
-                          )}
-                        />
-                      </View>
-                    )}
-                    <Pressable
-                      onPress={() => navigation.navigate("CustomBox")}
+                          );
+                        }}
+                      />
+                    </View>
+                  )}
+
+                  {/* Caja personalizada */}
+                  <Pressable
+                    onPress={() => navigation.navigate("CustomBox")}
+                    style={{
+                      backgroundColor: colors.surface,
+                      borderRadius: 20,
+                      borderWidth: 2,
+                      borderColor: colors.primary,
+                      padding: spacing.md,
+                      marginBottom: spacing.lg,
+                      flexDirection: "row",
+                      alignItems: "center",
+                      gap: 14,
+                    }}
+                  >
+                    <View
                       style={{
-                        backgroundColor: colors.surface,
-                        borderRadius: 20,
-                        borderWidth: 1.5,
-                        borderColor: colors.primary,
-                        padding: spacing.md,
-                        marginBottom: spacing.lg,
-                        flexDirection: "row",
+                        width: 56,
+                        height: 56,
+                        borderRadius: 28,
+                        backgroundColor: `${colors.primary}15`,
+                        justifyContent: "center",
                         alignItems: "center",
-                        gap: 14,
                       }}
                     >
-                      <View
+                      <AppText style={{ fontSize: 28 }}>📦</AppText>
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <AppText
                         style={{
-                          width: 56,
-                          height: 56,
-                          borderRadius: 28,
-                          backgroundColor: `${colors.primary}20`,
-                          justifyContent: "center",
-                          alignItems: "center",
+                          fontSize: 17,
+                          fontWeight: "900",
+                          color: colors.text,
+                          marginBottom: 4,
                         }}
                       >
-                        <AppText style={{ fontSize: 28 }}>📦</AppText>
-                      </View>
+                        Caja personalizada
+                      </AppText>
+                      <AppText style={{ color: colors.muted, fontSize: 13 }}>
+                        Elige exactamente lo que quieres en tu caja.
+                      </AppText>
+                    </View>
+                    <Ionicons
+                      name="arrow-forward"
+                      size={20}
+                      color={colors.primary}
+                    />
+                  </Pressable>
+
+                  {/* Productos individuales */}
+                  <View
+                    style={{
+                      marginBottom: spacing.lg,
+                      backgroundColor: colors.surface,
+                      borderRadius: 24,
+                      padding: spacing.md,
+                      borderWidth: 1,
+                      borderColor: colors.border,
+                    }}
+                  >
+                    <View
+                      style={{
+                        flexDirection: "row",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        marginBottom: 12,
+                        gap: 12,
+                      }}
+                    >
                       <View style={{ flex: 1 }}>
-                        <AppText
+                        <View
                           style={{
-                            fontSize: 17,
-                            fontWeight: "900",
-                            color: colors.text,
+                            flexDirection: "row",
+                            alignItems: "center",
                             marginBottom: 4,
                           }}
                         >
-                          Caja personalizada
-                        </AppText>
-                        <AppText style={{ color: colors.muted, fontSize: 13 }}>
-                          Elige exactamente lo que quieres en tu caja.
-                        </AppText>
-                      </View>
-                      <AppText style={{ fontSize: 20, color: colors.primary }}>
-                        →
-                      </AppText>
-                    </Pressable>
-
-                    <View
-                      style={{
-                        marginBottom: spacing.lg,
-                        backgroundColor: colors.surface,
-                        borderRadius: 24,
-                        padding: spacing.md,
-                        borderWidth: 1,
-                        borderColor: "#ececec",
-                      }}
-                    >
-                      <View
-                        style={{
-                          flexDirection: "row",
-                          justifyContent: "space-between",
-                          alignItems: "center",
-                          marginBottom: 12,
-                          gap: 12,
-                        }}
-                      >
-                        <View style={{ flex: 1 }}>
                           <View
                             style={{
-                              flexDirection: "row",
-                              alignItems: "center",
-                              marginBottom: 6,
+                              width: 4,
+                              height: 22,
+                              borderRadius: 999,
+                              backgroundColor: colors.primary,
+                              marginRight: 10,
                             }}
-                          >
-                            <View
-                              style={{
-                                width: 4,
-                                height: 22,
-                                borderRadius: 999,
-                                backgroundColor: colors.primary,
-                                marginRight: 10,
-                              }}
-                            />
-                            <AppText
-                              style={{
-                                fontSize: 24,
-                                fontWeight: "800",
-                                color: colors.text,
-                              }}
-                            >
-                              Productos individuales
-                            </AppText>
-                          </View>
-
+                          />
                           <AppText
                             style={{
-                              color: colors.muted,
-                              fontSize: 14,
-                              marginLeft: 14,
+                              fontSize: 20,
+                              fontWeight: "800",
+                              color: colors.text,
                             }}
                           >
-                            Compra al detalle y agrega productos directo al
-                            carrito.
+                            Productos individuales
                           </AppText>
                         </View>
-
-                        <Pressable
-                          onPress={() => navigation.navigate("Products")}
+                        <AppText
                           style={{
-                            borderWidth: 1,
-                            borderColor: "#cfe3c4",
-                            backgroundColor: "#f7fbf4",
-                            paddingHorizontal: 16,
-                            paddingVertical: 10,
-                            borderRadius: 14,
+                            color: colors.muted,
+                            fontSize: 13,
+                            marginLeft: 14,
                           }}
                         >
-                          <AppText
-                            style={{
-                              color: colors.text,
-                              fontSize: 13,
-                              fontWeight: "800",
-                            }}
-                          >
-                            Ver todos
-                          </AppText>
-                        </Pressable>
+                          Compra al detalle y agrega directo al carrito.
+                        </AppText>
                       </View>
 
-                      <ProductRowSection
-                        title=""
-                        products={products.slice(0, 10)}
-                        onPressProduct={(item) =>
-                          navigation.navigate("ProductDetail", {
-                            productId: item._id,
-                          })
-                        }
-                        onAddToCart={handleAddFromCard}
-                        addingProductId={addingProductId}
-                      />
+                      <Pressable
+                        onPress={() => navigation.navigate("Products")}
+                        style={{
+                          backgroundColor: colors.primary,
+                          paddingHorizontal: 16,
+                          paddingVertical: 10,
+                          borderRadius: 14,
+                        }}
+                      >
+                        <AppText
+                          style={{
+                            color: "#fff",
+                            fontSize: 13,
+                            fontWeight: "800",
+                          }}
+                        >
+                          Ver todos
+                        </AppText>
+                      </Pressable>
                     </View>
-                  </>
-                )}
-              </View>
-            )}
+
+                    <ProductRowSection
+                      title=""
+                      products={products.slice(0, 10)}
+                      onPressProduct={(item) =>
+                        navigation.navigate("ProductDetail", {
+                          productId: item._id,
+                        })
+                      }
+                      onAddToCart={handleAddFromCard}
+                      addingProductId={addingProductId}
+                    />
+                  </View>
+                </>
+              )}
+            </View>
           </View>
         }
-        ListEmptyComponent={
-          !showSections ? (
-            <View
-              style={{
-                backgroundColor: colors.surface,
-                borderRadius: 18,
-                paddingHorizontal: spacing.md,
-                paddingVertical: spacing.xl,
-                alignItems: "center",
-                marginHorizontal: spacing.md,
-              }}
-            >
-              <AppText
-                style={{
-                  fontSize: 20,
-                  fontWeight: "700",
-                  color: colors.text,
-                  marginBottom: 8,
-                }}
-              >
-                No encontramos productos
-              </AppText>
-
-              <AppText style={{ color: colors.muted, textAlign: "center" }}>
-                Prueba cambiando la búsqueda.
-              </AppText>
-            </View>
-          ) : null
-        }
+      />
+      <MobileCategoryMenu
+        visible={categoryMenuOpen}
+        onClose={() => setCategoryMenuOpen(false)}
       />
     </ScreenContainer>
   );

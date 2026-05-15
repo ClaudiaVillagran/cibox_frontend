@@ -1,4 +1,4 @@
-import { FlatList, Platform, ScrollView, View } from "react-native";
+import { FlatList, Platform, ScrollView, View, useWindowDimensions } from "react-native";
 import ProductCard from "./ProductCard";
 import { colors, spacing } from "../constants/theme";
 import AppText from "./AppText";
@@ -12,17 +12,23 @@ export default function ProductRowSection({
 }) {
   if (!products.length) return null;
 
+  const { width } = useWindowDimensions();
+  const isSmallScreen = width < 800;
+
+  const cardWidth = isSmallScreen ? 160 : 260;
+
   const renderCard = (item, index) => (
     <View
       key={item._id}
       style={{
-        width: 260,
+        width: cardWidth,
         marginRight: index === products.length - 1 ? 0 : spacing.md,
       }}
     >
       <ProductCard
         product={item}
-        compact
+        compact={!isSmallScreen}
+        mini={isSmallScreen}
         onPress={() => onPressProduct(item)}
         onAddToCart={onAddToCart}
         adding={addingProductId === item._id}
