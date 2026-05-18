@@ -40,8 +40,8 @@ import MobileCategoryMenu from "../components/MobileCategoryMenu";
 const BANNERS = [
   {
     id: "1",
-    imageDesktop: require("../../assets/ahorra_despensa_banner_web.png"),
-    imageMobile: require("../../assets/ahorra_despensa_banner_mobile.png"),
+    imageDesktop: require("../../assets/banner2.png"),
+    imageMobile: require("../../assets/banner2-mobile.png"),
   },
   {
     id: "2",
@@ -53,15 +53,55 @@ const BANNERS = [
     imageDesktop: require("../../assets/cibox_membresia_banner_web.png"),
     imageMobile: require("../../assets/cibox_membresia_banner_mobile.png"),
   },
+  {
+    id: "4",
+    imageDesktop: require("../../assets/ahorra_despensa_banner_web.png"),
+    imageMobile: require("../../assets/ahorra_despensa_banner_mobile.png"),
+  },
 ];
 
 // ─── Acceso rápido ─────────────────────────────────────────────────────────────
 const QUICK_ACCESS = [
-  { id: "recetas",    label: "Recetas",    emoji: "🍳", bg: "#fef3c7", border: "#f59e0b", screen: "Recipes"    },
-  { id: "caja",       label: "Mi caja",    emoji: "📦", bg: "#dcfce7", border: "#16a34a", screen: "CustomBox"  },
-  { id: "destacados", label: "Destacados", emoji: "⭐", bg: "#fce7f3", border: "#db2777", screen: "Products"   },
-  { id: "ciboxplus",  label: "Cibox+",     emoji: "💎", bg: "#ede9fe", border: "#7c3aed", screen: "HowItWorks" },
-  { id: "novedades",  label: "Novedades",  emoji: "✨", bg: "#e0f2fe", border: "#0284c7", screen: "Products"   },
+  {
+    id: "recetas",
+    label: "Recetas",
+    emoji: "🍳",
+    bg: "#fef3c7",
+    border: "#f59e0b",
+    screen: "Recipes",
+  },
+  {
+    id: "caja",
+    label: "Mi caja",
+    emoji: "📦",
+    bg: "#dcfce7",
+    border: "#16a34a",
+    screen: "CustomBox",
+  },
+  {
+    id: "destacados",
+    label: "Destacados",
+    emoji: "⭐",
+    bg: "#fce7f3",
+    border: "#db2777",
+    screen: "Products",
+  },
+  {
+    id: "ciboxplus",
+    label: "Cibox+",
+    emoji: "💎",
+    bg: "#ede9fe",
+    border: "#7c3aed",
+    screen: "HowItWorks",
+  },
+  {
+    id: "novedades",
+    label: "Novedades",
+    emoji: "✨",
+    bg: "#e0f2fe",
+    border: "#0284c7",
+    screen: "Products",
+  },
 ];
 
 // ─── Banner inline presionable ─────────────────────────────────────────────────
@@ -96,11 +136,11 @@ function QuickCircle({ item, index, onPress }) {
       withRepeat(
         withSequence(
           withTiming(5.5, { duration: 700 }),
-          withTiming(2,   { duration: 700 })
+          withTiming(2, { duration: 700 }),
         ),
         -1,
-        false
-      )
+        false,
+      ),
     );
   }, []);
 
@@ -169,10 +209,16 @@ export default function HomeScreen({ navigation }) {
       setSectionsLoading(true);
       const [featuredData, recommendedData] = await Promise.all([
         getFeaturedProducts({ limit: 8 }),
-        token ? getRecommendedProducts({ limit: 8 }) : Promise.resolve({ items: [] }),
+        token
+          ? getRecommendedProducts({ limit: 8 })
+          : Promise.resolve({ items: [] }),
       ]);
-      setFeaturedProducts(Array.isArray(featuredData?.items) ? featuredData.items : []);
-      setRecommendedProducts(Array.isArray(recommendedData?.items) ? recommendedData.items : []);
+      setFeaturedProducts(
+        Array.isArray(featuredData?.items) ? featuredData.items : [],
+      );
+      setRecommendedProducts(
+        Array.isArray(recommendedData?.items) ? recommendedData.items : [],
+      );
     } catch (e) {
       setFeaturedProducts([]);
       setRecommendedProducts([]);
@@ -206,7 +252,10 @@ export default function HomeScreen({ navigation }) {
       await loadCartSummary();
       showAppAlert("Éxito", "Producto agregado al carrito");
     } catch (error) {
-      Alert.alert("Error", error?.response?.data?.message || "No se pudo agregar al carrito");
+      Alert.alert(
+        "Error",
+        error?.response?.data?.message || "No se pudo agregar al carrito",
+      );
     } finally {
       setAddingProductId(null);
     }
@@ -219,21 +268,31 @@ export default function HomeScreen({ navigation }) {
         <Pressable
           onPress={() => setCategoryMenuOpen(true)}
           style={{
-            width: 38, height: 38, borderRadius: 19,
-            justifyContent: "center", alignItems: "center", marginLeft: 10,
+            width: 38,
+            height: 38,
+            borderRadius: 19,
+            justifyContent: "center",
+            alignItems: "center",
+            marginLeft: 10,
           }}
         >
           <Ionicons name="menu" size={24} color={colors.text} />
         </Pressable>
       ),
       headerRight: () => (
-        <View style={{ flexDirection: "row", alignItems: "center", marginRight: 4 }}>
+        <View
+          style={{ flexDirection: "row", alignItems: "center", marginRight: 4 }}
+        >
           <Pressable
             onPress={() => navigation.navigate("Notifications")}
             style={{
-              width: 38, height: 38, borderRadius: 19,
-              justifyContent: "center", alignItems: "center",
-              marginRight: 8, backgroundColor: colors.primary,
+              width: 38,
+              height: 38,
+              borderRadius: 19,
+              justifyContent: "center",
+              alignItems: "center",
+              marginRight: 8,
+              backgroundColor: colors.primary,
             }}
           >
             <Ionicons name="notifications-outline" size={20} color="#fff" />
@@ -242,22 +301,34 @@ export default function HomeScreen({ navigation }) {
           <Pressable
             onPress={() => navigation.navigate("Cart")}
             style={{
-              width: 38, height: 38, borderRadius: 19,
-              justifyContent: "center", alignItems: "center",
-              backgroundColor: colors.primary, position: "relative",
+              width: 38,
+              height: 38,
+              borderRadius: 19,
+              justifyContent: "center",
+              alignItems: "center",
+              backgroundColor: colors.primary,
+              position: "relative",
             }}
           >
             <Ionicons name="bag-outline" size={20} color="#fff" />
             {cartCount > 0 && (
               <View
                 style={{
-                  position: "absolute", top: -2, right: -2,
-                  minWidth: 18, height: 18, borderRadius: 9,
+                  position: "absolute",
+                  top: -2,
+                  right: -2,
+                  minWidth: 18,
+                  height: 18,
+                  borderRadius: 9,
                   backgroundColor: colors.accent,
-                  justifyContent: "center", alignItems: "center", paddingHorizontal: 4,
+                  justifyContent: "center",
+                  alignItems: "center",
+                  paddingHorizontal: 4,
                 }}
               >
-                <AppText style={{ color: "#333", fontSize: 10, fontWeight: "800" }}>
+                <AppText
+                  style={{ color: "#333", fontSize: 10, fontWeight: "800" }}
+                >
                   {cartCount}
                 </AppText>
               </View>
@@ -286,11 +357,13 @@ export default function HomeScreen({ navigation }) {
         keyboardShouldPersistTaps="handled"
         keyExtractor={(item) => item._id}
         renderItem={null}
-        contentContainerStyle={{ paddingBottom: spacing.xl, backgroundColor: colors.background }}
+        contentContainerStyle={{
+          paddingBottom: spacing.xl,
+          backgroundColor: colors.background,
+        }}
         ListFooterComponent={<View style={{ height: spacing.lg }} />}
         ListHeaderComponent={
           <View>
-
             {/* ── Card superior ──────────────────────────────────────────── */}
             <View
               style={{
@@ -316,17 +389,25 @@ export default function HomeScreen({ navigation }) {
                   marginBottom: spacing.md,
                 }}
               >
-                <AppText style={{ fontSize: 14, fontWeight: "800", color: colors.text }}>
+                <AppText
+                  style={{
+                    fontSize: 14,
+                    fontWeight: "800",
+                    color: colors.text,
+                  }}
+                >
                   Ahorra más en tu despensa con CIBOX
                 </AppText>
-                <AppText style={{ marginTop: 4, fontSize: 13, color: colors.muted }}>
+                <AppText
+                  style={{ marginTop: 4, fontSize: 13, color: colors.muted }}
+                >
                   Compras inteligentes para tu hogar.
                 </AppText>
               </View>
 
               {/* Buscador — solo móvil */}
               {!isWebDesktop && (
-                <View style={{ marginBottom: spacing.md }}>
+                <View style={{ marginBottom: spacing.md,  zIndex: 999, elevation: 999 }}>
                   <MobileSearchBar />
                 </View>
               )}
@@ -346,17 +427,37 @@ export default function HomeScreen({ navigation }) {
                   borderColor: `${colors.primary}25`,
                 }}
               >
-                <Ionicons name="information-circle-outline" size={18} color={colors.primary} style={{ marginRight: 8 }} />
-                <AppText style={{ flex: 1, fontSize: 13, fontWeight: "700", color: colors.primary }}>
+                <Ionicons
+                  name="information-circle-outline"
+                  size={18}
+                  color={colors.primary}
+                  style={{ marginRight: 8 }}
+                />
+                <AppText
+                  style={{
+                    flex: 1,
+                    fontSize: 13,
+                    fontWeight: "700",
+                    color: colors.primary,
+                  }}
+                >
                   Descubre cómo funciona CIBOX
                 </AppText>
-                <Ionicons name="chevron-forward" size={18} color={colors.primary} />
+                <Ionicons
+                  name="chevron-forward"
+                  size={18}
+                  color={colors.primary}
+                />
               </Pressable>
 
               {/* Carousel */}
               <View
                 onLayout={(e) => setBannerWidth(e.nativeEvent.layout.width)}
-                style={{ borderRadius: 14, overflow: "hidden", minHeight: isWebDesktop ? 180 : 150 }}
+                style={{
+                  borderRadius: 14,
+                  overflow: "hidden",
+                  minHeight: isWebDesktop ? 180 : 150,
+                }}
               >
                 {bannerWidth > 0 && (
                   <Carousel
@@ -369,11 +470,19 @@ export default function HomeScreen({ navigation }) {
                     pagingEnabled
                     snapEnabled
                     scrollAnimationDuration={900}
-                    onProgressChange={(_, abs) => { progressValue.value = abs; }}
+                    onProgressChange={(_, abs) => {
+                      progressValue.value = abs;
+                    }}
                     renderItem={({ item }) => (
                       <Image
-                        source={isWebDesktop ? item.imageDesktop : item.imageMobile}
-                        style={{ width: bannerWidth, height: isWebDesktop ? 180 : 150, resizeMode: "cover" }}
+                        source={
+                          isWebDesktop ? item.imageDesktop : item.imageMobile
+                        }
+                        style={{
+                          width: bannerWidth,
+                          height: isWebDesktop ? 180 : 150,
+                          resizeMode: "cover",
+                        }}
                       />
                     )}
                   />
@@ -384,8 +493,12 @@ export default function HomeScreen({ navigation }) {
               <View style={{ marginTop: spacing.md }}>
                 <AppText
                   style={{
-                    fontSize: 13, fontWeight: "800", color: colors.muted,
-                    marginBottom: 12, textTransform: "uppercase", letterSpacing: 0.5,
+                    fontSize: 13,
+                    fontWeight: "800",
+                    color: colors.muted,
+                    marginBottom: 12,
+                    textTransform: "uppercase",
+                    letterSpacing: 0.5,
                   }}
                 >
                   Acceso rápido
@@ -410,26 +523,78 @@ export default function HomeScreen({ navigation }) {
             {/* ── Secciones ──────────────────────────────────────────────── */}
             <View style={{ paddingHorizontal: spacing.md, zIndex: 1 }}>
               {sectionsLoading ? (
-                <View style={{ backgroundColor: colors.surface, borderRadius: 18, padding: spacing.md }}>
-                  <AppText style={{ color: colors.muted }}>Cargando destacados...</AppText>
+                <View
+                  style={{
+                    backgroundColor: colors.surface,
+                    borderRadius: 18,
+                    padding: spacing.md,
+                  }}
+                >
+                  <AppText style={{ color: colors.muted }}>
+                    Cargando destacados...
+                  </AppText>
                 </View>
               ) : (
                 <>
                   {/* Destacados */}
                   <View style={{ marginBottom: spacing.lg }}>
-                    <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-                      <View style={{ flexDirection: "row", alignItems: "center" }}>
-                        <View style={{ width: 4, height: 22, borderRadius: 999, backgroundColor: colors.primary, marginRight: 10 }} />
-                        <AppText style={{ fontSize: 20, fontWeight: "800", color: colors.text }}>Destacados</AppText>
+                    <View
+                      style={{
+                        flexDirection: "row",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        marginBottom: 12,
+                      }}
+                    >
+                      <View
+                        style={{ flexDirection: "row", alignItems: "center" }}
+                      >
+                        <View
+                          style={{
+                            width: 4,
+                            height: 22,
+                            borderRadius: 999,
+                            backgroundColor: colors.primary,
+                            marginRight: 10,
+                          }}
+                        />
+                        <AppText
+                          style={{
+                            fontSize: 20,
+                            fontWeight: "800",
+                            color: colors.text,
+                          }}
+                        >
+                          Destacados
+                        </AppText>
                       </View>
-                      <View style={{ backgroundColor: colors.primary, borderRadius: 999, paddingHorizontal: 10, paddingVertical: 4 }}>
-                        <AppText style={{ fontSize: 10, fontWeight: "800", color: "#fff" }}>TOP CIBOX</AppText>
+                      <View
+                        style={{
+                          backgroundColor: colors.primary,
+                          borderRadius: 999,
+                          paddingHorizontal: 10,
+                          paddingVertical: 4,
+                        }}
+                      >
+                        <AppText
+                          style={{
+                            fontSize: 10,
+                            fontWeight: "800",
+                            color: "#fff",
+                          }}
+                        >
+                          TOP CIBOX
+                        </AppText>
                       </View>
                     </View>
                     <ProductRowSection
                       title=""
                       products={featuredProducts}
-                      onPressProduct={(item) => navigation.navigate("ProductDetail", { productId: item._id })}
+                      onPressProduct={(item) =>
+                        navigation.navigate("ProductDetail", {
+                          productId: item._id,
+                        })
+                      }
                       onAddToCart={handleAddFromCard}
                       addingProductId={addingProductId}
                     />
@@ -446,14 +611,40 @@ export default function HomeScreen({ navigation }) {
                   {/* Recomendados */}
                   {recommendedProducts.length > 0 && (
                     <View style={{ marginBottom: spacing.lg }}>
-                      <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 12 }}>
-                        <View style={{ width: 4, height: 22, borderRadius: 999, backgroundColor: colors.accent, marginRight: 10 }} />
-                        <AppText style={{ fontSize: 20, fontWeight: "800", color: colors.text }}>Recomendados para ti</AppText>
+                      <View
+                        style={{
+                          flexDirection: "row",
+                          alignItems: "center",
+                          marginBottom: 12,
+                        }}
+                      >
+                        <View
+                          style={{
+                            width: 4,
+                            height: 22,
+                            borderRadius: 999,
+                            backgroundColor: colors.accent,
+                            marginRight: 10,
+                          }}
+                        />
+                        <AppText
+                          style={{
+                            fontSize: 20,
+                            fontWeight: "800",
+                            color: colors.text,
+                          }}
+                        >
+                          Recomendados para ti
+                        </AppText>
                       </View>
                       <ProductRowSection
                         title=""
                         products={recommendedProducts}
-                        onPressProduct={(item) => navigation.navigate("ProductDetail", { productId: item._id })}
+                        onPressProduct={(item) =>
+                          navigation.navigate("ProductDetail", {
+                            productId: item._id,
+                          })
+                        }
                         onAddToCart={handleAddFromCard}
                         addingProductId={addingProductId}
                       />
@@ -463,9 +654,31 @@ export default function HomeScreen({ navigation }) {
                   {/* Categorías */}
                   {featuredCategories.length > 0 && (
                     <View style={{ marginBottom: spacing.lg }}>
-                      <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 14 }}>
-                        <View style={{ width: 4, height: 22, borderRadius: 999, backgroundColor: colors.primary, marginRight: 10 }} />
-                        <AppText style={{ fontSize: 20, fontWeight: "800", color: colors.text }}>Categorías</AppText>
+                      <View
+                        style={{
+                          flexDirection: "row",
+                          alignItems: "center",
+                          marginBottom: 14,
+                        }}
+                      >
+                        <View
+                          style={{
+                            width: 4,
+                            height: 22,
+                            borderRadius: 999,
+                            backgroundColor: colors.primary,
+                            marginRight: 10,
+                          }}
+                        />
+                        <AppText
+                          style={{
+                            fontSize: 20,
+                            fontWeight: "800",
+                            color: colors.text,
+                          }}
+                        >
+                          Categorías
+                        </AppText>
                       </View>
                       <FlatList
                         data={featuredCategories}
@@ -477,25 +690,49 @@ export default function HomeScreen({ navigation }) {
                         contentContainerStyle={{ paddingRight: spacing.md }}
                         renderItem={({ item }) => {
                           const circleSize = isWebDesktop ? 100 : 64;
-                          const fontSize   = isWebDesktop ? 13 : 11;
-                          const itemWidth  = isWebDesktop ? 110 : 72;
+                          const fontSize = isWebDesktop ? 13 : 11;
+                          const itemWidth = isWebDesktop ? 110 : 72;
                           return (
                             <Pressable
-                              onPress={() => navigation.navigate("Products", { search: "", category: item._id })}
-                              style={{ alignItems: "center", marginRight: isWebDesktop ? 20 : 16, width: itemWidth }}
+                              onPress={() =>
+                                navigation.navigate("Products", {
+                                  search: "",
+                                  category: item._id,
+                                })
+                              }
+                              style={{
+                                alignItems: "center",
+                                marginRight: isWebDesktop ? 20 : 16,
+                                width: itemWidth,
+                              }}
                             >
                               <View
                                 style={{
-                                  width: circleSize, height: circleSize,
+                                  width: circleSize,
+                                  height: circleSize,
                                   borderRadius: circleSize / 2,
-                                  borderWidth: 2.5, borderColor: colors.primary,
-                                  overflow: "hidden", marginBottom: 8,
+                                  borderWidth: 2.5,
+                                  borderColor: colors.primary,
+                                  overflow: "hidden",
+                                  marginBottom: 8,
                                   backgroundColor: `${colors.primary}10`,
                                 }}
                               >
-                                <Image source={{ uri: item.image }} style={{ width: "100%", height: "100%" }} resizeMode="cover" />
+                                <Image
+                                  source={{ uri: item.image }}
+                                  style={{ width: "100%", height: "100%" }}
+                                  resizeMode="cover"
+                                />
                               </View>
-                              <AppText numberOfLines={2} style={{ fontSize, fontWeight: "700", color: colors.text, textAlign: "center" }}>
+                              <AppText
+                                numberOfLines={2}
+                                style={{
+                                  fontSize,
+                                  fontWeight: "700",
+                                  color: colors.text,
+                                  textAlign: "center",
+                                }}
+                              >
                                 {item.name}
                               </AppText>
                             </Pressable>
@@ -528,14 +765,38 @@ export default function HomeScreen({ navigation }) {
                       gap: 14,
                     }}
                   >
-                    <View style={{ width: 56, height: 56, borderRadius: 28, backgroundColor: `${colors.primary}15`, justifyContent: "center", alignItems: "center" }}>
+                    <View
+                      style={{
+                        width: 56,
+                        height: 56,
+                        borderRadius: 28,
+                        backgroundColor: `${colors.primary}15`,
+                        justifyContent: "center",
+                        alignItems: "center",
+                      }}
+                    >
                       <AppText style={{ fontSize: 28 }}>📦</AppText>
                     </View>
                     <View style={{ flex: 1 }}>
-                      <AppText style={{ fontSize: 17, fontWeight: "900", color: colors.text, marginBottom: 4 }}>Caja personalizada</AppText>
-                      <AppText style={{ color: colors.muted, fontSize: 13 }}>Elige exactamente lo que quieres en tu caja.</AppText>
+                      <AppText
+                        style={{
+                          fontSize: 17,
+                          fontWeight: "900",
+                          color: colors.text,
+                          marginBottom: 4,
+                        }}
+                      >
+                        Caja personalizada
+                      </AppText>
+                      <AppText style={{ color: colors.muted, fontSize: 13 }}>
+                        Elige exactamente lo que quieres en tu caja.
+                      </AppText>
                     </View>
-                    <Ionicons name="arrow-forward" size={20} color={colors.primary} />
+                    <Ionicons
+                      name="arrow-forward"
+                      size={20}
+                      color={colors.primary}
+                    />
                   </Pressable>
 
                   {/* ── Banner inline 3: Ahorro inteligente ── */}
@@ -557,27 +818,80 @@ export default function HomeScreen({ navigation }) {
                       borderColor: colors.border,
                     }}
                   >
-                    <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 12, gap: 12 }}>
+                    <View
+                      style={{
+                        flexDirection: "row",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        marginBottom: 12,
+                        gap: 12,
+                      }}
+                    >
                       <View style={{ flex: 1 }}>
-                        <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 4 }}>
-                          <View style={{ width: 4, height: 22, borderRadius: 999, backgroundColor: colors.primary, marginRight: 10 }} />
-                          <AppText style={{ fontSize: 20, fontWeight: "800", color: colors.text }}>Productos individuales</AppText>
+                        <View
+                          style={{
+                            flexDirection: "row",
+                            alignItems: "center",
+                            marginBottom: 4,
+                          }}
+                        >
+                          <View
+                            style={{
+                              width: 4,
+                              height: 22,
+                              borderRadius: 999,
+                              backgroundColor: colors.primary,
+                              marginRight: 10,
+                            }}
+                          />
+                          <AppText
+                            style={{
+                              fontSize: 20,
+                              fontWeight: "800",
+                              color: colors.text,
+                            }}
+                          >
+                            Productos individuales
+                          </AppText>
                         </View>
-                        <AppText style={{ color: colors.muted, fontSize: 13, marginLeft: 14 }}>
+                        <AppText
+                          style={{
+                            color: colors.muted,
+                            fontSize: 13,
+                            marginLeft: 14,
+                          }}
+                        >
                           Compra al detalle y agrega directo al carrito.
                         </AppText>
                       </View>
                       <Pressable
                         onPress={() => navigation.navigate("Products")}
-                        style={{ backgroundColor: colors.primary, paddingHorizontal: 16, paddingVertical: 10, borderRadius: 14 }}
+                        style={{
+                          backgroundColor: colors.primary,
+                          paddingHorizontal: 16,
+                          paddingVertical: 10,
+                          borderRadius: 14,
+                        }}
                       >
-                        <AppText style={{ color: "#fff", fontSize: 13, fontWeight: "800" }}>Ver todos</AppText>
+                        <AppText
+                          style={{
+                            color: "#fff",
+                            fontSize: 13,
+                            fontWeight: "800",
+                          }}
+                        >
+                          Ver todos
+                        </AppText>
                       </Pressable>
                     </View>
                     <ProductRowSection
                       title=""
                       products={products.slice(0, 10)}
-                      onPressProduct={(item) => navigation.navigate("ProductDetail", { productId: item._id })}
+                      onPressProduct={(item) =>
+                        navigation.navigate("ProductDetail", {
+                          productId: item._id,
+                        })
+                      }
                       onAddToCart={handleAddFromCard}
                       addingProductId={addingProductId}
                     />
@@ -588,7 +902,10 @@ export default function HomeScreen({ navigation }) {
           </View>
         }
       />
-      <MobileCategoryMenu visible={categoryMenuOpen} onClose={() => setCategoryMenuOpen(false)} />
+      <MobileCategoryMenu
+        visible={categoryMenuOpen}
+        onClose={() => setCategoryMenuOpen(false)}
+      />
     </ScreenContainer>
   );
 }
