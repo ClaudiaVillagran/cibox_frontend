@@ -3,7 +3,7 @@ import useAuthStore from "../store/authStore";
 import { getGuestId } from "../utils/guestId";
 
 const client = axios.create({
-   baseURL: process.env.EXPO_PUBLIC_API_URL,
+ baseURL: process.env.EXPO_PUBLIC_API_URL,
    //baseURL: "http://localhost:3001/api"
 });
 

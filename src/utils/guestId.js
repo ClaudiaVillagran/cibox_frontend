@@ -26,7 +26,7 @@ export const getGuestId = async () => {
 
     const res = await axios.get(
       `${process.env.EXPO_PUBLIC_API_URL}/guest/id`
-        //"http://localhost:3001/api/guest/id"
+       // "http://localhost:3001/api/guest/id"
     );
 
     const guestId = res.data?.data?.guest_id;
