@@ -7,6 +7,7 @@ import {
   Pressable,
   ScrollView,
   View,
+  StyleSheet,
   useWindowDimensions,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
@@ -35,7 +36,8 @@ import { showAppAlert } from "../utils/appAlerts";
 import useAuthStore from "../store/authStore";
 import AppText from "../components/AppText";
 import MobileCategoryMenu from "../components/MobileCategoryMenu";
-
+import { Share } from "react-native";
+import useMissionStore from "../store/missionStore";
 // ─── Carousel principal (3 banners) ───────────────────────────────────────────
 const BANNERS = [
   {
@@ -200,7 +202,7 @@ export default function HomeScreen({ navigation }) {
   const [sectionsLoading, setSectionsLoading] = useState(true);
   const [addingProductId, setAddingProductId] = useState(null);
   const [bannerWidth, setBannerWidth] = useState(0);
-
+  const { stats, loadMissions } = useMissionStore();
   const progressValue = useSharedValue(0);
   const { cartCount, loadCartSummary } = useCartStore();
 
@@ -343,6 +345,8 @@ export default function HomeScreen({ navigation }) {
     loadCartSummary();
     fetchFeaturedCategories();
     fetchProducts();
+
+    if (token) loadMissions();
   }, []);
 
   useEffect(() => {
@@ -407,7 +411,13 @@ export default function HomeScreen({ navigation }) {
 
               {/* Buscador — solo móvil */}
               {!isWebDesktop && (
-                <View style={{ marginBottom: spacing.md,  zIndex: 999, elevation: 999 }}>
+                <View
+                  style={{
+                    marginBottom: spacing.md,
+                    zIndex: 999,
+                    elevation: 999,
+                  }}
+                >
                   <MobileSearchBar />
                 </View>
               )}
@@ -519,6 +529,43 @@ export default function HomeScreen({ navigation }) {
                 </ScrollView>
               </View>
             </View>
+            <Pressable
+              onPress={() => navigation.navigate("Missions")}
+              style={({ pressed }) => [
+                styles.missionsBtn,
+                pressed && { opacity: 0.88 },
+              ]}
+            >
+              {/* Decoración de fondo */}
+              <View style={styles.missionsBtnGlow} />
+
+              {/* Icono */}
+              <View style={styles.missionsBtnIcon}>
+                <AppText style={{ fontSize: 30 }}>🏆</AppText>
+              </View>
+
+              {/* Texto */}
+              <View style={{ flex: 1 }}>
+                <AppText style={styles.missionsBtnTitle}>
+                  Misiones CIBOX
+                </AppText>
+                <AppText style={styles.missionsBtnSub}>
+                  Completa retos y gana descuentos
+                </AppText>
+              </View>
+
+              {/* Progress + arrow */}
+              <View style={styles.missionsBtnRight}>
+                {token && (
+                  <View style={styles.missionsBtnBadge}>
+                    <AppText style={styles.missionsBtnBadgeText}>
+                      {stats.completed}/{stats.total}
+                    </AppText>
+                  </View>
+                )}
+                <Ionicons name="chevron-forward" size={20} color="#7a5a00" />
+              </View>
+            </Pressable>
 
             {/* ── Secciones ──────────────────────────────────────────────── */}
             <View style={{ paddingHorizontal: spacing.md, zIndex: 1 }}>
@@ -909,3 +956,65 @@ export default function HomeScreen({ navigation }) {
     </ScreenContainer>
   );
 }
+const styles = StyleSheet.create({
+  missionsBtn: {
+    marginHorizontal: spacing.md,
+    marginBottom: spacing.md,
+    borderRadius: 18,
+    backgroundColor: "#F7B81C",
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 14,
+    paddingHorizontal: spacing.md,
+    gap: 12,
+    overflow: "hidden",
+    shadowColor: "#F7B81C",
+    shadowOpacity: 0.45,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 6,
+  },
+  missionsBtnGlow: {
+    position: "absolute",
+    right: -20,
+    top: -20,
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: "rgba(255,255,255,0.15)",
+  },
+  missionsBtnIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: "rgba(255,255,255,0.35)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  missionsBtnTitle: {
+    fontSize: 16,
+    fontWeight: "800",
+    color: "#3d2d00",
+  },
+  missionsBtnSub: {
+    fontSize: 12,
+    color: "#5a4200",
+    marginTop: 1,
+  },
+  missionsBtnRight: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+  },
+  missionsBtnBadge: {
+    backgroundColor: "rgba(0,0,0,0.15)",
+    borderRadius: 12,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+  },
+  missionsBtnBadgeText: {
+    fontSize: 13,
+    fontWeight: "800",
+    color: "#3d2d00",
+  },
+});

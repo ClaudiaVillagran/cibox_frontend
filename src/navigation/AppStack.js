@@ -10,6 +10,7 @@ import useAuthStore from "../store/authStore";
 import useCartStore from "../store/cartStore";
 import { colors } from "../constants/theme";
 import AppText from "../components/AppText";
+import MissionsScreen from "../screens/MissionsScreen";
 
 import HomeScreen from "../screens/HomeScreen";
 import PantryScreen from "../screens/PantryScreen";
@@ -142,83 +143,176 @@ export default function AppStack() {
 
       <Stack.Screen
         name="Products"
-        component={isWebDesktop ? withWebLayout(ProductsScreen) : ProductsScreen}
+        component={
+          isWebDesktop ? withWebLayout(ProductsScreen) : ProductsScreen
+        }
         options={isWebDesktop ? { headerShown: false } : { title: "Productos" }}
       />
       <Stack.Screen
         name="ProductDetail"
-        component={isWebDesktop ? withWebLayout(ProductDetailScreen) : ProductDetailScreen}
-        options={isWebDesktop ? { headerShown: false } : { title: "Detalle del producto" }}
+        component={
+          isWebDesktop
+            ? withWebLayout(ProductDetailScreen)
+            : ProductDetailScreen
+        }
+        options={
+          isWebDesktop
+            ? { headerShown: false }
+            : { title: "Detalle del producto" }
+        }
       />
       <Stack.Screen
         name="Cart"
         component={isWebDesktop ? withWebLayout(CartScreen) : CartScreen}
-        options={isWebDesktop ? { headerShown: false } : { title: "Mi carrito", headerRight: () => null }}
+        options={
+          isWebDesktop
+            ? { headerShown: false }
+            : { title: "Mi carrito", headerRight: () => null }
+        }
       />
       <Stack.Screen
         name="Checkout"
-        component={isWebDesktop ? withWebLayout(CheckoutScreen) : CheckoutScreen}
-        options={isWebDesktop ? { headerShown: false } : { title: "Checkout", headerRight: () => null }}
+        component={
+          isWebDesktop ? withWebLayout(CheckoutScreen) : CheckoutScreen
+        }
+        options={
+          isWebDesktop
+            ? { headerShown: false }
+            : { title: "Checkout", headerRight: () => null }
+        }
       />
       <Stack.Screen
         name="OrderDetail"
-        component={isWebDesktop ? withWebLayout(OrderDetailScreen) : OrderDetailScreen}
-        options={isWebDesktop ? { headerShown: false } : { title: "Detalle de orden" }}
+        component={
+          isWebDesktop ? withWebLayout(OrderDetailScreen) : OrderDetailScreen
+        }
+        options={
+          isWebDesktop ? { headerShown: false } : { title: "Detalle de orden" }
+        }
       />
       <Stack.Screen
         name="Notifications"
-        component={isWebDesktop ? withWebLayout(NotificationsScreen) : NotificationsScreen}
-        options={isWebDesktop ? { headerShown: false } : { title: "Notificaciones" }}
+        component={
+          isWebDesktop
+            ? withWebLayout(NotificationsScreen)
+            : NotificationsScreen
+        }
+        options={
+          isWebDesktop ? { headerShown: false } : { title: "Notificaciones" }
+        }
       />
       <Stack.Screen
         name="OrderSuccess"
-        component={isWebDesktop ? withWebLayout(OrderSuccessScreen) : OrderSuccessScreen}
-        options={isWebDesktop ? { headerShown: false } : { title: "Compra exitosa", headerRight: () => null }}
+        component={
+          isWebDesktop ? withWebLayout(OrderSuccessScreen) : OrderSuccessScreen
+        }
+        options={
+          isWebDesktop
+            ? { headerShown: false }
+            : { title: "Compra exitosa", headerRight: () => null }
+        }
       />
       <Stack.Screen
         name="OrderFailed"
-        component={isWebDesktop ? withWebLayout(OrderFailedScreen) : OrderFailedScreen}
-        options={isWebDesktop ? { headerShown: false } : { title: "Compra fallida", headerRight: () => null }}
+        component={
+          isWebDesktop ? withWebLayout(OrderFailedScreen) : OrderFailedScreen
+        }
+        options={
+          isWebDesktop
+            ? { headerShown: false }
+            : { title: "Compra fallida", headerRight: () => null }
+        }
       />
       <Stack.Screen
         name="VendorProducts"
-        component={isWebDesktop ? withWebLayout(VendorProductsScreen) : VendorProductsScreen}
-        options={isWebDesktop ? { headerShown: false } : { title: "Mis productos" }}
+        component={
+          isWebDesktop
+            ? withWebLayout(VendorProductsScreen)
+            : VendorProductsScreen
+        }
+        options={
+          isWebDesktop ? { headerShown: false } : { title: "Mis productos" }
+        }
       />
       <Stack.Screen
         name="CreateProduct"
-        component={isWebDesktop ? withWebLayout(CreateProductScreen) : CreateProductScreen}
-        options={isWebDesktop ? { headerShown: false } : { title: "Crear producto" }}
+        component={
+          isWebDesktop
+            ? withWebLayout(CreateProductScreen)
+            : CreateProductScreen
+        }
+        options={
+          isWebDesktop ? { headerShown: false } : { title: "Crear producto" }
+        }
       />
       <Stack.Screen
         name="EditProduct"
-        component={isWebDesktop ? withWebLayout(EditProductScreen) : EditProductScreen}
-        options={isWebDesktop ? { headerShown: false } : { title: "Editar producto" }}
+        component={
+          isWebDesktop ? withWebLayout(EditProductScreen) : EditProductScreen
+        }
+        options={
+          isWebDesktop ? { headerShown: false } : { title: "Editar producto" }
+        }
       />
       <Stack.Screen
         name="Webpay"
         component={isWebDesktop ? withWebLayout(WebpayScreen) : WebpayScreen}
-        options={isWebDesktop ? { headerShown: false } : { title: "Pago con Webpay", headerRight: () => null }}
+        options={
+          isWebDesktop
+            ? { headerShown: false }
+            : { title: "Pago con Webpay", headerRight: () => null }
+        }
       />
       <Stack.Screen
         name="CustomBox"
-        component={isWebDesktop ? withWebLayout(CustomBoxScreen) : CustomBoxScreen}
-        options={isWebDesktop ? { headerShown: false } : { title: "Arma tu caja", headerRight: () => null }}
+        component={
+          isWebDesktop ? withWebLayout(CustomBoxScreen) : CustomBoxScreen
+        }
+        options={
+          isWebDesktop
+            ? { headerShown: false }
+            : { title: "Arma tu caja", headerRight: () => null }
+        }
       />
       <Stack.Screen
         name="CustomBoxCheckout"
-        component={isWebDesktop ? withWebLayout(CustomBoxCheckoutScreen) : CustomBoxCheckoutScreen}
-        options={isWebDesktop ? { headerShown: false } : { title: "Confirmar pedido", headerRight: () => null }}
+        component={
+          isWebDesktop
+            ? withWebLayout(CustomBoxCheckoutScreen)
+            : CustomBoxCheckoutScreen
+        }
+        options={
+          isWebDesktop
+            ? { headerShown: false }
+            : { title: "Confirmar pedido", headerRight: () => null }
+        }
       />
       <Stack.Screen
         name="HowItWorks"
-        component={isWebDesktop ? withWebLayout(HowItWorksScreen) : HowItWorksScreen}
-        options={isWebDesktop ? { headerShown: false } : { title: "Cómo funciona CIBOX" }}
+        component={
+          isWebDesktop ? withWebLayout(HowItWorksScreen) : HowItWorksScreen
+        }
+        options={
+          isWebDesktop
+            ? { headerShown: false }
+            : { title: "Cómo funciona CIBOX" }
+        }
       />
       <Stack.Screen
         name="Recipes"
         component={isWebDesktop ? withWebLayout(RecipesScreen) : RecipesScreen}
-        options={isWebDesktop ? { headerShown: false } : { title: "Ideas para cocinar" }}
+        options={
+          isWebDesktop
+            ? { headerShown: false }
+            : { title: "Ideas para cocinar" }
+        }
+      />
+      <Stack.Screen
+        name="Missions"
+        component={
+          isWebDesktop ? withWebLayout(MissionsScreen) : MissionsScreen
+        }
+        options={isWebDesktop ? { headerShown: false } : { title: "Misiones" }}
       />
 
       {!token && (
@@ -230,18 +324,42 @@ export default function AppStack() {
           />
           <Stack.Screen
             name="VerifyEmail"
-            component={isWebDesktop ? withWebLayout(VerifyEmailScreen) : VerifyEmailScreen}
-            options={isWebDesktop ? { headerShown: false } : { title: "Verificar correo", headerRight: () => null }}
+            component={
+              isWebDesktop
+                ? withWebLayout(VerifyEmailScreen)
+                : VerifyEmailScreen
+            }
+            options={
+              isWebDesktop
+                ? { headerShown: false }
+                : { title: "Verificar correo", headerRight: () => null }
+            }
           />
           <Stack.Screen
             name="ForgotPassword"
-            component={isWebDesktop ? withWebLayout(ForgotPasswordScreen) : ForgotPasswordScreen}
-            options={isWebDesktop ? { headerShown: false } : { title: "Recuperar contraseña", headerRight: () => null }}
+            component={
+              isWebDesktop
+                ? withWebLayout(ForgotPasswordScreen)
+                : ForgotPasswordScreen
+            }
+            options={
+              isWebDesktop
+                ? { headerShown: false }
+                : { title: "Recuperar contraseña", headerRight: () => null }
+            }
           />
           <Stack.Screen
             name="ResetPassword"
-            component={isWebDesktop ? withWebLayout(ResetPasswordScreen) : ResetPasswordScreen}
-            options={isWebDesktop ? { headerShown: false } : { title: "Nueva contraseña", headerRight: () => null }}
+            component={
+              isWebDesktop
+                ? withWebLayout(ResetPasswordScreen)
+                : ResetPasswordScreen
+            }
+            options={
+              isWebDesktop
+                ? { headerShown: false }
+                : { title: "Nueva contraseña", headerRight: () => null }
+            }
           />
         </>
       )}
