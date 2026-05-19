@@ -138,7 +138,7 @@ export default function ProfileScreen({ navigation }) {
 
             <AppButton
               title="Volver al catálogo"
-              onPress={() => navigation.navigate("Products")}
+              onPress={() => navigation.navigate("MainTabs")}
               variant="secondary"
               style={{ marginTop: spacing.sm }}
             />

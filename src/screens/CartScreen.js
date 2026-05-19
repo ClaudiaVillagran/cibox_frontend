@@ -271,7 +271,7 @@ export default function CartScreen({ navigation }) {
 
           <AppButton
             title="Ir al catálogo"
-            onPress={() => navigation.navigate("Products")}
+            onPress={() => navigation.navigate("MainTabs")}
           />
         </View>
       </ScreenContainer>
