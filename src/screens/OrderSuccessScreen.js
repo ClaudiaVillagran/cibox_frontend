@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { Platform, View } from "react-native";
+import { Platform, View, useWindowDimensions } from "react-native";
 import ScreenContainer from "../components/ScreenContainer";
 import AppButton from "../components/AppButton";
 import { colors, spacing } from "../constants/theme";
@@ -10,6 +10,8 @@ export default function OrderSuccessScreen({ route, navigation }) {
   const params = route.params || {};
   const { token } = useAuthStore();
   const isGuest = !token;
+  const { width } = useWindowDimensions();
+  const isWebDesktop = Platform.OS === "web" && width >= 800; // ← igual que AppStack
 
   const orderId = useMemo(() => {
     if (params.orderId) return params.orderId;
@@ -21,24 +23,23 @@ export default function OrderSuccessScreen({ route, navigation }) {
   }, [params.orderId]);
 
   const goToInicio = () => {
+    const home = isWebDesktop ? "Inicio" : "MainTabs"; // ← fix
     try {
-      navigation.reset({
-        index: 0,
-        routes: [{ name: Platform.OS === "web" ? "Inicio" : "MainTabs" }],
-      });
+      navigation.reset({ index: 0, routes: [{ name: home }] });
     } catch {
-      navigation.navigate(Platform.OS === "web" ? "Inicio" : "MainTabs");
+      navigation.navigate(home);
     }
   };
 
   const goToOrder = () => {
+    const home = isWebDesktop ? "Inicio" : "MainTabs"; // ← fix
     try {
       navigation.navigate("OrderDetail", { orderId });
     } catch {
       navigation.reset({
         index: 0,
         routes: [
-          { name: Platform.OS === "web" ? "Inicio" : "MainTabs" },
+          { name: home },
           { name: "OrderDetail", params: { orderId } },
         ],
       });

@@ -66,7 +66,10 @@ export default function CartScreen({ navigation }) {
       return item.box_items;
     }
 
-    if (Array.isArray(item?.product?.box_items) && item.product.box_items.length > 0) {
+    if (
+      Array.isArray(item?.product?.box_items) &&
+      item.product.box_items.length > 0
+    ) {
       return item.product.box_items;
     }
 
@@ -268,7 +271,7 @@ export default function CartScreen({ navigation }) {
 
           <AppButton
             title="Ir al catálogo"
-            onPress={() => navigation.navigate("Inicio")}
+            onPress={() => navigation.navigate("Products")}
           />
         </View>
       </ScreenContainer>
@@ -410,8 +413,7 @@ export default function CartScreen({ navigation }) {
                             flexDirection: "row",
                             justifyContent: "space-between",
                             alignItems: "flex-start",
-                            marginBottom:
-                              index === boxItems.length - 1 ? 0 : 6,
+                            marginBottom: index === boxItems.length - 1 ? 0 : 6,
                             gap: 10,
                           }}
                         >

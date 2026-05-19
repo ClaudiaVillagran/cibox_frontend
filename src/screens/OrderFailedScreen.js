@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { Platform, View } from "react-native";
+import { Platform, View, useWindowDimensions } from "react-native";
 import ScreenContainer from "../components/ScreenContainer";
 import AppButton from "../components/AppButton";
 import { colors, spacing } from "../constants/theme";
@@ -7,6 +7,8 @@ import AppText from "../components/AppText";
 
 export default function OrderFailedScreen({ route, navigation }) {
   const params = route.params || {};
+  const { width } = useWindowDimensions();
+  const isWebDesktop = Platform.OS === "web" && width >= 800; // ← fix
 
   const orderId = useMemo(() => {
     if (params.orderId) return params.orderId;
@@ -29,24 +31,23 @@ export default function OrderFailedScreen({ route, navigation }) {
   const isCancelled = status === "cancelled";
 
   const goToInicio = () => {
+    const home = isWebDesktop ? "Inicio" : "MainTabs"; // ← fix
     try {
-      navigation.reset({
-        index: 0,
-        routes: [{ name: Platform.OS === "web" ? "Inicio" : "MainTabs" }],
-      });
+      navigation.reset({ index: 0, routes: [{ name: home }] });
     } catch {
-      navigation.navigate(Platform.OS === "web" ? "Inicio" : "MainTabs");
+      navigation.navigate(home);
     }
   };
 
   const goToOrder = () => {
+    const home = isWebDesktop ? "Inicio" : "MainTabs"; // ← fix
     try {
       navigation.navigate("OrderDetail", { orderId });
     } catch {
       navigation.reset({
         index: 0,
         routes: [
-          { name: Platform.OS === "web" ? "Inicio" : "MainTabs" },
+          { name: home },
           { name: "OrderDetail", params: { orderId } },
         ],
       });

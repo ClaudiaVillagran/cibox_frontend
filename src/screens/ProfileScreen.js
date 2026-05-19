@@ -29,7 +29,7 @@ export default function ProfileScreen({ navigation }) {
       marginBottom: spacing.md,
       ...shadows.card,
     }),
-    []
+    [],
   );
 
   const halfCardStyle = useMemo(
@@ -37,7 +37,7 @@ export default function ProfileScreen({ navigation }) {
       ...cardStyle,
       width: "48%",
     }),
-    [cardStyle]
+    [cardStyle],
   );
 
   const getDisplayName = useCallback(() => {
@@ -127,8 +127,8 @@ export default function ProfileScreen({ navigation }) {
                 marginBottom: spacing.lg,
               }}
             >
-              Accede a tu cuenta para revisar tus datos, tus órdenes y tus accesos
-              rápidos en CIBOX.
+              Accede a tu cuenta para revisar tus datos, tus órdenes y tus
+              accesos rápidos en CIBOX.
             </AppText>
 
             <AppButton
@@ -138,7 +138,7 @@ export default function ProfileScreen({ navigation }) {
 
             <AppButton
               title="Volver al catálogo"
-              onPress={() => navigation.navigate("Inicio")}
+              onPress={() => navigation.navigate("Products")}
               variant="secondary"
               style={{ marginTop: spacing.sm }}
             />
