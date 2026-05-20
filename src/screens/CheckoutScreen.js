@@ -28,7 +28,10 @@ import {
 import { showAppAlert } from "../utils/appAlerts";
 import { CHILE_REGIONS } from "../constants/chileLocations";
 import AppText from "../components/AppText";
-import { getCheckoutCouponPreview } from "../services/couponService";
+import {
+  getCheckoutCouponPreview,
+  validateCouponCode,
+} from "../services/couponService";
 import useAuthStore from "../store/authStore";
 
 const normalizeEmail = (email = "") => String(email).trim().toLowerCase();
@@ -287,7 +290,8 @@ export default function CheckoutScreen({ navigation }) {
   const [autoDiscount, setAutoDiscount] = useState(null);
   const [errors, setErrors] = useState({});
   const { token } = useAuthStore();
-
+  const [couponLoading, setCouponLoading] = useState(false);
+  const [couponResult, setCouponResult] = useState(null);
   const { loadCartSummary } = useCartStore();
 
   const regionOptions = useMemo(() => {
@@ -520,11 +524,12 @@ export default function CheckoutScreen({ navigation }) {
 
     return () => clearTimeout(timer);
   }, [region, city, address, addressLine2, reference, cart]);
-
+  const discountAmount = couponResult?.valid
+    ? Number(couponResult.discount_preview || 0)
+    : Number(autoDiscount?.discount_amount || 0);
   const items = Array.isArray(cart?.items) ? cart.items : [];
   const productsTotal = Number(cart?.total || 0);
   const shippingAmount = Number(shippingQuote?.amount || 0);
-  const discountAmount = Number(autoDiscount?.discount_amount || 0);
   const finalTotal = productsTotal + shippingAmount - discountAmount;
 
   const validateForm = () => {
@@ -564,6 +569,23 @@ export default function CheckoutScreen({ navigation }) {
         error?.response?.data || error.message,
       );
       setAutoDiscount(null);
+    }
+  };
+  const handleApplyCoupon = async () => {
+    const code = couponCode.trim().toUpperCase();
+    if (!code) return;
+    try {
+      setCouponLoading(true);
+      setCouponResult(null);
+      const result = await validateCouponCode({
+        code,
+        subtotal: productsTotal,
+      });
+      setCouponResult(result);
+    } catch {
+      setCouponResult({ valid: false, message: "Error al validar el cupón" });
+    } finally {
+      setCouponLoading(false);
     }
   };
   useEffect(() => {
@@ -976,20 +998,77 @@ export default function CheckoutScreen({ navigation }) {
             </Pressable>
           </View>
         </View>
-
-        <View style={cardStyle}>
-          <AppText
+        <AppText style={labelStyle}>Código de cupón</AppText>
+        <View style={{ flexDirection: "row", gap: 8, marginBottom: 8 }}>
+          <TextInput
+            value={couponCode}
+            onChangeText={(v) => {
+              setCouponCode(v);
+              setCouponResult(null);
+            }}
+            placeholder="Opcional"
+            autoCapitalize="characters"
+            style={{ ...inputStyle, flex: 1, marginBottom: 0 }}
+            placeholderTextColor="#999"
+          />
+          <Pressable
+            onPress={handleApplyCoupon}
+            disabled={!couponCode.trim() || couponLoading}
             style={{
-              fontSize: 20,
-              fontWeight: "800",
-              color: colors.text,
-              marginBottom: 14,
+              backgroundColor: couponCode.trim() ? colors.primary : "#ccc",
+              borderRadius: 14,
+              paddingHorizontal: 16,
+              justifyContent: "center",
+              alignItems: "center",
+              minWidth: 80,
             }}
           >
-            Cupón y notas
-          </AppText>
+            {couponLoading ? (
+              <ActivityIndicator size="small" color="#fff" />
+            ) : (
+              <AppText
+                style={{ color: "#fff", fontWeight: "800", fontSize: 13 }}
+              >
+                Aplicar
+              </AppText>
+            )}
+          </Pressable>
+        </View>
 
-          <AppText style={labelStyle}>Código de cupón</AppText>
+        {couponResult && (
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              gap: 6,
+              marginBottom: 10,
+              padding: 10,
+              borderRadius: 10,
+              backgroundColor: couponResult.valid ? "#f0fdf4" : "#fef2f2",
+              borderWidth: 1,
+              borderColor: couponResult.valid ? "#86efac" : "#fca5a5",
+            }}
+          >
+            <AppText style={{ fontSize: 14 }}>
+              {couponResult.valid ? "✅" : "❌"}
+            </AppText>
+            <AppText
+              style={{
+                fontSize: 13,
+                fontWeight: "700",
+                color: couponResult.valid ? "#166534" : "#991b1b",
+                flex: 1,
+              }}
+            >
+              {couponResult.valid
+                ? `Cupón válido — descuento: ${formatPrice(couponResult.discount_preview)}`
+                : couponResult.message || "Cupón inválido"}
+            </AppText>
+          </View>
+        )}
+        <View style={cardStyle}>
+  
+          {/* <AppText style={labelStyle}>Código de cupón</AppText>
           <TextInput
             value={couponCode}
             onChangeText={setCouponCode}
@@ -997,7 +1076,8 @@ export default function CheckoutScreen({ navigation }) {
             autoCapitalize="characters"
             style={{ ...inputStyle, marginBottom: 14 }}
             placeholderTextColor="#999"
-          />
+          /> */}
+        
 
           <AppText style={labelStyle}>Notas para la entrega</AppText>
           <TextInput
@@ -1139,8 +1219,10 @@ export default function CheckoutScreen({ navigation }) {
 
             {discountAmount > 0 ? (
               <AppText style={{ color: "#4E9B27", fontWeight: "800" }}>
-                {autoDiscount?.label || "Descuento primera compra"}: -
-                {formatPrice(discountAmount)}
+                {couponResult?.valid
+                  ? `Cupón ${couponResult.code}`
+                  : autoDiscount?.label || "Descuento primera compra"}
+                : -{formatPrice(discountAmount)}
               </AppText>
             ) : null}
 

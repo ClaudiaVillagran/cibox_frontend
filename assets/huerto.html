@@ -1,0 +1,991 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Huerto Infantil – Bitácora Digital</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;1,9..144,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --green-dark: #1a3d2b;
+    --green-mid: #2d6a4f;
+    --green-light: #52b788;
+    --green-pale: #b7e4c7;
+    --cream: #faf6ef;
+    --earth: #8b5e3c;
+    --earth-light: #c9a26b;
+    --text-dark: #1a1a1a;
+    --text-mid: #4a4a4a;
+    --text-muted: #7a7a7a;
+    --white: #ffffff;
+    --section-pad: 100px 6vw;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--cream);
+    color: var(--text-dark);
+    overflow-x: hidden;
+  }
+
+  /* NAV */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 20px 6vw;
+    background: rgba(26,61,43,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(82,183,136,0.2);
+  }
+  .nav-logo {
+    font-family: 'Fraunces', serif;
+    font-size: 18px;
+    color: var(--green-pale);
+    text-decoration: none;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .nav-logo span { font-size: 22px; }
+  .nav-links { display: flex; gap: 32px; list-style: none; }
+  .nav-links a {
+    color: rgba(183,228,199,0.7);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--green-pale); }
+
+  /* HERO */
+  #hero {
+    min-height: 100vh;
+    background: linear-gradient(160deg, var(--green-dark) 0%, #0d2a1c 60%, #1a3d2b 100%);
+    display: flex; align-items: center;
+    padding: 120px 6vw 80px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero-bg-circles {
+    position: absolute; inset: 0; pointer-events: none;
+  }
+  .hero-bg-circles div {
+    position: absolute; border-radius: 50%;
+    background: rgba(82,183,136,0.07);
+  }
+  .hero-bg-circles div:nth-child(1) { width: 600px; height: 600px; top: -200px; right: -100px; }
+  .hero-bg-circles div:nth-child(2) { width: 300px; height: 300px; bottom: 50px; left: -100px; background: rgba(201,162,107,0.05); }
+  .hero-content { max-width: 600px; z-index: 1; }
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(82,183,136,0.15);
+    border: 1px solid rgba(82,183,136,0.3);
+    color: var(--green-light);
+    padding: 6px 16px;
+    border-radius: 100px;
+    font-size: 13px;
+    font-weight: 500;
+    margin-bottom: 32px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+  h1 {
+    font-family: 'Fraunces', serif;
+    font-size: clamp(48px, 7vw, 80px);
+    font-weight: 600;
+    color: var(--white);
+    line-height: 1.05;
+    margin-bottom: 24px;
+  }
+  h1 em { font-style: italic; color: var(--green-light); }
+  .hero-sub {
+    font-size: 18px;
+    color: rgba(183,228,199,0.7);
+    line-height: 1.6;
+    margin-bottom: 48px;
+    font-weight: 300;
+  }
+  .btn-group { display: flex; gap: 16px; flex-wrap: wrap; }
+  .btn-primary {
+    background: var(--green-light);
+    color: var(--green-dark);
+    border: none;
+    padding: 16px 32px;
+    border-radius: 100px;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+    transition: transform 0.2s, background 0.2s;
+  }
+  .btn-primary:hover { background: #6fcf97; transform: translateY(-2px); }
+  .btn-outline {
+    background: transparent;
+    color: var(--green-pale);
+    border: 1.5px solid rgba(183,228,199,0.4);
+    padding: 16px 32px;
+    border-radius: 100px;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+    transition: border-color 0.2s, color 0.2s, transform 0.2s;
+  }
+  .btn-outline:hover { border-color: var(--green-light); color: var(--green-light); transform: translateY(-2px); }
+
+  .hero-stats {
+    display: flex; gap: 48px; margin-top: 64px;
+    border-top: 1px solid rgba(82,183,136,0.15);
+    padding-top: 48px;
+  }
+  .stat-item { }
+  .stat-num {
+    font-family: 'Fraunces', serif;
+    font-size: 36px; font-weight: 600;
+    color: var(--green-light); display: block;
+  }
+  .stat-label { font-size: 13px; color: rgba(183,228,199,0.6); font-weight: 300; }
+
+  /* SECTIONS COMMON */
+  section { padding: var(--section-pad); }
+  .section-tag {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--green-mid);
+    margin-bottom: 20px;
+  }
+  h2 {
+    font-family: 'Fraunces', serif;
+    font-size: clamp(32px, 4vw, 52px);
+    font-weight: 600;
+    line-height: 1.1;
+    margin-bottom: 24px;
+  }
+
+  /* INTRO */
+  #intro {
+    background: var(--white);
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 80px;
+    align-items: center;
+  }
+  #intro .text p {
+    font-size: 17px;
+    color: var(--text-mid);
+    line-height: 1.8;
+    margin-bottom: 16px;
+    font-weight: 300;
+  }
+  #intro .text p strong { color: var(--green-mid); font-weight: 500; }
+  .intro-visual {
+    background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
+    border-radius: 24px;
+    height: 400px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 120px;
+    position: relative;
+    overflow: hidden;
+  }
+  .intro-visual::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(circle at 70% 30%, rgba(255,255,255,0.3), transparent);
+  }
+
+  /* DIAGNOSTICO */
+  #diagnostico {
+    background: var(--cream);
+  }
+  #diagnostico h2 { max-width: 500px; }
+  .diag-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    margin-top: 48px;
+  }
+  .diag-card {
+    background: var(--white);
+    border-radius: 20px;
+    padding: 36px 28px;
+    border: 1px solid rgba(0,0,0,0.06);
+    transition: transform 0.3s, box-shadow 0.3s;
+  }
+  .diag-card:hover { transform: translateY(-6px); box-shadow: 0 20px 40px rgba(0,0,0,0.08); }
+  .diag-icon {
+    width: 52px; height: 52px;
+    border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px;
+    margin-bottom: 20px;
+  }
+  .diag-icon.city { background: #e8f0fe; }
+  .diag-icon.plant { background: #e8f5e9; }
+  .diag-icon.family { background: #fff3e0; }
+  .diag-card h3 {
+    font-family: 'Fraunces', serif;
+    font-size: 20px; font-weight: 600;
+    margin-bottom: 12px;
+    color: var(--green-dark);
+  }
+  .diag-card p { font-size: 15px; color: var(--text-mid); line-height: 1.7; font-weight: 300; }
+
+  /* OBJETIVO */
+  #objetivo {
+    background: var(--green-dark);
+    color: var(--white);
+  }
+  #objetivo .section-tag { color: var(--green-light); }
+  #objetivo h2 { color: var(--white); text-align: center; }
+  .objetivo-lead {
+    text-align: center;
+    font-size: 17px;
+    color: rgba(183,228,199,0.7);
+    max-width: 700px;
+    margin: 0 auto 60px;
+    line-height: 1.7;
+    font-weight: 300;
+  }
+  .obj-pillars {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+  }
+  .obj-pillar {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(82,183,136,0.2);
+    border-radius: 20px;
+    padding: 32px 24px;
+    text-align: center;
+    transition: background 0.3s, border-color 0.3s, transform 0.3s;
+  }
+  .obj-pillar:hover { background: rgba(82,183,136,0.1); border-color: rgba(82,183,136,0.5); transform: translateY(-4px); }
+  .obj-emoji { font-size: 36px; margin-bottom: 16px; display: block; }
+  .obj-pillar h3 {
+    font-family: 'Fraunces', serif;
+    font-size: 20px; color: var(--green-pale);
+    margin-bottom: 8px;
+  }
+  .obj-pillar p { font-size: 14px; color: rgba(183,228,199,0.6); font-weight: 300; }
+
+  /* OBJETIVOS ESPECÍFICOS */
+  #especificos { background: var(--white); }
+  .esp-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-top: 48px;
+  }
+  .esp-card {
+    display: flex; gap: 20px;
+    background: var(--cream);
+    border-radius: 16px;
+    padding: 28px;
+    border-left: 4px solid var(--green-light);
+    transition: transform 0.2s;
+  }
+  .esp-card:hover { transform: translateX(4px); }
+  .esp-num {
+    font-family: 'Fraunces', serif;
+    font-size: 36px; font-weight: 600;
+    color: var(--green-pale);
+    line-height: 1; flex-shrink: 0;
+  }
+  .esp-text h3 {
+    font-family: 'Fraunces', serif;
+    font-size: 19px; color: var(--green-dark);
+    margin-bottom: 8px;
+  }
+  .esp-text p { font-size: 14px; color: var(--text-mid); line-height: 1.7; font-weight: 300; }
+
+  /* TIMELINE */
+  #planificacion { background: var(--cream); }
+  .timeline {
+    position: relative;
+    margin-top: 60px;
+    padding-left: 40px;
+  }
+  .timeline::before {
+    content: '';
+    position: absolute; left: 16px; top: 0; bottom: 0;
+    width: 2px;
+    background: linear-gradient(to bottom, var(--green-light), var(--earth-light));
+  }
+  .tl-item {
+    position: relative;
+    margin-bottom: 40px;
+    padding-left: 32px;
+  }
+  .tl-dot {
+    position: absolute; left: -32px; top: 4px;
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: var(--white);
+    border: 3px solid var(--green-light);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Fraunces', serif;
+    font-size: 13px; font-weight: 600;
+    color: var(--green-mid);
+    z-index: 1;
+    transition: background 0.2s, border-color 0.2s;
+  }
+  .tl-item:hover .tl-dot { background: var(--green-light); color: var(--white); }
+  .tl-card {
+    background: var(--white);
+    border-radius: 16px;
+    padding: 24px 28px;
+    border: 1px solid rgba(0,0,0,0.06);
+    transition: box-shadow 0.2s;
+  }
+  .tl-item:hover .tl-card { box-shadow: 0 8px 24px rgba(0,0,0,0.06); }
+  .tl-card h3 {
+    font-family: 'Fraunces', serif;
+    font-size: 18px; color: var(--green-dark);
+    margin-bottom: 6px;
+  }
+  .tl-card p { font-size: 14px; color: var(--text-mid); line-height: 1.6; font-weight: 300; }
+
+  /* ACTIVIDADES */
+  #actividades { background: var(--white); }
+  .act-grid {
+    display: grid;
+    grid-template-columns: repeat(3,1fr);
+    gap: 28px;
+    margin-top: 48px;
+  }
+  .act-card {
+    border-radius: 20px;
+    overflow: hidden;
+    background: var(--cream);
+    border: 1px solid rgba(0,0,0,0.06);
+    transition: transform 0.3s, box-shadow 0.3s;
+  }
+  .act-card:hover { transform: translateY(-8px); box-shadow: 0 24px 48px rgba(0,0,0,0.08); }
+  .act-thumb {
+    height: 200px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 80px;
+  }
+  .act-thumb.t1 { background: linear-gradient(135deg, #e8f5e9, #a5d6a7); }
+  .act-thumb.t2 { background: linear-gradient(135deg, #fff9c4, #f9a825); }
+  .act-thumb.t3 { background: linear-gradient(135deg, #e3f2fd, #90caf9); }
+  .act-body { padding: 24px; }
+  .act-body h3 {
+    font-family: 'Fraunces', serif;
+    font-size: 19px; color: var(--green-dark);
+    margin-bottom: 10px;
+  }
+  .act-body p { font-size: 14px; color: var(--text-mid); line-height: 1.7; font-weight: 300; }
+
+  /* CONSTRUCCION */
+  #construccion {
+    background: linear-gradient(135deg, #1a3d2b 0%, #2d6a4f 100%);
+    color: var(--white);
+  }
+  #construccion .section-tag { color: var(--green-light); }
+  #construccion h2 { color: var(--white); }
+  .const-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 80px;
+    align-items: center;
+  }
+  .const-text p {
+    font-size: 16px;
+    color: rgba(183,228,199,0.75);
+    line-height: 1.8;
+    font-weight: 300;
+    margin-bottom: 16px;
+  }
+  .plant-tags {
+    display: flex; flex-wrap: wrap; gap: 12px;
+    margin-top: 32px;
+  }
+  .plant-tag {
+    background: rgba(82,183,136,0.15);
+    border: 1px solid rgba(82,183,136,0.3);
+    color: var(--green-pale);
+    padding: 10px 20px;
+    border-radius: 100px;
+    font-size: 14px;
+    font-weight: 500;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .const-visual {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  .const-img {
+    border-radius: 16px;
+    aspect-ratio: 1;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 60px;
+    overflow: hidden;
+    transition: transform 0.3s;
+  }
+  .const-img:hover { transform: scale(1.04); }
+  .const-img.i1 { background: rgba(82,183,136,0.15); }
+  .const-img.i2 { background: rgba(201,162,107,0.15); }
+  .const-img.i3 { background: rgba(82,183,136,0.1); }
+  .const-img.i4 { background: rgba(201,162,107,0.1); }
+
+  /* GALERIA */
+  #galeria { background: var(--cream); }
+  .galeria-intro { font-size: 17px; color: var(--text-mid); margin-bottom: 48px; font-weight: 300; }
+  .gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: auto auto;
+    gap: 16px;
+  }
+  .gallery-item {
+    border-radius: 16px;
+    overflow: hidden;
+    cursor: pointer;
+    position: relative;
+    transition: transform 0.3s;
+  }
+  .gallery-item:hover { transform: scale(1.02); }
+  .gallery-item.big { grid-column: span 2; grid-row: span 2; }
+  .gallery-thumb {
+    width: 100%; height: 100%;
+    min-height: 160px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 56px;
+  }
+  .gallery-item.big .gallery-thumb { min-height: 340px; font-size: 96px; }
+  .g1 { background: linear-gradient(135deg, #e8f5e9, #c8e6c9); }
+  .g2 { background: linear-gradient(135deg, #fff8e1, #ffcc02); }
+  .g3 { background: linear-gradient(135deg, #fce4ec, #f48fb1); }
+  .g4 { background: linear-gradient(135deg, #e3f2fd, #90caf9); }
+  .g5 { background: linear-gradient(135deg, #f1f8e9, #aed581); }
+  .g6 { background: linear-gradient(135deg, #fff3e0, #ffb74d); }
+
+  /* REFLEXION */
+  #reflexion {
+    background: var(--earth);
+    color: var(--white);
+    text-align: center;
+  }
+  #reflexion .section-tag { color: var(--earth-light); }
+  #reflexion h2 { color: var(--white); }
+  .refl-quote {
+    font-family: 'Fraunces', serif;
+    font-size: clamp(20px, 2.5vw, 28px);
+    font-style: italic;
+    font-weight: 400;
+    color: rgba(255,255,255,0.85);
+    max-width: 700px;
+    margin: 0 auto 32px;
+    line-height: 1.5;
+  }
+  .refl-body {
+    font-size: 16px;
+    color: rgba(255,255,255,0.65);
+    max-width: 600px;
+    margin: 0 auto 48px;
+    line-height: 1.8;
+    font-weight: 300;
+  }
+  .refl-btns { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+  .btn-earth {
+    background: rgba(255,255,255,0.12);
+    border: 1.5px solid rgba(255,255,255,0.3);
+    color: var(--white);
+    padding: 16px 32px;
+    border-radius: 100px;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+    transition: background 0.2s, border-color 0.2s, transform 0.2s;
+  }
+  .btn-earth:hover { background: rgba(255,255,255,0.2); border-color: rgba(255,255,255,0.5); transform: translateY(-2px); }
+  .btn-earth-solid {
+    background: var(--earth-light);
+    border: none;
+    color: var(--green-dark);
+    padding: 16px 32px;
+    border-radius: 100px;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+    transition: transform 0.2s, background 0.2s;
+  }
+  .btn-earth-solid:hover { background: #d4ab75; transform: translateY(-2px); }
+
+  /* FOOTER */
+  footer {
+    background: var(--green-dark);
+    padding: 40px 6vw;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  .footer-logo {
+    font-family: 'Fraunces', serif;
+    font-size: 16px;
+    color: var(--green-pale);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .footer-copy {
+    font-size: 13px;
+    color: rgba(183,228,199,0.4);
+  }
+
+  /* MODAL */
+  .modal-overlay {
+    display: none;
+    position: fixed; inset: 0; z-index: 200;
+    background: rgba(0,0,0,0.7);
+    align-items: center; justify-content: center;
+  }
+  .modal-overlay.active { display: flex; }
+  .modal-box {
+    background: var(--white);
+    border-radius: 24px;
+    padding: 48px 40px;
+    max-width: 480px;
+    width: 90%;
+    text-align: center;
+    position: relative;
+  }
+  .modal-close {
+    position: absolute; top: 16px; right: 20px;
+    background: none; border: none;
+    font-size: 24px; cursor: pointer;
+    color: var(--text-muted);
+    line-height: 1;
+    transition: color 0.2s;
+  }
+  .modal-close:hover { color: var(--text-dark); }
+  .modal-icon { font-size: 56px; margin-bottom: 16px; }
+  .modal-box h3 {
+    font-family: 'Fraunces', serif;
+    font-size: 24px; color: var(--green-dark);
+    margin-bottom: 12px;
+  }
+  .modal-box p { font-size: 15px; color: var(--text-mid); line-height: 1.7; font-weight: 300; }
+  .modal-btn {
+    margin-top: 28px;
+    background: var(--green-mid);
+    color: var(--white);
+    border: none;
+    padding: 14px 32px;
+    border-radius: 100px;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.2s;
+  }
+  .modal-btn:hover { background: var(--green-light); transform: translateY(-2px); }
+
+  /* ANIMATIONS */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .fade-up { animation: fadeUp 0.7s ease forwards; }
+  .fade-up-d1 { animation-delay: 0.1s; }
+  .fade-up-d2 { animation-delay: 0.2s; }
+  .fade-up-d3 { animation-delay: 0.3s; }
+
+  /* RESPONSIVE */
+  @media (max-width: 900px) {
+    :root { --section-pad: 70px 5vw; }
+    #intro { grid-template-columns: 1fr; }
+    .intro-visual { height: 280px; }
+    .diag-grid { grid-template-columns: 1fr; }
+    .obj-pillars { grid-template-columns: 1fr 1fr; }
+    .esp-grid { grid-template-columns: 1fr; }
+    .act-grid { grid-template-columns: 1fr; }
+    .const-layout { grid-template-columns: 1fr; }
+    .gallery-grid { grid-template-columns: 1fr 1fr; }
+    .gallery-item.big { grid-column: span 2; }
+    nav { padding: 16px 5vw; }
+    .nav-links { gap: 20px; }
+  }
+  @media (max-width: 600px) {
+    .hero-stats { gap: 24px; flex-wrap: wrap; }
+    .obj-pillars { grid-template-columns: 1fr; }
+    .gallery-grid { grid-template-columns: 1fr; }
+    .gallery-item.big { grid-column: span 1; }
+    .nav-links { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="#hero" class="nav-logo">
+    <span>🌱</span> Huerto Infantil
+  </a>
+  <ul class="nav-links">
+    <li><a href="#intro">Proyecto</a></li>
+    <li><a href="#planificacion">Planificación</a></li>
+    <li><a href="#actividades">Actividades</a></li>
+    <li><a href="#galeria">Galería</a></li>
+    <li><a href="#reflexion">Reflexión</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-bg-circles">
+    <div></div><div></div>
+  </div>
+  <div class="hero-content">
+    <div class="hero-badge">🌿 Proyecto educativo ambiental</div>
+    <h1 class="fade-up">Huerto <em>Infantil</em> — Bitácora Digital</h1>
+    <p class="hero-sub fade-up fade-up-d1">Proyecto educativo ambiental · Jardín Infantil · Santiago, Chile</p>
+    <div class="btn-group fade-up fade-up-d2">
+      <a href="#intro" class="btn-primary">Conoce el proyecto</a>
+      <a href="#actividades" class="btn-outline">Ver actividades</a>
+    </div>
+    <div class="hero-stats fade-up fade-up-d3">
+      <div class="stat-item">
+        <span class="stat-num">7</span>
+        <span class="stat-label">Etapas del proyecto</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-num">4</span>
+        <span class="stat-label">Plantas sembradas</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-num">∞</span>
+        <span class="stat-label">Momentos que florecieron</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- INTRO -->
+<section id="intro">
+  <div class="text">
+    <span class="section-tag">Introducción</span>
+    <h2>¿Por qué un huerto en el jardín?</h2>
+    <p>En muchos barrios de Santiago, las áreas verdes son escasas y los niños y niñas crecen lejos del contacto con la naturaleza. Este proyecto nace de esa necesidad: <strong>acercar la tierra, las plantas y los ciclos naturales</strong> a la primera infancia, dentro del espacio del jardín infantil.</p>
+    <p>La naturaleza enseña con calma, con ciclos y con paciencia. Queremos que niñas y niños aprendan a observarla, cuidarla y amarla desde pequeños.</p>
+  </div>
+  <div class="intro-visual">🌱</div>
+</section>
+
+<!-- DIAGNÓSTICO -->
+<section id="diagnostico">
+  <span class="section-tag">Diagnóstico</span>
+  <h2>La problemática que nos moviliza</h2>
+  <div class="diag-grid">
+    <div class="diag-card">
+      <div class="diag-icon city">🏙️</div>
+      <h3>Escasez de naturaleza urbana</h3>
+      <p>Los niños y niñas de Santiago pasan la mayor parte del día en espacios cerrados, sin acceso a jardines ni experiencias al aire libre con plantas.</p>
+    </div>
+    <div class="diag-card">
+      <div class="diag-icon plant">🌿</div>
+      <h3>Desconexión con los ciclos naturales</h3>
+      <p>Pocos niños saben de dónde viene su comida, cómo crece una planta o qué significa cuidar un ser vivo. Esta desconexión afecta su desarrollo socio-emocional.</p>
+    </div>
+    <div class="diag-card">
+      <div class="diag-icon family">👨‍👩‍👧</div>
+      <h3>Necesidad de experiencias significativas</h3>
+      <p>Las familias y educadoras identificaron la importancia de generar vivencias concretas, sensoriales y comunitarias con el entorno natural.</p>
+    </div>
+  </div>
+</section>
+
+<!-- OBJETIVO GENERAL -->
+<section id="objetivo">
+  <span class="section-tag" style="display:block;text-align:center;">Objetivo general</span>
+  <h2>Nuestra gran meta 🌻</h2>
+  <p class="objetivo-lead">Fomentar el aprendizaje y la conexión con la naturaleza en niños y niñas del jardín infantil, mediante la implementación de un huerto educativo que promueva experiencias significativas, el cuidado del medio ambiente y el desarrollo integral de la primera infancia.</p>
+  <div class="obj-pillars">
+    <div class="obj-pillar">
+      <span class="obj-emoji">🌍</span>
+      <h3>Conexión</h3>
+      <p>Con la naturaleza y los seres vivos</p>
+    </div>
+    <div class="obj-pillar">
+      <span class="obj-emoji">📚</span>
+      <h3>Aprendizaje</h3>
+      <p>Activo, sensorial y significativo</p>
+    </div>
+    <div class="obj-pillar">
+      <span class="obj-emoji">🤝</span>
+      <h3>Comunidad</h3>
+      <p>Familias, niños y educadoras juntos</p>
+    </div>
+    <div class="obj-pillar">
+      <span class="obj-emoji">🌿</span>
+      <h3>Cuidado</h3>
+      <p>Del entorno y del medioambiente</p>
+    </div>
+  </div>
+</section>
+
+<!-- OBJETIVOS ESPECÍFICOS -->
+<section id="especificos">
+  <span class="section-tag">Objetivos específicos</span>
+  <h2>¿Qué queremos lograr? 🎯</h2>
+  <div class="esp-grid">
+    <div class="esp-card">
+      <div class="esp-num">01</div>
+      <div class="esp-text">
+        <h3>Cuidado de plantas</h3>
+        <p>Promover la responsabilidad y empatía a través del riego, observación y cuidado diario de las plantas del huerto.</p>
+      </div>
+    </div>
+    <div class="esp-card">
+      <div class="esp-num">02</div>
+      <div class="esp-text">
+        <h3>Trabajo en equipo</h3>
+        <p>Incentivar la colaboración entre pares en actividades compartidas como sembrar, regar y cosechar.</p>
+      </div>
+    </div>
+    <div class="esp-card">
+      <div class="esp-num">03</div>
+      <div class="esp-text">
+        <h3>Educación ambiental</h3>
+        <p>Enseñar conceptos sobre el cuidado del medioambiente, los ciclos de la naturaleza y la sostenibilidad.</p>
+      </div>
+    </div>
+    <div class="esp-card">
+      <div class="esp-num">04</div>
+      <div class="esp-text">
+        <h3>Experiencias significativas</h3>
+        <p>Generar momentos de aprendizaje vivencial que queden en la memoria emocional de cada niño y niña.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PLANIFICACION -->
+<section id="planificacion">
+  <span class="section-tag">Planificación</span>
+  <h2>Línea de tiempo del proyecto 📅</h2>
+  <div class="timeline">
+    <div class="tl-item">
+      <div class="tl-dot">1</div>
+      <div class="tl-card">
+        <h3>🔍 Diagnóstico</h3>
+        <p>Detección de necesidades y observación del entorno del jardín infantil.</p>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot">2</div>
+      <div class="tl-card">
+        <h3>👨‍👩‍👧 Reunión con familias</h3>
+        <p>Presentación del proyecto y convocatoria para construir el huerto juntos.</p>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot">3</div>
+      <div class="tl-card">
+        <h3>📄 Entrega de trípticos</h3>
+        <p>Material educativo para familias con información sobre el huerto y sus beneficios.</p>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot">4</div>
+      <div class="tl-card">
+        <h3>🎨 Actividades educativas</h3>
+        <p>Talleres sensoriales, juegos con tierra y primeras siembras con los niños y niñas.</p>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot">5</div>
+      <div class="tl-card">
+        <h3>🌿 Construcción del huerto</h3>
+        <p>Jornada comunitaria con familias y educadoras para armar las camas del huerto.</p>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot">6</div>
+      <div class="tl-card">
+        <h3>🎵 Canción de las plantas</h3>
+        <p>Actividad musical para integrar el aprendizaje ambiental de forma lúdica y emotiva.</p>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot">7</div>
+      <div class="tl-card">
+        <h3>🌟 Resultado final</h3>
+        <p>¡Huerto en funcionamiento! Niños y niñas cuidan, riegan y observan su propio jardín.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ACTIVIDADES -->
+<section id="actividades">
+  <span class="section-tag">Actividades educativas</span>
+  <h2>Aprender jugando y sembrando 🎨🎵</h2>
+  <div class="act-grid">
+    <div class="act-card" onclick="openModal('sensorial')">
+      <div class="act-thumb t1">🪴</div>
+      <div class="act-body">
+        <h3>Talleres sensoriales</h3>
+        <p>Los niños y niñas exploraron texturas, olores y formas de semillas, tierra y hojas en actividades guiadas por sus educadoras.</p>
+      </div>
+    </div>
+    <div class="act-card" onclick="openModal('cancion')">
+      <div class="act-thumb t2">🎵</div>
+      <div class="act-body">
+        <h3>Canción de las plantas</h3>
+        <p>Una canción creada especialmente para el proyecto que enseña el ciclo de la vida de las plantas de forma divertida y memorable.</p>
+      </div>
+    </div>
+    <div class="act-card" onclick="openModal('bitacora')">
+      <div class="act-thumb t3">📓</div>
+      <div class="act-body">
+        <h3>Bitácora y dibujo libre</h3>
+        <p>Cada niño y niña registró sus observaciones del huerto con dibujos, fotos y palabras en su propia bitácora personal.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONSTRUCCIÓN -->
+<section id="construccion">
+  <div class="const-layout">
+    <div class="const-text">
+      <span class="section-tag">Construcción del huerto</span>
+      <h2>¡Todos pusimos las manos en la tierra! 🌿</h2>
+      <p>La construcción del huerto fue una jornada comunitaria donde familias, educadoras y niños y niñas trabajaron juntos. Se armaron las camas de cultivo, se preparó la tierra y se realizaron las primeras siembras.</p>
+      <p>Los niños y niñas participaron en cada etapa: mover tierra, plantar semillas y regar con sus pequeñas manos. Una experiencia que difícilmente olvidarán. 💚</p>
+      <div class="plant-tags">
+        <span class="plant-tag">🥬 Lechugas</span>
+        <span class="plant-tag">🌿 Hierbas aromáticas</span>
+        <span class="plant-tag">🌸 Flores comestibles</span>
+        <span class="plant-tag">🍅 Tomates cherry</span>
+      </div>
+    </div>
+    <div class="const-visual">
+      <div class="const-img i1">🌱</div>
+      <div class="const-img i2">🤲</div>
+      <div class="const-img i3">🌻</div>
+      <div class="const-img i4">🍃</div>
+    </div>
+  </div>
+</section>
+
+<!-- GALERÍA -->
+<section id="galeria">
+  <span class="section-tag">Galería</span>
+  <h2>Momentos que florecieron 📸</h2>
+  <p class="galeria-intro">Cada imagen cuenta una historia de aprendizaje, alegría y conexión con la naturaleza.</p>
+  <div class="gallery-grid">
+    <div class="gallery-item big">
+      <div class="gallery-thumb g1">🌿</div>
+    </div>
+    <div class="gallery-item">
+      <div class="gallery-thumb g2">🌸</div>
+    </div>
+    <div class="gallery-item">
+      <div class="gallery-thumb g3">🌺</div>
+    </div>
+    <div class="gallery-item">
+      <div class="gallery-thumb g4">💧</div>
+    </div>
+    <div class="gallery-item">
+      <div class="gallery-thumb g5">🌾</div>
+    </div>
+    <div class="gallery-item">
+      <div class="gallery-thumb g6">🤝</div>
+    </div>
+  </div>
+</section>
+
+<!-- REFLEXIÓN -->
+<section id="reflexion">
+  <span class="section-tag">Reflexión final</span>
+  <h2>La naturaleza como primera maestra 🌻</h2>
+  <p class="refl-quote">"Cuando un niño o niña siembra una semilla, no solo aprende de plantas. Aprende a esperar, a cuidar, a sorprenderse."</p>
+  <p class="refl-body">Este proyecto nos demostró que incluso en medio de la ciudad, es posible crear espacios vivos donde la infancia florezca junto a la naturaleza. El huerto sigue creciendo, y con él, también crecen ellos y ellas.</p>
+  <div class="refl-btns">
+    <a href="#hero" class="btn-earth">Compartir el proyecto</a>
+    <button class="btn-earth-solid" onclick="openModal('descarga')">Descargar bitácora</button>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">🌱 Huerto Infantil — Bitácora Digital</div>
+  <div class="footer-copy">Jardín Infantil · Santiago, Chile · 2025</div>
+</footer>
+
+<!-- MODALS -->
+<div class="modal-overlay" id="modal-sensorial" onclick="closeModal('sensorial')">
+  <div class="modal-box" onclick="event.stopPropagation()">
+    <button class="modal-close" onclick="closeModal('sensorial')">×</button>
+    <div class="modal-icon">🪴</div>
+    <h3>Talleres sensoriales</h3>
+    <p>En esta actividad los niños y niñas exploraron con todos sus sentidos: tocaron tierra húmeda y seca, olieron hierbas aromáticas, observaron semillas de distintos tamaños y escucharon el sonido del agua al regar. Un aprendizaje que va mucho más allá de los libros.</p>
+    <button class="modal-btn" onclick="closeModal('sensorial')">¡Qué lindo! ✨</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-cancion" onclick="closeModal('cancion')">
+  <div class="modal-box" onclick="event.stopPropagation()">
+    <button class="modal-close" onclick="closeModal('cancion')">×</button>
+    <div class="modal-icon">🎵</div>
+    <h3>Canción de las plantas</h3>
+    <p>Una canción creada especialmente para el proyecto que enseña el ciclo de la vida de las plantas de forma divertida y memorable. Los niños aprendieron sobre la semilla, el agua, el sol y el crecimiento cantando juntos en el huerto.</p>
+    <button class="modal-btn" onclick="closeModal('cancion')">¡Me encanta! 🎶</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-bitacora" onclick="closeModal('bitacora')">
+  <div class="modal-box" onclick="event.stopPropagation()">
+    <button class="modal-close" onclick="closeModal('bitacora')">×</button>
+    <div class="modal-icon">📓</div>
+    <h3>Bitácora y dibujo libre</h3>
+    <p>Cada niño y niña tuvo su propia bitácora donde registraron con dibujos, fotos pegadas y palabras todo lo que observaron en el huerto. Este registro personal se convirtió en un tesoro de aprendizaje que llevaron a casa.</p>
+    <button class="modal-btn" onclick="closeModal('bitacora')">¡Hermoso! 🖍️</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-descarga" onclick="closeModal('descarga')">
+  <div class="modal-box" onclick="event.stopPropagation()">
+    <button class="modal-close" onclick="closeModal('descarga')">×</button>
+    <div class="modal-icon">📥</div>
+    <h3>Descargar bitácora</h3>
+    <p>La bitácora digital completa del proyecto Huerto Infantil está disponible para descargar. Contiene todas las actividades, fotos, reflexiones y el registro de crecimiento del huerto a lo largo del año.</p>
+    <button class="modal-btn" onclick="closeModal('descarga')">Entendido 🌱</button>
+  </div>
+</div>
+
+<script>
+  function openModal(id) {
+    document.getElementById('modal-' + id).classList.add('active');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeModal(id) {
+    document.getElementById('modal-' + id).classList.remove('active');
+    document.body.style.overflow = '';
+  }
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      document.querySelectorAll('.modal-overlay.active').forEach(function(m) {
+        m.classList.remove('active');
+      });
+      document.body.style.overflow = '';
+    }
+  });
+</script>
+</body>
+</html>

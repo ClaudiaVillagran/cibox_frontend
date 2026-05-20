@@ -7,3 +7,8 @@ export const getCheckoutCouponPreview = async ({ subtotal }) => {
 
   return response.data?.data || response.data;
 };
+
+export const validateCouponCode = async ({ code, subtotal }) => {
+  const response = await client.post("/coupons/validate", { code, subtotal });
+  return response.data?.data || response.data;
+};
