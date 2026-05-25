@@ -1,7 +1,9 @@
+import { useRef } from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { ActivityIndicator, View } from "react-native";
 import AppStack from "./AppStack";
 import { colors } from "../constants/theme";
+import { usePushNotifications } from "../hooks/usePushNotifications";
 
 const linking = {
   prefixes: [
@@ -37,8 +39,14 @@ const linking = {
 };
 
 export default function RootNavigation() {
+  const navigationRef = useRef(null);
+
+  // Registra el dispositivo para push y maneja taps en notificaciones
+  usePushNotifications(navigationRef);
+
   return (
     <NavigationContainer
+      ref={navigationRef}
       linking={linking}
       fallback={
         <View

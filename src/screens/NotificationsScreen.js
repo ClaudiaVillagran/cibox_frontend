@@ -42,8 +42,6 @@ export default function NotificationsScreen({ navigation }) {
         unreadOnly: activeFilter === "unread",
         limit: 50,
       });
-      console.log(data);
-
       setNotifications(Array.isArray(data?.items) ? data.items : []);
       setUnreadCount(data?.unread_count ?? 0);
     } catch (error) {
@@ -57,23 +55,23 @@ export default function NotificationsScreen({ navigation }) {
     }
   }, [activeFilter, token]);
 
-  const handleMarkOne = async (notificationId, isRead) => {
+  const handleNotificationPress = async (item) => {
     if (!token) {
       navigation.navigate("Auth");
       return;
     }
 
-    if (isRead) return;
+    // Marcar como leída si no lo está (sin esperar, para que la navegación sea instantánea)
+    if (!item.is_read) {
+      markNotificationAsRead(item._id)
+        .then(() => fetchNotifications())
+        .catch(() => {});
+    }
 
-    try {
-      await markNotificationAsRead(notificationId);
-      await fetchNotifications();
-    } catch (error) {
-      console.log(
-        "MARK NOTIFICATION ERROR:",
-        error?.response?.data || error.message,
-      );
-      showAppAlert("Error", "No se pudo marcar la notificación");
+    // Navegar según el tipo de notificación
+    const orderId = item?.data?.orderId;
+    if (orderId) {
+      navigation.navigate("OrderDetail", { orderId });
     }
   };
 
@@ -122,7 +120,7 @@ export default function NotificationsScreen({ navigation }) {
 
     return (
       <Pressable
-        onPress={() => handleMarkOne(item._id, isRead)}
+        onPress={() => handleNotificationPress(item)}
         style={{
           ...cardStyle,
           backgroundColor: isRead ? colors.surface : "#f3f4f6",
