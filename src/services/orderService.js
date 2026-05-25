@@ -57,3 +57,19 @@ export const createOrderFromCustomBox = async (payload) => {
   const response = await client.post("/orders/from-custom-box", payload);
   return response.data;
 };
+
+export const adminGetOrders = async ({ page = 1, limit = 20, status } = {}) => {
+  const params = { page, limit };
+  if (status) params.status = status;
+  const response = await client.get("/orders/admin", { params });
+  return response.data?.data || response.data;
+};
+
+export const adminUpdateOrderStatus = async (orderId, { status, tracking_number, note }) => {
+  const response = await client.patch(`/orders/admin/${orderId}/status`, {
+    status,
+    tracking_number,
+    note,
+  });
+  return response.data;
+};

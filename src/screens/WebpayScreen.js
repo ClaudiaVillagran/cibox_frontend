@@ -32,22 +32,19 @@ export default function WebpayScreen({ route, navigation }) {
     if (Platform.OS !== "web") return;
     if (!paymentToken || !paymentUrl) return;
 
-    const formHtml = `
-      <html>
-        <body>
-          <form id="webpayForm" action="${paymentUrl}" method="POST">
-            <input type="hidden" name="token_ws" value="${paymentToken}" />
-          </form>
-          <script>
-            document.getElementById("webpayForm").submit();
-          </script>
-        </body>
-      </html>
-    `;
+    // Usar form dinámico en vez de document.write() (deprecado y bloqueado por CSP)
+    const form = document.createElement("form");
+    form.method = "POST";
+    form.action = paymentUrl;
 
-    document.open();
-    document.write(formHtml);
-    document.close();
+    const input = document.createElement("input");
+    input.type = "hidden";
+    input.name = "token_ws";
+    input.value = paymentToken;
+
+    form.appendChild(input);
+    document.body.appendChild(form);
+    form.submit();
   }, [paymentToken, paymentUrl]);
 
   const goToSuccess = (finalOrderId) => {

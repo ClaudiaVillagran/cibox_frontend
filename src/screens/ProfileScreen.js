@@ -18,6 +18,7 @@ export default function ProfileScreen({ navigation }) {
   const [loading, setLoading] = useState(!!token);
 
   const isVendor = profile?.role === "vendor";
+  const isAdmin  = profile?.role === "admin";
 
   const cardStyle = useMemo(
     () => ({
@@ -285,6 +286,14 @@ export default function ProfileScreen({ navigation }) {
           >
             Accesos rápidos
           </AppText>
+
+          {isAdmin && (
+            <AppButton
+              title="🛠️ Panel de órdenes"
+              onPress={() => navigation.navigate("AdminOrders")}
+              style={{ marginBottom: 10 }}
+            />
+          )}
 
           <AppButton title="Refrescar perfil" onPress={loadProfile} />
 

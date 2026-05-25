@@ -36,6 +36,7 @@ import CustomBoxScreen from "../screens/CustomBoxScreen";
 import CustomBoxCheckoutScreen from "../screens/CustomBoxCheckoutScreen";
 import HowItWorksScreen from "../screens/HowItWorksScreen";
 import RecipesScreen from "../screens/RecipesScreen";
+import AdminOrdersScreen from "../screens/AdminOrdersScreen";
 
 const Stack = createNativeStackNavigator();
 
@@ -313,6 +314,15 @@ export default function AppStack() {
           isWebDesktop ? withWebLayout(MissionsScreen) : MissionsScreen
         }
         options={isWebDesktop ? { headerShown: false } : { title: "Misiones" }}
+      />
+      <Stack.Screen
+        name="AdminOrders"
+        component={
+          isWebDesktop ? withWebLayout(AdminOrdersScreen) : AdminOrdersScreen
+        }
+        options={
+          isWebDesktop ? { headerShown: false } : { title: "Panel de órdenes" }
+        }
       />
 
       {!token && (
