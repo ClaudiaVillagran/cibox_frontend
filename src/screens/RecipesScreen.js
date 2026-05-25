@@ -314,7 +314,7 @@ export default function RecipesScreen({ navigation }) {
 
   // Añadir un ingrediente al carrito
   const handleAddIngredient = async (recipe, ingredient) => {
-    if (!token) { navigation.navigate("Login"); return; }
+    if (!token) { navigation.navigate("Auth"); return; }
     const product = findProduct(ingredient.key);
     if (!product) return;
 
@@ -334,7 +334,7 @@ export default function RecipesScreen({ navigation }) {
 
   // Añadir TODOS los ingredientes disponibles de una receta
   const handleAddAll = async (recipe) => {
-    if (!token) { navigation.navigate("Login"); return; }
+    if (!token) { navigation.navigate("Auth"); return; }
     const available = recipe.ingredients.filter((i) => findProduct(i.key));
     if (available.length === 0) return;
 

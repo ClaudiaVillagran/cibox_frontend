@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
-  Clipboard,
   FlatList,
+  Platform,
   Pressable,
   StyleSheet,
   View,
 } from "react-native";
+import * as Clipboard from "expo-clipboard";
 import { Ionicons } from "@expo/vector-icons";
 import ScreenContainer from "../components/ScreenContainer";
 import AppText from "../components/AppText";
@@ -91,7 +92,7 @@ export default function OrderDetailScreen({ route, navigation }) {
 
   // ── Volver a pedir ────────────────────────────────────────────────────────
   const handleReorder = async () => {
-    if (!token) { navigation.navigate("Login"); return; }
+    if (!token) { navigation.navigate("Auth"); return; }
     const items = Array.isArray(order?.items) ? order.items : [];
     if (!items.length) return;
     setAddingAll(true);
@@ -111,12 +112,20 @@ export default function OrderDetailScreen({ route, navigation }) {
   };
 
   // ── Copiar tracking ───────────────────────────────────────────────────────
-  const handleCopyTracking = () => {
+  const handleCopyTracking = async () => {
     const tn = order?.shipping?.tracking_number;
     if (!tn) return;
-    Clipboard.setString(tn);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    try {
+      if (Platform.OS === "web") {
+        await navigator.clipboard.writeText(tn);
+      } else {
+        await Clipboard.setStringAsync(tn);
+      }
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      showAppAlert("Seguimiento", tn);
+    }
   };
 
   // ── Build timeline ────────────────────────────────────────────────────────
@@ -184,7 +193,14 @@ export default function OrderDetailScreen({ route, navigation }) {
   return (
     <ScreenContainer maxWidth={720}>
       {/* Volver */}
-      <Pressable onPress={() => navigation.goBack()} style={styles.backBtn}>
+      <Pressable
+        onPress={() =>
+          navigation.canGoBack()
+            ? navigation.goBack()
+            : navigation.navigate("MainTabs", { screen: "OrdersTab" })
+        }
+        style={styles.backBtn}
+      >
         <Ionicons name="arrow-back-outline" size={18} color={colors.text} />
         <AppText style={styles.backText}>Volver</AppText>
       </Pressable>
