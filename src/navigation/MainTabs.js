@@ -6,12 +6,18 @@ import ProfileScreen from "../screens/ProfileScreen";
 import { colors } from "../constants/theme";
 import { Image } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import useAuthStore from "../store/authStore";
 
 const Tab = createBottomTabNavigator();
 
 export default function MainTabs() {
   const user = useAuthStore((state) => state.user);
+  const insets = useSafeAreaInsets();
+
+  // Altura base del tab bar + padding del sistema (barra Android o home indicator iOS)
+  const TAB_BAR_HEIGHT = 56;
+  const bottomPadding = Math.max(insets.bottom, 8);
 
   return (
     <Tab.Navigator
@@ -27,9 +33,9 @@ export default function MainTabs() {
           color: colors.text,
         },
         tabBarStyle: {
-          height: 64,
+          height: TAB_BAR_HEIGHT + bottomPadding,
           paddingTop: 6,
-          paddingBottom: 8,
+          paddingBottom: bottomPadding,
           backgroundColor: colors.surface,
           borderTopColor: colors.border,
         },

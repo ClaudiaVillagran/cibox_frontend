@@ -1,5 +1,6 @@
 import { useEffect } from "react";
-import { SafeAreaView, Text, ActivityIndicator, View } from "react-native";
+import { SafeAreaView, ActivityIndicator, View } from "react-native";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 import useAuthStore from "./src/store/authStore";
 import RootNavigation from "./src/navigation";
 
@@ -27,14 +28,20 @@ export default function App() {
   // ⛔ Espera a que carguen fuentes Y auth
   if (isLoading || !fontsLoaded) {
     return (
-      <SafeAreaView style={{ flex: 1 }}>
-        <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-          <ActivityIndicator />
-          <AppText style={{ marginTop: 10 }}>Cargando...</AppText>
-        </View>
-      </SafeAreaView>
+      <SafeAreaProvider>
+        <SafeAreaView style={{ flex: 1 }}>
+          <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+            <ActivityIndicator />
+            <AppText style={{ marginTop: 10 }}>Cargando...</AppText>
+          </View>
+        </SafeAreaView>
+      </SafeAreaProvider>
     );
   }
 
-  return <RootNavigation />;
+  return (
+    <SafeAreaProvider>
+      <RootNavigation />
+    </SafeAreaProvider>
+  );
 }
