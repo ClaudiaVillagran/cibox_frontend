@@ -21,6 +21,12 @@ export default function ProductCard({
   const ciboxPlusEnabled = !!product?.cibox_plus?.enabled;
   const imageUrl = product?.thumbnail || product?.images?.[0] || null;
 
+  // Precio comparativo con supermercado
+  const comparePrice = Number(product?.compare_price || 0);
+  const hasComparison = comparePrice > 0 && basePrice !== null && comparePrice > basePrice;
+  const savings = hasComparison ? comparePrice - basePrice : 0;
+  const savingsPct = hasComparison ? Math.round((savings / comparePrice) * 100) : 0;
+
   const formatPrice = (value) => {
     if (value === null || value === undefined) return "—";
     return `$${Number(value).toLocaleString("es-CL")}`;
@@ -145,15 +151,47 @@ export default function ProductCard({
 
         {/* Precio */}
         <View style={{ marginBottom: 4 }}>
-          <AppText
-            style={{
-              fontSize: priceSize,
-              fontWeight: "900",
-              color: colors.text,
-            }}
-          >
-            {formatPrice(basePrice)}
-          </AppText>
+          {/* Precio supermercado tachado */}
+          {hasComparison && (
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 2 }}>
+              <AppText style={{
+                fontSize: mini ? 11 : 13,
+                color: colors.muted,
+                textDecorationLine: "line-through",
+              }}>
+                {formatPrice(comparePrice)}
+              </AppText>
+              <View style={{
+                backgroundColor: "#dcfce7",
+                borderRadius: 999,
+                paddingHorizontal: 6,
+                paddingVertical: 2,
+              }}>
+                <AppText style={{ fontSize: 10, fontWeight: "800", color: "#16a34a" }}>
+                  -{savingsPct}%
+                </AppText>
+              </View>
+            </View>
+          )}
+
+          {/* Precio CIBOX */}
+          <View style={{ flexDirection: "row", alignItems: "baseline", gap: 4 }}>
+            <AppText style={{ fontSize: priceSize, fontWeight: "900", color: colors.text }}>
+              {formatPrice(basePrice)}
+            </AppText>
+            {hasComparison && !mini && (
+              <AppText style={{ fontSize: 11, color: "#16a34a", fontWeight: "700" }}>
+                CIBOX
+              </AppText>
+            )}
+          </View>
+
+          {/* Ahorro en monto */}
+          {hasComparison && !mini && (
+            <AppText style={{ fontSize: 11, color: "#16a34a", fontWeight: "700", marginTop: 2 }}>
+              Ahorras {formatPrice(savings)} vs supermercado
+            </AppText>
+          )}
         </View>
 
         {/* Categoría */}

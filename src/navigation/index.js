@@ -34,6 +34,10 @@ const linking = {
       OrdersTab: "orders",
       ProfileTab: "profile",
       Auth: "auth",
+      B2BProvider: "ciboxpresentation",
+      Contact: "contacto",
+      Terms: "terminos-y-condiciones",
+      Privacy: "politica-de-privacidad",
     },
   },
 };

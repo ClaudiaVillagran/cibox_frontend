@@ -32,12 +32,12 @@ export default function EditProductScreen() {
         description: product?.description || "",
         sku: product?.sku || "",
         brand: product?.brand || "",
-        selectedCategory: product?.category?.id
-          ? {
-              _id: product.category.id,
-              name: product.category.name,
-            }
-          : null,
+        // Cargar categorías del nuevo formato (array) con fallback al campo legacy
+        selectedCategories: Array.isArray(product?.categories) && product.categories.length
+          ? product.categories.map((c) => ({ _id: c.id, name: c.name }))
+          : product?.category?.id
+            ? [{ _id: product.category.id, name: product.category.name }]
+            : [],
         stock: product?.stock ?? "",
         basePrice: baseTier?.price ?? "",
         baseLabel: baseTier?.label || "Unidad",
@@ -50,6 +50,7 @@ export default function EditProductScreen() {
         width: product?.dimensions?.width ?? "",
         height: product?.dimensions?.height ?? "",
         dimensionUnit: product?.dimensions?.unit || "cm",
+        comparePrice: product?.compare_price ? String(product.compare_price) : "",
         ciboxPlusEnabled: Boolean(product?.cibox_plus?.enabled),
         images: Array.isArray(product?.images) ? product.images : [],
       });

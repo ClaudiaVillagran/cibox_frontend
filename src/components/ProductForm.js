@@ -51,8 +51,13 @@ export default function ProductForm({
     initialValues?.dimensionUnit || "cm",
   );
 
-  const [selectedCategory, setSelectedCategory] = useState(
-    initialValues?.selectedCategory || null,
+  // Multi-categoría: array de { _id, name }
+  const [selectedCategories, setSelectedCategories] = useState(
+    Array.isArray(initialValues?.selectedCategories)
+      ? initialValues.selectedCategories
+      : initialValues?.selectedCategory
+        ? [initialValues.selectedCategory]
+        : [],
   );
 
   const [stock, setStock] = useState(
@@ -73,6 +78,10 @@ export default function ProductForm({
   );
   const [packLabel, setPackLabel] = useState(
     initialValues?.packLabel || "Pack 3+",
+  );
+
+  const [comparePrice, setComparePrice] = useState(
+    initialValues?.comparePrice != null ? String(initialValues.comparePrice) : "",
   );
 
   const [ciboxPlusEnabled, setCiboxPlusEnabled] = useState(
@@ -113,7 +122,7 @@ export default function ProductForm({
   const validateForm = () => {
     if (!name.trim()) return "Debes ingresar el nombre del producto";
     if (!description.trim()) return "Debes ingresar la descripción";
-    if (!selectedCategory?._id) return "Debes seleccionar una categoría";
+    if (!selectedCategories.length) return "Debes seleccionar al menos una categoría";
     if (!stock.trim()) return "Debes ingresar stock";
     if (!basePrice.trim()) return "Debes ingresar el precio base";
 
@@ -268,10 +277,9 @@ export default function ProductForm({
         description: description.trim(),
         sku: sku.trim(),
         brand: brand.trim(),
-        category: {
-          id: selectedCategory._id,
-          name: selectedCategory.name,
-        },
+        // El backend resuelve category, categories y category_ids a partir de estos IDs
+        category_ids: selectedCategories.map((c) => String(c._id)),
+        compare_price: comparePrice.trim() ? parseNumber(comparePrice) : 0,
         pricing: {
           tiers,
         },
@@ -454,8 +462,8 @@ export default function ProductForm({
         style={inputStyle}
       />
 
-      <AppText style={labelStyle}>Categoría</AppText>
-      <CategorySelect value={selectedCategory} onChange={setSelectedCategory} />
+      <AppText style={labelStyle}>Categorías</AppText>
+      <CategorySelect value={selectedCategories} onChange={setSelectedCategories} />
 
       <AppText style={labelStyle}>Stock</AppText>
       <TextInput
@@ -497,6 +505,32 @@ export default function ProductForm({
         placeholderTextColor={colors.muted}
         style={inputStyle}
       />
+
+      {/* Precio comparativo supermercado */}
+      <View style={{
+        borderWidth: 1,
+        borderColor: "#FDE68A",
+        borderRadius: radius.md,
+        backgroundColor: "#FFFBEB",
+        padding: spacing.md,
+        marginBottom: spacing.md,
+      }}>
+        <AppText style={{ fontSize: 13, fontWeight: "800", color: "#92400E", marginBottom: 4 }}>
+          💡 Precio en supermercado tradicional
+        </AppText>
+        <AppText style={{ fontSize: 12, color: "#B45309", marginBottom: 10 }}>
+          Opcional. Si lo ingresas, la app mostrará el ahorro real en la tarjeta del producto.
+        </AppText>
+        <AppText style={labelStyle}>Precio referencia supermercado ($)</AppText>
+        <TextInput
+          value={comparePrice}
+          onChangeText={setComparePrice}
+          placeholder="Ej: 2990 (deja vacío si no aplica)"
+          placeholderTextColor={colors.muted}
+          keyboardType="numeric"
+          style={inputStyle}
+        />
+      </View>
 
       <AppText
         style={{

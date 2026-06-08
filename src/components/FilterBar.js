@@ -1,6 +1,5 @@
 import { useState } from "react";
 import {
-  FlatList,
   Modal,
   Pressable,
   ScrollView,
@@ -539,71 +538,177 @@ export default function FilterBar({
               </Pressable>
             )}
 
-            {/* Grid de categorías */}
-            <FlatList
-              data={filteredCategories}
-              keyExtractor={(item) => item._id || item.id || item.name}
-              numColumns={2}
-              showsVerticalScrollIndicator={false}
-              columnWrapperStyle={{ gap: 8 }}
-              ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
-              ListEmptyComponent={
-                <AppText
-                  style={{
-                    color: colors.muted,
-                    textAlign: "center",
-                    paddingVertical: spacing.md,
-                  }}
-                >
-                  Sin resultados
-                </AppText>
-              }
-              renderItem={({ item }) => {
-                const id = item._id || item.id || "";
-                const active = selectedCategory === id;
-                return (
-                  <Pressable
-                    onPress={() => {
-                      onSelectCategory(id);
-                      closeModal();
-                    }}
-                    style={{
-                      flex: 1,
-                      flexDirection: "row",
-                      alignItems: "center",
-                      gap: 8,
-                      padding: 12,
-                      borderRadius: radius.md,
-                      borderWidth: 1.5,
-                      borderColor: active ? colors.primary : colors.border,
-                      backgroundColor: active
-                        ? `${colors.primary}12`
-                        : colors.background,
-                    }}
-                  >
-                    <AppText
-                      numberOfLines={2}
-                      style={{
-                        flex: 1,
-                        fontSize: 13,
-                        fontWeight: "600",
-                        color: active ? colors.primary : colors.text,
-                        lineHeight: 18,
-                      }}
-                    >
-                      {item.name}
-                    </AppText>
-                    {active && (
-                      <Ionicons
-                        name="checkmark-circle"
-                        size={16}
-                        color={colors.primary}
-                      />
-                    )}
-                  </Pressable>
-                );
-              }}
-            />
+            {/* Lista de categorías — plana si hay búsqueda, jerárquica si no */}
+            <ScrollView showsVerticalScrollIndicator={false}>
+              {categorySearch.trim() ? (
+                // ── Búsqueda activa: lista plana ──────────────────────────────
+                filteredCategories.length === 0 ? (
+                  <AppText style={{ color: colors.muted, textAlign: "center", paddingVertical: spacing.md }}>
+                    Sin resultados
+                  </AppText>
+                ) : (
+                  filteredCategories.map((item) => {
+                    const id = item._id || item.id || "";
+                    const active = selectedCategory === id;
+                    return (
+                      <Pressable
+                        key={id}
+                        onPress={() => { onSelectCategory(id); closeModal(); }}
+                        style={{
+                          flexDirection: "row",
+                          alignItems: "center",
+                          gap: 10,
+                          paddingHorizontal: 14,
+                          paddingVertical: 12,
+                          borderRadius: radius.md,
+                          borderWidth: 1,
+                          borderColor: active ? colors.primary : colors.border,
+                          backgroundColor: active ? `${colors.primary}10` : colors.background,
+                          marginBottom: 8,
+                        }}
+                      >
+                        <AppText numberOfLines={1} style={{
+                          flex: 1, fontSize: 14,
+                          fontWeight: active ? "700" : "500",
+                          color: active ? colors.primary : colors.text,
+                        }}>
+                          {item.name}
+                        </AppText>
+                        {active && <Ionicons name="checkmark-circle" size={18} color={colors.primary} />}
+                      </Pressable>
+                    );
+                  })
+                )
+              ) : (
+                // ── Sin búsqueda: vista jerárquica ────────────────────────────
+                (() => {
+                  const parents  = categories.filter((c) => !c.parent_id);
+                  const childMap = categories.reduce((acc, c) => {
+                    if (!c.parent_id) return acc;
+                    const key = String(c.parent_id);
+                    if (!acc[key]) acc[key] = [];
+                    acc[key].push(c);
+                    return acc;
+                  }, {});
+                  const parentIds = new Set(parents.map((p) => String(p._id || p.id)));
+                  const orphans   = categories.filter(
+                    (c) => c.parent_id && !parentIds.has(String(c.parent_id))
+                  );
+
+                  const rows = [];
+
+                  // Padres con sus hijos
+                  for (const parent of parents) {
+                    const pid    = String(parent._id || parent.id || "");
+                    const kids   = childMap[pid] || [];
+                    const active = selectedCategory === pid;
+
+                    rows.push(
+                      // Fila padre
+                      <Pressable
+                        key={`parent-${pid}`}
+                        onPress={() => { onSelectCategory(pid); closeModal(); }}
+                        style={{
+                          flexDirection: "row",
+                          alignItems: "center",
+                          gap: 10,
+                          paddingHorizontal: 14,
+                          paddingVertical: 13,
+                          borderBottomWidth: 1,
+                          borderColor: colors.border,
+                          backgroundColor: active ? `${colors.primary}08` : colors.surface,
+                        }}
+                      >
+                        <AppText numberOfLines={1} style={{
+                          flex: 1, fontSize: 14, fontWeight: "800",
+                          color: active ? colors.primary : colors.text,
+                        }}>
+                          {parent.name}
+                        </AppText>
+                        {kids.length > 0 && (
+                          <AppText style={{ fontSize: 11, color: colors.muted, marginRight: 4 }}>
+                            {kids.length}
+                          </AppText>
+                        )}
+                        {active
+                          ? <Ionicons name="checkmark-circle" size={18} color={colors.primary} />
+                          : <Ionicons name="chevron-forward" size={14} color={colors.muted} />
+                        }
+                      </Pressable>
+                    );
+
+                    // Filas hijos con sangría
+                    for (const child of kids) {
+                      const cid    = String(child._id || child.id || "");
+                      const cActive = selectedCategory === cid;
+                      rows.push(
+                        <Pressable
+                          key={`child-${cid}`}
+                          onPress={() => { onSelectCategory(cid); closeModal(); }}
+                          style={{
+                            flexDirection: "row",
+                            alignItems: "center",
+                            gap: 10,
+                            paddingLeft: 36,
+                            paddingRight: 14,
+                            paddingVertical: 11,
+                            borderBottomWidth: 1,
+                            borderColor: colors.border,
+                            backgroundColor: cActive ? `${colors.primary}08` : "#FAFAFA",
+                          }}
+                        >
+                          {/* Línea de sangría */}
+                          <View style={{
+                            position: "absolute", left: 20, top: 0, bottom: 0,
+                            width: 1, backgroundColor: colors.border,
+                          }} />
+                          <AppText numberOfLines={1} style={{
+                            flex: 1, fontSize: 13,
+                            fontWeight: cActive ? "700" : "400",
+                            color: cActive ? colors.primary : colors.text,
+                          }}>
+                            {child.name}
+                          </AppText>
+                          {cActive && <Ionicons name="checkmark-circle" size={16} color={colors.primary} />}
+                        </Pressable>
+                      );
+                    }
+                  }
+
+                  // Huérfanas al final
+                  for (const cat of orphans) {
+                    const id     = String(cat._id || cat.id || "");
+                    const active = selectedCategory === id;
+                    rows.push(
+                      <Pressable
+                        key={`orphan-${id}`}
+                        onPress={() => { onSelectCategory(id); closeModal(); }}
+                        style={{
+                          flexDirection: "row",
+                          alignItems: "center",
+                          gap: 10,
+                          paddingHorizontal: 14,
+                          paddingVertical: 13,
+                          borderBottomWidth: 1,
+                          borderColor: colors.border,
+                          backgroundColor: active ? `${colors.primary}08` : colors.surface,
+                        }}
+                      >
+                        <AppText numberOfLines={1} style={{
+                          flex: 1, fontSize: 14, fontWeight: "500",
+                          color: active ? colors.primary : colors.text,
+                        }}>
+                          {cat.name}
+                        </AppText>
+                        {active && <Ionicons name="checkmark-circle" size={18} color={colors.primary} />}
+                      </Pressable>
+                    );
+                  }
+
+                  return rows;
+                })()
+              )}
+            </ScrollView>
           </Pressable>
         </Pressable>
       </Modal>

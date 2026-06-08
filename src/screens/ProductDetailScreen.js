@@ -11,6 +11,7 @@ import {
   useWindowDimensions,
   View,
 } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import ScreenContainer from "../components/ScreenContainer";
 import AppButton from "../components/AppButton";
 import ProductRowSection from "../components/ProductRowSection";
@@ -409,6 +410,48 @@ export default function ProductDetailScreen({ route, navigation }) {
     return product.box_items.filter((item) => item?.product_id);
   }, [product]);
 
+  // ── Breadcrumb navegable ──────────────────────────────────────────────────
+  const breadcrumbCats = useMemo(() => {
+    if (Array.isArray(product?.categories) && product.categories.length) {
+      return [...product.categories].reverse(); // [hijo, padre] → invertir a [padre, hijo]
+    }
+    if (product?.category?.name) {
+      return [{ id: product.category.id, name: product.category.name }];
+    }
+    return [];
+  }, [product]);
+
+  const renderBreadcrumb = () => (
+    <View style={{
+      flexDirection: "row",
+      flexWrap: "wrap",
+      alignItems: "center",
+      marginBottom: 14,
+      gap: 2,
+    }}>
+      <Pressable onPress={() => navigation.navigate(isWebDesktop ? "Inicio" : "MainTabs")}>
+        <AppText style={{ fontSize: 12, color: colors.primary, fontWeight: "600" }}>
+          Inicio
+        </AppText>
+      </Pressable>
+
+      {breadcrumbCats.map((cat, i) => (
+        <View key={cat.id || i} style={{ flexDirection: "row", alignItems: "center", gap: 2 }}>
+          <Ionicons name="chevron-forward" size={12} color={colors.muted} />
+          <Pressable onPress={() => navigation.navigate("Products", { category: cat.id })}>
+            <AppText style={{
+              fontSize: 12,
+              color: i === breadcrumbCats.length - 1 ? colors.text : colors.primary,
+              fontWeight: i === breadcrumbCats.length - 1 ? "700" : "600",
+            }}>
+              {cat.name}
+            </AppText>
+          </Pressable>
+        </View>
+      ))}
+    </View>
+  );
+
   if (loading) {
     return (
       <ScreenContainer maxWidth={1200}>
@@ -571,22 +614,68 @@ export default function ProductDetailScreen({ route, navigation }) {
         {product.name}
       </AppText>
 
-      <AppText
-        style={{
-          fontSize: 28,
-          fontWeight: "800",
-          color: colors.text,
-          marginBottom: 4,
-        }}
-      >
-        ${selectedTierPrice || "—"}
-      </AppText>
-
-      <AppText style={{ color: colors.muted, marginBottom: 14 }}>
-        {product?.product_type === "box"
-          ? "Precio de la caja completa"
-          : "Precio por unidad según opción seleccionada"}
-      </AppText>
+      {/* Comparación de precio */}
+      {(() => {
+        const cp = Number(product?.compare_price || 0);
+        const hasCmp = cp > 0 && selectedTierPrice > 0 && cp > selectedTierPrice;
+        const saved = hasCmp ? cp - selectedTierPrice : 0;
+        const pct   = hasCmp ? Math.round((saved / cp) * 100) : 0;
+        return (
+          <View style={{ marginBottom: 14 }}>
+            {hasCmp && (
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 4 }}>
+                <AppText style={{ fontSize: 15, color: colors.muted, textDecorationLine: "line-through" }}>
+                  ${cp.toLocaleString("es-CL")}
+                </AppText>
+                <AppText style={{ fontSize: 12, color: colors.muted }}>
+                  En supermercado
+                </AppText>
+              </View>
+            )}
+            <View style={{ flexDirection: "row", alignItems: "baseline", gap: 8 }}>
+              <AppText style={{ fontSize: 32, fontWeight: "900", color: colors.text }}>
+                ${selectedTierPrice || "—"}
+              </AppText>
+              {hasCmp && (
+                <View style={{
+                  backgroundColor: "#dcfce7",
+                  borderRadius: 999,
+                  paddingHorizontal: 10,
+                  paddingVertical: 4,
+                }}>
+                  <AppText style={{ fontSize: 13, fontWeight: "800", color: "#16a34a" }}>
+                    -{pct}%
+                  </AppText>
+                </View>
+              )}
+            </View>
+            {hasCmp && (
+              <View style={{
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 6,
+                marginTop: 6,
+                backgroundColor: "#f0fdf4",
+                borderRadius: 8,
+                paddingHorizontal: 10,
+                paddingVertical: 6,
+                alignSelf: "flex-start",
+              }}>
+                <AppText style={{ fontSize: 13, fontWeight: "800", color: "#16a34a" }}>
+                  Ahorras ${saved.toLocaleString("es-CL")} vs supermercado
+                </AppText>
+              </View>
+            )}
+            {!hasCmp && (
+              <AppText style={{ color: colors.muted, fontSize: 13 }}>
+                {product?.product_type === "box"
+                  ? "Precio de la caja completa"
+                  : "Precio por unidad según opción seleccionada"}
+              </AppText>
+            )}
+          </View>
+        );
+      })()}
 
       <View
         style={{
@@ -664,10 +753,6 @@ export default function ProductDetailScreen({ route, navigation }) {
           </View>
         ) : null}
       </View>
-
-      <AppText style={{ color: colors.muted, marginBottom: 6 }}>
-        Categoría: {product?.category?.name || "Sin categoría"}
-      </AppText>
 
       <AppText style={{ color: colors.muted, marginBottom: 18 }}>
         Puntuación promedio: {product?.average_rating ?? 0} · Reseñas:{" "}
@@ -943,6 +1028,7 @@ export default function ProductDetailScreen({ route, navigation }) {
     return (
       <ScreenContainer maxWidth={720}>
         <ScrollView contentContainerStyle={{ paddingBottom: spacing.xl }}>
+          {renderBreadcrumb()}
           <View style={cardStyle}>
             {Array.isArray(product?.images) && product.images.length > 0 ? (
               <ScrollView
@@ -1192,6 +1278,7 @@ export default function ProductDetailScreen({ route, navigation }) {
   return (
     <ScreenContainer maxWidth={1280}>
       <ScrollView contentContainerStyle={{ paddingBottom: spacing.xl }}>
+        {renderBreadcrumb()}
         <View
           style={{
             flexDirection: "row",

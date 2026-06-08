@@ -278,6 +278,7 @@ export default function CheckoutScreen({ navigation }) {
   const [paymentMethod, setPaymentMethod] = useState("webpay");
   const [couponCode, setCouponCode] = useState("");
   const [deliveryNotes, setDeliveryNotes] = useState("");
+  const [termsAccepted, setTermsAccepted] = useState(false);
 
   const [cart, setCart] = useState(null);
   const [loadingCart, setLoadingCart] = useState(true);
@@ -596,6 +597,14 @@ export default function CheckoutScreen({ navigation }) {
   const handleCheckout = async () => {
     if (!validateForm()) {
       showAppAlert("Revisa tus datos", "Hay campos inválidos en el checkout");
+      return;
+    }
+
+    if (!termsAccepted) {
+      showAppAlert(
+        "Términos y condiciones",
+        "Debes aceptar los términos y condiciones para continuar.",
+      );
       return;
     }
 
@@ -1244,16 +1253,74 @@ export default function CheckoutScreen({ navigation }) {
             fontSize: 13,
             lineHeight: 18,
             marginTop: 12,
-            marginBottom: 10,
+            marginBottom: 16,
           }}
         >
           Al confirmar tu compra, te enviaremos un correo con el resumen del
           pedido y te notificaremos por email cuando el estado cambie.
         </AppText>
+
+        {/* ── Checkbox Términos y Condiciones ── */}
+        <Pressable
+          onPress={() => setTermsAccepted((v) => !v)}
+          style={{
+            flexDirection: "row",
+            alignItems: "flex-start",
+            gap: 12,
+            marginBottom: 16,
+            padding: 14,
+            borderRadius: 14,
+            borderWidth: 1.5,
+            borderColor: termsAccepted ? colors.primary : colors.border,
+            backgroundColor: termsAccepted ? `${colors.primary}0A` : "#FAFBF8",
+          }}
+        >
+          {/* Caja del check */}
+          <View
+            style={{
+              width: 22,
+              height: 22,
+              borderRadius: 6,
+              borderWidth: 2,
+              borderColor: termsAccepted ? colors.primary : "#C0C0C0",
+              backgroundColor: termsAccepted ? colors.primary : "#fff",
+              justifyContent: "center",
+              alignItems: "center",
+              flexShrink: 0,
+              marginTop: 1,
+            }}
+          >
+            {termsAccepted && (
+              <Text style={{ color: "#fff", fontSize: 13, fontWeight: "900", lineHeight: 16 }}>
+                ✓
+              </Text>
+            )}
+          </View>
+
+          {/* Texto */}
+          <AppText style={{ fontSize: 13, color: colors.text, flex: 1, lineHeight: 20 }}>
+            He leído y acepto los{" "}
+            <AppText
+              style={{ color: colors.primary, fontWeight: "700", textDecorationLine: "underline" }}
+              onPress={() => navigation.navigate("Terms")}
+            >
+              Términos y Condiciones
+            </AppText>
+            {" "}y la{" "}
+            <AppText
+              style={{ color: colors.primary, fontWeight: "700", textDecorationLine: "underline" }}
+              onPress={() => navigation.navigate("Privacy")}
+            >
+              Política de Privacidad
+            </AppText>
+            {" "}de CIBOX.
+          </AppText>
+        </Pressable>
+
         <AppButton
           title={submitting ? "Procesando..." : "Confirmar compra"}
           onPress={handleCheckout}
-          disabled={submitting || !items.length || shippingLoading}
+          disabled={submitting || !items.length || shippingLoading || !termsAccepted}
         />
       </ScrollView>
     </ScreenContainer>

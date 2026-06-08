@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
   FlatList,
   Platform,
   Pressable,
@@ -13,7 +14,7 @@ import ScreenContainer from "../components/ScreenContainer";
 import AppText from "../components/AppText";
 import AppButton from "../components/AppButton";
 import { colors, radius, spacing } from "../constants/theme";
-import { getOrderById } from "../services/orderService";
+import { getOrderById, cancelOrder } from "../services/orderService";
 import { addItemToCart } from "../services/cartService";
 import useAuthStore from "../store/authStore";
 import useCartStore from "../store/cartStore";
@@ -59,11 +60,12 @@ export default function OrderDetailScreen({ route, navigation }) {
   const { loadCartSummary } = useCartStore();
   const orderId             = route?.params?.orderId;
 
-  const [order, setOrder]         = useState(null);
-  const [loading, setLoading]     = useState(true);
-  const [addingAll, setAddingAll] = useState(false);
-  const [copied, setCopied]       = useState(false);
-  const refreshTimer              = useRef(null);
+  const [order, setOrder]           = useState(null);
+  const [loading, setLoading]       = useState(true);
+  const [addingAll, setAddingAll]   = useState(false);
+  const [copied, setCopied]         = useState(false);
+  const [cancelling, setCancelling] = useState(false);
+  const refreshTimer                = useRef(null);
 
   // ── Fetch ─────────────────────────────────────────────────────────────────
   const fetchOrder = useCallback(async () => {
@@ -81,6 +83,36 @@ export default function OrderDetailScreen({ route, navigation }) {
   }, [orderId, token]);
 
   useEffect(() => { fetchOrder(); }, [fetchOrder]);
+
+  // ── Cancelar orden ────────────────────────────────────────────────────────
+  const handleCancel = () => {
+    Alert.alert(
+      "Cancelar orden",
+      "¿Estás seguro que deseas cancelar esta orden? Esta acción no se puede deshacer.",
+      [
+        { text: "No, mantener", style: "cancel" },
+        {
+          text: "Sí, cancelar",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              setCancelling(true);
+              await cancelOrder(orderId);
+              showAppAlert("Orden cancelada", "Tu orden fue cancelada correctamente.");
+              fetchOrder(); // refresca el estado
+            } catch (err) {
+              showAppAlert(
+                "Error",
+                err?.response?.data?.message || "No se pudo cancelar la orden.",
+              );
+            } finally {
+              setCancelling(false);
+            }
+          },
+        },
+      ],
+    );
+  };
 
   // Auto-refresh cada 30 s mientras la orden está activa
   useEffect(() => {
@@ -420,18 +452,49 @@ export default function OrderDetailScreen({ route, navigation }) {
         }
 
         ListFooterComponent={
-          !isCancelled && orderItems.length > 0 ? (
-            <Pressable
-              onPress={handleReorder}
-              disabled={addingAll}
-              style={[styles.reorderBtn, addingAll && { opacity: 0.6 }]}
-            >
-              <Ionicons name="refresh-circle-outline" size={18} color="#fff" />
-              <AppText style={styles.reorderText}>
-                {addingAll ? "Agregando..." : "Volver a pedir"}
-              </AppText>
-            </Pressable>
-          ) : null
+          <View style={{ gap: 10, marginBottom: spacing.lg }}>
+            {/* Volver a pedir */}
+            {!isCancelled && orderItems.length > 0 && (
+              <Pressable
+                onPress={handleReorder}
+                disabled={addingAll}
+                style={[styles.reorderBtn, addingAll && { opacity: 0.6 }]}
+              >
+                <Ionicons name="refresh-circle-outline" size={18} color="#fff" />
+                <AppText style={styles.reorderText}>
+                  {addingAll ? "Agregando..." : "Volver a pedir"}
+                </AppText>
+              </Pressable>
+            )}
+
+            {/* Cancelar orden — solo si está pendiente */}
+            {order?.status === "pending" && (
+              <Pressable
+                onPress={handleCancel}
+                disabled={cancelling}
+                style={({ pressed }) => ({
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 8,
+                  paddingVertical: 13,
+                  borderRadius: 14,
+                  borderWidth: 1.5,
+                  borderColor: cancelling ? "#fca5a5" : "#ef4444",
+                  backgroundColor: pressed ? "#fef2f2" : "#fff",
+                  opacity: cancelling ? 0.6 : 1,
+                })}
+              >
+                {cancelling
+                  ? <ActivityIndicator size="small" color="#ef4444" />
+                  : <Ionicons name="close-circle-outline" size={18} color="#ef4444" />
+                }
+                <AppText style={{ fontSize: 14, fontWeight: "700", color: "#ef4444" }}>
+                  {cancelling ? "Cancelando..." : "Cancelar orden"}
+                </AppText>
+              </Pressable>
+            )}
+          </View>
         }
       />
     </ScreenContainer>

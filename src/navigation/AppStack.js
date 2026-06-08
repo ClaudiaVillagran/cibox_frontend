@@ -37,6 +37,10 @@ import CustomBoxCheckoutScreen from "../screens/CustomBoxCheckoutScreen";
 import HowItWorksScreen from "../screens/HowItWorksScreen";
 import RecipesScreen from "../screens/RecipesScreen";
 import AdminOrdersScreen from "../screens/AdminOrdersScreen";
+import B2BProviderScreen from "../screens/B2BProviderScreen";
+import ContactScreen from "../screens/ContactScreen";
+import TermsScreen from "../screens/TermsScreen";
+import PrivacyScreen from "../screens/PrivacyScreen";
 
 const Stack = createNativeStackNavigator();
 
@@ -322,6 +326,44 @@ export default function AppStack() {
         }
         options={
           isWebDesktop ? { headerShown: false } : { title: "Panel de órdenes" }
+        }
+      />
+      <Stack.Screen
+        name="B2BProvider"
+        component={B2BProviderScreen}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="Contact"
+        component={
+          isWebDesktop ? withWebLayout(ContactScreen) : ContactScreen
+        }
+        options={
+          isWebDesktop
+            ? { headerShown: false }
+            : { title: "Contáctanos", headerRight: () => null }
+        }
+      />
+      <Stack.Screen
+        name="Terms"
+        component={
+          isWebDesktop ? withWebLayout(TermsScreen) : TermsScreen
+        }
+        options={
+          isWebDesktop
+            ? { headerShown: false }
+            : { title: "Términos y condiciones", headerRight: () => null }
+        }
+      />
+      <Stack.Screen
+        name="Privacy"
+        component={
+          isWebDesktop ? withWebLayout(PrivacyScreen) : PrivacyScreen
+        }
+        options={
+          isWebDesktop
+            ? { headerShown: false }
+            : { title: "Política de privacidad", headerRight: () => null }
         }
       />
 

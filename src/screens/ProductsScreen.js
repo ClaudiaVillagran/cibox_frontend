@@ -9,6 +9,7 @@ import {
   useWindowDimensions,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { ProductsGridSkeleton } from "../components/SkeletonLoader";
 import ScreenContainer from "../components/ScreenContainer";
 import ProductCard from "../components/ProductCard";
 import SearchInput from "../components/SearchInput";
@@ -228,15 +229,8 @@ export default function ProductsScreen({ navigation, route }) {
   
   if (loading && !products.length) {
     return (
-      <ScreenContainer maxWidth={1100}>
-        <View
-          style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
-        >
-          <ActivityIndicator size="large" color={colors.primary} />
-          <AppText style={{ marginTop: spacing.sm, color: colors.muted }}>
-            Cargando productos...
-          </AppText>
-        </View>
+      <ScreenContainer maxWidth={1100} padded={false}>
+        <ProductsGridSkeleton columns={numColumns} count={numColumns * 3} />
       </ScreenContainer>
     );
   }
@@ -369,26 +363,74 @@ export default function ProductsScreen({ navigation, route }) {
             style={{
               backgroundColor: colors.surface,
               borderRadius: radius.lg,
-              paddingHorizontal: spacing.md,
+              borderWidth: 1,
+              borderColor: colors.border,
+              paddingHorizontal: spacing.lg,
               paddingVertical: spacing.xl,
               alignItems: "center",
               marginHorizontal: spacing.md,
+              gap: 12,
             }}
           >
+            <AppText style={{ fontSize: 48 }}>🔍</AppText>
+
             <AppText
               style={{
-                fontSize: 20,
-                fontWeight: "700",
+                fontSize: 18,
+                fontWeight: "800",
                 color: colors.text,
-                marginBottom: 8,
+                textAlign: "center",
               }}
             >
-              No encontramos productos
+              Sin resultados
             </AppText>
 
-            <AppText style={{ color: colors.muted, textAlign: "center" }}>
-              Prueba cambiando la búsqueda o limpiando los filtros.
+            <AppText style={{ color: colors.muted, textAlign: "center", lineHeight: 22 }}>
+              No encontramos productos que coincidan con tu búsqueda o filtros actuales.
             </AppText>
+
+            {/* Sugerencias */}
+            <View style={{
+              backgroundColor: colors.background,
+              borderRadius: radius.md,
+              borderWidth: 1,
+              borderColor: colors.border,
+              padding: spacing.md,
+              width: "100%",
+              gap: 6,
+            }}>
+              <AppText style={{ fontSize: 12, fontWeight: "700", color: colors.muted, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 4 }}>
+                Sugerencias
+              </AppText>
+              {[
+                "Revisa la ortografía de tu búsqueda",
+                "Usa palabras más generales",
+                "Limpia los filtros de precio o categoría",
+              ].map((tip, i) => (
+                <View key={i} style={{ flexDirection: "row", gap: 8, alignItems: "flex-start" }}>
+                  <AppText style={{ color: colors.primary, fontSize: 14, lineHeight: 20 }}>•</AppText>
+                  <AppText style={{ color: colors.muted, fontSize: 13, flex: 1, lineHeight: 20 }}>{tip}</AppText>
+                </View>
+              ))}
+            </View>
+
+            <Pressable
+              onPress={handleClearFilters}
+              style={({ pressed }) => ({
+                backgroundColor: pressed ? `${colors.primary}CC` : colors.primary,
+                borderRadius: 999,
+                paddingHorizontal: 24,
+                paddingVertical: 12,
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 8,
+              })}
+            >
+              <Ionicons name="refresh-outline" size={16} color="#fff" />
+              <AppText style={{ color: "#fff", fontWeight: "800", fontSize: 14 }}>
+                Limpiar filtros
+              </AppText>
+            </Pressable>
           </View>
         }
       />

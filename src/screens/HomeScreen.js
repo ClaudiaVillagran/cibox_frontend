@@ -35,6 +35,7 @@ import useCartStore from "../store/cartStore";
 import { showAppAlert } from "../utils/appAlerts";
 import useAuthStore from "../store/authStore";
 import AppText from "../components/AppText";
+import { ProductRowSkeleton } from "../components/SkeletonLoader";
 import MobileCategoryMenu from "../components/MobileCategoryMenu";
 import { Share } from "react-native";
 import useMissionStore from "../store/missionStore";
@@ -567,19 +568,172 @@ export default function HomeScreen({ navigation }) {
               </View>
             </Pressable>
 
+            {/* ══════════════════════════════════════════════════════════
+                #4 SEÑALES DE CONFIANZA
+                ══════════════════════════════════════════════════════════ */}
+            <View style={{ paddingHorizontal: spacing.md, marginBottom: spacing.lg }}>
+              {/* Título */}
+              <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 14 }}>
+                <View style={{ width: 4, height: 22, borderRadius: 999, backgroundColor: colors.primary, marginRight: 10 }} />
+                <AppText style={{ fontSize: 18, fontWeight: "800", color: colors.text }}>
+                  Tu compra, 100% segura
+                </AppText>
+              </View>
+
+              {/* Grid de señales */}
+              <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10 }}>
+                {[
+                  { icon: "lock-closed-outline",      label: "Pago seguro",         sub: "Webpay / Transbank" },
+                  { icon: "logo-whatsapp",             label: "Soporte WhatsApp",    sub: "+569 91264828" },
+                  { icon: "cube-outline",              label: "Tracking de pedido",  sub: "Seguimiento en tiempo real" },
+                  { icon: "refresh-outline",           label: "Cambios y devoluciones", sub: "Dentro de 24 hrs" },
+                  { icon: "storefront-outline",        label: "Empresa chilena",     sub: "Santiago, Chile" },
+                  { icon: "shield-checkmark-outline",  label: "Datos protegidos",    sub: "Ley 19.628" },
+                ].map((item, i) => (
+                  <View
+                    key={i}
+                    style={{
+                      width: "47%",
+                      flexDirection: "row",
+                      alignItems: "center",
+                      gap: 10,
+                      backgroundColor: colors.surface,
+                      borderRadius: 14,
+                      borderWidth: 1,
+                      borderColor: colors.border,
+                      padding: 12,
+                      shadowColor: "#000",
+                      shadowOpacity: 0.04,
+                      shadowRadius: 6,
+                      shadowOffset: { width: 0, height: 2 },
+                      elevation: 1,
+                    }}
+                  >
+                    <View style={{
+                      width: 36,
+                      height: 36,
+                      borderRadius: 10,
+                      backgroundColor: `${colors.primary}14`,
+                      borderWidth: 1,
+                      borderColor: `${colors.primary}25`,
+                      justifyContent: "center",
+                      alignItems: "center",
+                      flexShrink: 0,
+                    }}>
+                      <Ionicons name={item.icon} size={18} color={colors.primary} />
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <AppText style={{ fontSize: 12, fontWeight: "800", color: colors.text, lineHeight: 16 }}>
+                        {item.label}
+                      </AppText>
+                      <AppText style={{ fontSize: 10, color: colors.muted, lineHeight: 14 }}>
+                        {item.sub}
+                      </AppText>
+                    </View>
+                  </View>
+                ))}
+              </View>
+            </View>
+
+            {/* ══════════════════════════════════════════════════════════
+                #5 ¿POR QUÉ CIBOX ES MÁS BARATO?
+                ══════════════════════════════════════════════════════════ */}
+            <View style={{
+              marginHorizontal: spacing.md,
+              marginBottom: spacing.lg,
+              backgroundColor: `${colors.primary}08`,
+              borderRadius: 20,
+              borderWidth: 1,
+              borderColor: `${colors.primary}20`,
+              overflow: "hidden",
+            }}>
+              {/* Header */}
+              <View style={{
+                backgroundColor: colors.primary,
+                paddingHorizontal: spacing.md,
+                paddingVertical: 14,
+              }}>
+                <AppText style={{ fontSize: 17, fontWeight: "900", color: "#fff" }}>
+                  ¿Por qué CIBOX es más barato?
+                </AppText>
+                <AppText style={{ fontSize: 12, color: "rgba(255,255,255,.85)", marginTop: 2 }}>
+                  No es magia. Es un modelo de negocio diferente.
+                </AppText>
+              </View>
+
+              {/* Razones */}
+              <View style={{ padding: spacing.md, gap: 14 }}>
+                {[
+                  {
+                    icon: "people-outline",
+                    title: "Compramos directo al proveedor",
+                    desc: "Sin intermediarios. Negociamos precio directo con distribuidores y fabricantes.",
+                  },
+                  {
+                    icon: "phone-portrait-outline",
+                    title: "Somos 100% online",
+                    desc: "Sin local físico, sin góndolas, sin costos de sala. Ese ahorro te lo traspasamos.",
+                  },
+                  {
+                    icon: "cube-outline",
+                    title: "Formatos inteligentes",
+                    desc: "Cajas y packs pensados para bajar el costo por unidad en los productos que más usas.",
+                  },
+                  // {
+                  //   icon: "eye-outline",
+                  //   title: "Precios transparentes",
+                  //   desc: "Mostramos el precio del supermercado vs. CIBOX para que compares antes de comprar.",
+                  // },
+                ].map((item, i, arr) => (
+                  <View
+                    key={i}
+                    style={{
+                      flexDirection: "row",
+                      gap: 12,
+                      alignItems: "flex-start",
+                      paddingBottom: i < arr.length - 1 ? 14 : 0,
+                      borderBottomWidth: i < arr.length - 1 ? 1 : 0,
+                      borderColor: `${colors.primary}20`,
+                    }}
+                  >
+                    <View style={{
+                      width: 38,
+                      height: 38,
+                      borderRadius: 12,
+                      backgroundColor: colors.primary,
+                      justifyContent: "center",
+                      alignItems: "center",
+                      flexShrink: 0,
+                    }}>
+                      <Ionicons name={item.icon} size={18} color="#fff" />
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <AppText style={{ fontSize: 13, fontWeight: "800", color: colors.text, marginBottom: 3 }}>
+                        {item.title}
+                      </AppText>
+                      <AppText style={{ fontSize: 12, color: colors.muted, lineHeight: 18 }}>
+                        {item.desc}
+                      </AppText>
+                    </View>
+                  </View>
+                ))}
+              </View>
+            </View>
+
             {/* ── Secciones ──────────────────────────────────────────────── */}
             <View style={{ paddingHorizontal: spacing.md, zIndex: 1 }}>
               {sectionsLoading ? (
-                <View
-                  style={{
-                    backgroundColor: colors.surface,
-                    borderRadius: 18,
-                    padding: spacing.md,
-                  }}
-                >
-                  <AppText style={{ color: colors.muted }}>
-                    Cargando destacados...
-                  </AppText>
+                <View style={{ gap: 28 }}>
+                  {/* Skeleton sección Destacados */}
+                  <View style={{ gap: 12 }}>
+                    <View style={{ width: 140, height: 20, borderRadius: 8, backgroundColor: colors.border, opacity: 0.6 }} />
+                    <ProductRowSkeleton count={3} />
+                  </View>
+                  {/* Skeleton sección Recomendados */}
+                  <View style={{ gap: 12 }}>
+                    <View style={{ width: 180, height: 20, borderRadius: 8, backgroundColor: colors.border, opacity: 0.6 }} />
+                    <ProductRowSkeleton count={3} />
+                  </View>
                 </View>
               ) : (
                 <>
